@@ -153,6 +153,10 @@
     box-shadow: 0 16px 48px rgba(0,0,0,0.08), 0 8px 20px rgba(0,0,0,0.05);
     z-index: 10;
   }
+  /* Touch devices (mobile): no hover-enlarge — a tap would otherwise leave the card stuck larger */
+  @media (hover: none) {
+    .card-inner.reveal-done:hover { transform: none; box-shadow: none; z-index: auto; }
+  }
   .card-cell img, .card-cell video {
     width: 100%; height: 100%;
     object-fit: cover;
@@ -690,17 +694,19 @@
     .hero-island { top: 36px; width: calc(100vw - 60px); }
     .hero-island::before { border-radius: 42px; }
     .hero-pill { gap: 12px; padding: 15px 12px 15px 18px; }
-    .hero-logo { height: 44px; }
+    .hero-logo { height: 33px; }
     .hero-btn { padding: 8px 13px; font-size: 12.5px; }
     .hero-mission { padding: 15px 18px 18px; font-size: 15px; }
+    .rp-banner-link { margin-bottom: 112px; }
     .overlay { overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
     .overlay::-webkit-scrollbar { display: none; }
     .overlay-panels { flex-direction: column; height: auto; min-height: 100%; }
-    .overlay-left { flex: none; height: auto; padding: 32px 16px 16px; }
+    .overlay-left { flex: none; height: auto; padding: 80px 16px 16px; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; }
+    .overlay::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: 74px; background: rgba(20, 20, 24, 0.2); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); z-index: 208; }
     .overlay-card-frame { padding: 0 8px; }
     .overlay-card { max-width: calc(100vw - 48px); }
-    .overlay-right { flex: none; height: auto; overflow: visible; border-left: none; border-top: 1px solid rgba(255,255,255,0.06); }
-    .rp-content { height: auto; overflow-y: visible; }
+    .overlay-right { flex: none; height: auto; overflow: visible; border-left: none; border-top: none; }
+    .rp-content { height: auto; overflow-y: visible; padding-top: 20px; }
     .right-scroll-viewport { position: relative; inset: auto; min-height: 60vh; }
     .overlay-dog-name { font-size: 16px; }
     .overlay-info { padding: 12px 8px 4px; }
@@ -730,10 +736,11 @@
 
   /* ── Redesigned Right Panel: Steal / Block Cards ── */
   .rp-content {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 28px 24px 40px;
+    padding: 80px 24px 40px;
     height: 100%;
     overflow-y: auto;
     scrollbar-width: none;
@@ -747,6 +754,8 @@
     justify-content: space-between;
     gap: 12px;
   }
+  /* Desktop: pin Buy Now to the top-right so "How It Works" can start lower */
+  .rp-section-header .rp-shop-btn { position: absolute; top: 28px; right: 24px; }
   .rp-section-title {
     font-size: 32px;
     font-weight: 700;
@@ -1371,6 +1380,30 @@
     }
     .howto-shop-btn { top: 10px; right: 10px; padding: 9px 18px; font-size: 13px; }
   }
+  /* Mobile video lightbox — placed after the base .rp-vlb rules so these win.
+     Full-screen modal, centered video, close button matching .overlay-close. */
+  @media (max-width: 600px) {
+    .rp-video-lightbox { position: fixed; z-index: 9999; background: rgba(0, 0, 0, 0.96); }
+    .rp-vlb-topbar .rp-shop-btn { display: none; }
+    .rp-back-btn {
+      position: fixed;
+      top: 10px; left: 10px;
+      width: 54px; height: 54px;
+      padding: 0;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      box-shadow: none;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    .rp-back-btn::before { content: "\00d7"; font-size: 27px; line-height: 1; }
+    .rp-back-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .rp-vlb-player { padding: 74px 14px 20px; }
+    .rp-vlb-video-area { max-width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -1395,7 +1428,7 @@
 <!-- Card Overlay (Two-Panel) -->
 <div class="overlay" id="overlay">
   <button class="overlay-close" id="overlayClose">&times;</button>
-  <a class="overlay-shop-btn" id="overlayShopBtn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+  <a class="overlay-shop-btn" id="overlayShopBtn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now →</a>
   <div class="overlay-panels" id="overlayPanels">
 
     <!-- LEFT PANEL: Card image + info + boop -->
@@ -1431,7 +1464,7 @@
 <div class="video-overlay" id="videoOverlay">
   <button class="vo-close" id="voClose" aria-label="Close"></button>
   <div class="vo-topbar">
-    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now →</a>
   </div>
   <button class="vo-arrow vo-arrow-prev" id="voArrowPrev" aria-label="Previous video">&#8249;</button>
   <button class="vo-arrow vo-arrow-next" id="voArrowNext" aria-label="Next video">&#8250;</button>
@@ -1451,7 +1484,7 @@
 <div class="video-overlay" id="photoOverlay">
   <button class="vo-close" id="poClose" aria-label="Close"></button>
   <div class="vo-topbar">
-    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now →</a>
   </div>
   <button class="vo-arrow vo-arrow-prev" id="poArrowPrev" aria-label="Previous photo">&#8249;</button>
   <button class="vo-arrow vo-arrow-next" id="poArrowNext" aria-label="Next photo">&#8250;</button>
@@ -1470,7 +1503,7 @@
 <!-- How to Play / FAQ Overlay -->
 <div class="howto-overlay" id="howtoOverlay">
   <button class="overlay-close howto-close" id="howtoClose" aria-label="Close">&times;</button>
-  <a class="howto-shop-btn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+  <a class="howto-shop-btn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now →</a>
   <div class="howto-content" id="howtoContent">
 
     <div class="howto-left">
@@ -1990,7 +2023,7 @@ function buildVideoCell(el, item) {
     el.appendChild(img);
   } else if (item.video) {
     const vid = document.createElement('video');
-    vid.src = item.video;
+    vid.src = item.video + '#t=0.1';
     vid.muted = true;
     vid.preload = 'metadata';
     vid.playsInline = true;
@@ -2162,7 +2195,10 @@ function setLeftPanel(item) {
     }
     document.getElementById('overlayDogName').textContent = item.dogName;
 
-    document.getElementById('overlayOwner').innerHTML = `<span>Proud pup of</span> ${item.ownerName}`;
+    // "Proud pup of ..." line removed for all cards — location is shown on the card art
+    const ownerEl = document.getElementById('overlayOwner');
+    ownerEl.style.display = 'none';
+    ownerEl.innerHTML = '';
 
   } else if (item.type === 'photo') {
     if (item.image) {
@@ -2339,7 +2375,7 @@ function buildMarketingPanel(rightEl, item) {
   shopBtn.href = 'https://play-pupcup.myshopify.com/';
   shopBtn.target = '_blank';
   shopBtn.rel = 'noopener';
-  shopBtn.textContent = 'Shop Now →';
+  shopBtn.textContent = 'Buy Now →';
 
   headerRow.appendChild(howTitle);
   headerRow.appendChild(shopBtn);
@@ -2380,7 +2416,7 @@ function buildMarketingPanel(rightEl, item) {
     bg.className = 'rp-vt-bg';
 
     const vid = document.createElement('video');
-    vid.src = videoSrcs[i];
+    vid.src = videoSrcs[i] + '#t=0.1';
     vid.muted = true;
     vid.preload = 'metadata';
     vid.playsInline = true;
@@ -2430,7 +2466,7 @@ function openVideoLightbox(rightEl, videoSrc) {
   shopBtn.href = 'https://play-pupcup.myshopify.com/';
   shopBtn.target = '_blank';
   shopBtn.rel = 'noopener';
-  shopBtn.textContent = 'Shop Now →';
+  shopBtn.textContent = 'Buy Now →';
 
   topbar.appendChild(backBtn);
   topbar.appendChild(shopBtn);
@@ -2459,7 +2495,10 @@ function openVideoLightbox(rightEl, videoSrc) {
   playerWrap.appendChild(videoArea);
   lb.appendChild(playerWrap);
 
-  rightEl.appendChild(lb);
+  // On mobile, mount the lightbox full-screen (covers the overlay's X + Buy Now);
+  // on desktop keep it inside the right panel.
+  const mountTarget = window.matchMedia('(max-width: 600px)').matches ? document.body : rightEl;
+  mountTarget.appendChild(lb);
 
   // Fade in: defer one frame so the initial opacity:0 is painted first
   requestAnimationFrame(() => requestAnimationFrame(() => lb.classList.add('rp-vlb-visible')));
