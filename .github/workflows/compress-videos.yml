@@ -1,0 +1,45 @@
+name: Compress videos
+
+# Automatically compresses videos added to images/ and commits the smaller
+# versions back. GitHub Pages then redeploys automatically. See
+# scripts/compress-videos.sh for the compression logic and re-processing guard.
+
+on:
+  push:
+    paths:
+      - 'images/**.mp4'
+      - 'images/**.MP4'
+      - 'images/**.mov'
+      - 'images/**.MOV'
+      - 'images/**.m4v'
+      - 'images/**.webm'
+      - 'scripts/compress-videos.sh'
+
+permissions:
+  contents: write
+
+jobs:
+  compress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Compress new videos
+        run: bash scripts/compress-videos.sh
+
+      - name: Commit compressed videos
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            # [skip ci] stops this auto-commit from re-triggering the workflow.
+            git commit -m "Auto-compress videos [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi

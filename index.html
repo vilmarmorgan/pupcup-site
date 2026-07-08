@@ -1,0 +1,3544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pupcup — Home</title>
+<meta name="description" content="Pupcup — a card game featuring illustrated dogs. Explore the gallery of every pup in the deck.">
+<meta property="og:title" content="Pupcup — Home">
+<meta property="og:description" content="A card game featuring illustrated dogs. Explore the infinite gallery.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+<style>
+  /* ───── Reset & Base ───── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --card-w: 280px;
+    --card-h: 381px;
+    --gap: 60px;
+    --cell-w: calc(var(--card-w) + var(--gap));
+    --cell-h: calc(var(--card-h) + var(--gap));
+    --bg: #1e2028;
+    --surface: #1a1a1e;
+    --accent: #f5c542;
+    --text: #f0ece4;
+    --text-muted: #9a9a9e;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Jost', system-ui, sans-serif;
+    color: var(--text);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* ───── Floating Hero Island ───── */
+  .hero-island {
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    width: min(640px, calc(100vw - 28px));
+    display: flex;
+    flex-direction: column;
+  }
+  /* Bottom "pill": a large-radius rounded rectangle spanning the whole island, its
+     top edge flush with the top pill's top edge, revealing beneath as the mission bar. */
+  .hero-island::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 52px;
+    background: rgba(225, 205, 205, 0.9);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    box-shadow: 0 20px 36px rgba(18, 20, 28, 0.26);
+    z-index: 0;
+  }
+  .hero-pill {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 19px 16px 19px 26px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 6px 16px rgba(18, 20, 28, 0.18);
+  }
+  .hero-logo { height: 52px; width: auto; display: block; flex-shrink: 0; }
+  .hero-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .hero-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 18px;
+    border-radius: 100px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .hero-btn:hover { transform: scale(1.04); }
+  .hero-btn:active { transform: scale(0.96); }
+  .hero-btn-howto { background: #231f20; color: #ffffff; }
+  .hero-btn-buy {
+    background: #ff8d1e;
+    color: #231f20;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
+  }
+  /* Mission text sits over the bottom pill (::before), below the top pill. */
+  .hero-mission {
+    position: relative;
+    z-index: 1;
+    padding: 18px 28px 22px;
+    text-align: center;
+    color: #3c3733;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  /* ───── Infinite Canvas ───── */
+  #canvas-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    cursor: grab;
+  }
+  #canvas-viewport.dragging { cursor: grabbing; }
+
+  #canvas-world {
+    position: absolute;
+    left: 50%; top: 50%;
+    will-change: transform;
+  }
+
+  /* ───── Card Cells ───── */
+  .card-cell {
+    position: absolute;
+    width: var(--card-w);
+    height: var(--card-h);
+  }
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #ffffff;
+    border: none;
+    outline: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+  }
+  .card-inner.reveal-done:hover {
+    transform: scale(1.08);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.08), 0 8px 20px rgba(0,0,0,0.05);
+    z-index: 10;
+  }
+  .card-cell img, .card-cell video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+  .card-cell .card-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px;
+    background: #ffffff;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+    padding: 12px;
+  }
+  .card-placeholder .paw {
+    font-size: 32px;
+    opacity: 0.4;
+  }
+  .card-cell .card-type-badge {
+    position: absolute;
+    top: 8px; left: 8px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-steal { background: #e74c3c; color: white; }
+  .badge-block { background: #3498db; color: white; }
+  .badge-rule  { background: #9b59b6; color: white; }
+  .badge-photo { background: #2ecc71; color: white; }
+  .badge-video { background: #e67e22; color: white; }
+
+  /* ───── Play Button Overlay (video thumbnails) ───── */
+  .play-btn {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .play-btn::after {
+    content: '';
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .play-btn::before {
+    content: '';
+    position: absolute;
+    /* triangle play icon */
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 10px 0 10px 18px;
+    border-color: transparent transparent transparent white;
+    z-index: 1;
+    margin-left: 3px;
+  }
+
+  /* ───── Card Overlay ───── */
+  /* ───── Overlay (Two-Panel, Full-Screen) ───── */
+  .overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 200;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    background: #141417;
+    transition: opacity 0.3s ease;
+  }
+  .overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .overlay-panels {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transform: scale(0.96);
+    transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  .overlay.active .overlay-panels {
+    transform: scale(1);
+  }
+
+  /* ── Left Panel: 50% width, 100% height ── */
+  .overlay-left {
+    flex: 0 0 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(26, 26, 30, 0.95);
+    overflow: visible;
+    position: relative;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  /* Card + info frame, vertically centered */
+  .overlay-card-frame {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-height: 90%;
+    width: 100%;
+    padding: 0 40px;
+    cursor: default;
+  }
+
+  .overlay-card {
+    position: relative;
+    /* Height-first: cap by available viewport height, derive width via aspect ratio */
+    max-height: calc(90vh - 160px);
+    width: auto;
+    max-width: 494px;
+    aspect-ratio: 2.75 / 3.75;
+    border-radius: 14px;
+    overflow: hidden;
+    background: transparent;
+  }
+  .overlay-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    box-shadow: inset 0 0 0 2px rgba(26, 26, 30, 0.90);
+    pointer-events: none;
+    z-index: 1;
+  }
+  #overlayMedia {
+    overflow: hidden;
+  }
+  .overlay-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .overlay-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    background: #000;
+  }
+  .overlay-card .card-placeholder-large {
+    width: 100%;
+    height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 12px;
+    background: #ffffff;
+    color: var(--text-muted);
+    font-size: 16px;
+  }
+  .card-placeholder-large .paw { font-size: 56px; opacity: 0.4; }
+
+  .overlay-info {
+    text-align: center;
+    padding: 20px 16px 8px;
+  }
+  .overlay-dog-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .overlay-class-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+  .overlay-owner {
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .overlay-owner span {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* ── Right Panel: 50% width, 100% height ── */
+  .overlay-right {
+    flex: 0 0 50%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background: #141417;
+    border-left: none;
+  }
+
+  /* Right panel: infinite vertical scroll container */
+  .right-scroll-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    cursor: grab;
+  }
+  .right-scroll-viewport.dragging { cursor: grabbing; }
+  .right-scroll-world {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+  }
+
+  /* Right panel media grid cell */
+  .right-cell {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  .right-cell:hover { opacity: 0.85; }
+  .right-cell img, .right-cell video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .right-cell .right-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    text-align: center;
+  }
+  .right-placeholder .right-icon { font-size: 28px; opacity: 0.5; }
+  .right-cell .right-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 24px 12px 10px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* Right panel: marketing wireframe (steal/block cards) */
+  .right-marketing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    height: 100%;
+    padding: 48px 36px;
+  }
+  .marketing-box {
+    width: 100%;
+    max-width: 340px;
+    border: 2px dashed rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 36px 24px;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .marketing-box:hover { border-color: rgba(255,255,255,0.25); }
+  .marketing-box .marketing-icon { font-size: 40px; opacity: 0.5; }
+  .marketing-box .marketing-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.6);
+  }
+  .marketing-box .marketing-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    max-width: 220px;
+  }
+
+  /* ── Close Button ── */
+  .overlay-close {
+    position: fixed;
+    top: 20px; left: 20px;
+    width: 66px; height: 66px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 33px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+    z-index: 210;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .overlay-close:hover { background: rgba(255,255,255,0.2); }
+
+  /* ── Mobile header Shop Now button (hidden on desktop) ── */
+  .overlay-shop-btn { display: none; }
+
+  /* ───── Card Entrance Animation ───── */
+  .card-inner {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  .card-inner.revealed {
+    animation: cardReveal 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  @keyframes cardReveal {
+    0%   { opacity: 0; transform: translateY(24px) scale(0.96); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  /* After reveal completes, let hover take over transform */
+  .card-inner.reveal-done {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  /* ───── Boop Button ───── */
+  .boop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    box-shadow: 0 2px 12px rgba(245, 197, 66, 0.3);
+    position: relative;
+    overflow: visible;
+  }
+  .boop-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 20px rgba(245, 197, 66, 0.45);
+  }
+  .boop-btn:active {
+    transform: scale(0.95);
+  }
+  .boop-btn.booped {
+    animation: boopPop 0.35s ease;
+  }
+  .boop-paw {
+    font-size: 18px;
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+  .boop-btn:active .boop-paw {
+    transform: rotate(-20deg) scale(1.2);
+  }
+  .boop-count {
+    background: rgba(0,0,0,0.15);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+  }
+  @keyframes boopPop {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.18); }
+    60%  { transform: scale(0.94); }
+    100% { transform: scale(1); }
+  }
+
+  /* ───── Boop FX Container (shared, fixed full-viewport, used by every Boop button) ───── */
+  .boop-fx {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 600;
+  }
+
+  /* ── Paw Burst ── */
+  .paw-particle {
+    position: absolute;
+    font-size: 22px;
+    pointer-events: none;
+    animation: pawBurst var(--dur) ease-out forwards;
+    opacity: 0;
+  }
+  @keyframes pawBurst {
+    0%   { transform: translate(0, 0) scale(0.3) rotate(0deg); opacity: 1; }
+    60%  { opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(1) rotate(var(--rot)); opacity: 0; }
+  }
+
+  /* ── Bone Rain ── */
+  .bone-particle {
+    position: absolute;
+    font-size: 20px;
+    pointer-events: none;
+    top: -30px;
+    animation: boneRain var(--dur) ease-in forwards;
+    opacity: 0;
+  }
+  @keyframes boneRain {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(var(--fall)) rotate(var(--rot)); opacity: 0; }
+  }
+
+  /* ── Tail Wag Ripple ── */
+  .ripple-ring {
+    position: absolute;
+    left: 50%;
+    bottom: 60px;
+    width: 40px; height: 40px;
+    margin-left: -20px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    pointer-events: none;
+    animation: rippleGrow var(--dur) ease-out forwards;
+    opacity: 0;
+  }
+  @keyframes rippleGrow {
+    0%   { transform: scale(0.3); opacity: 0.9; }
+    100% { transform: scale(var(--scale)); opacity: 0; }
+  }
+  .ripple-paw {
+    position: absolute;
+    font-size: 16px;
+    pointer-events: none;
+    animation: ripplePawFloat var(--dur) ease-out forwards;
+    opacity: 0;
+  }
+  @keyframes ripplePawFloat {
+    0%   { transform: translate(0, 0) scale(0.5); opacity: 0.9; }
+    50%  { opacity: 0.7; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(1.1); opacity: 0; }
+  }
+
+  /* ───── Boop Maxed Out (daily limit) ───── */
+  .boop-btn.boop-maxed {
+    animation: boopShake 0.4s ease;
+    opacity: 0.5;
+  }
+  @keyframes boopShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  /* ───── Super Boop Full-Screen FX (shared, fixed full-viewport) ───── */
+  .super-boop-flash {
+    position: fixed;
+    inset: 0;
+    z-index: 610;
+    pointer-events: none;
+    background: radial-gradient(circle at center, rgba(245, 197, 66, 0.5), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .super-boop-flash.active {
+    opacity: 1;
+    animation: superFlash 0.6s ease-out forwards;
+  }
+  @keyframes superFlash {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .super-boop-fx {
+    position: fixed;
+    inset: 0;
+    z-index: 605;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  /* Super-sized particles */
+  .paw-particle.super,
+  .bone-particle.super,
+  .ripple-paw.super {
+    z-index: 9998;
+  }
+  .ripple-ring.super {
+    border-color: var(--accent);
+    border-width: 4px;
+    z-index: 9998;
+  }
+
+  /* ───── Hint Text ───── */
+  .hint {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 90;
+    font-size: 12px;
+    color: var(--text-muted);
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 1s ease;
+  }
+  .hint.hidden { opacity: 0; }
+
+  /* ───── Mobile adjustments ───── */
+  @media (max-width: 600px) {
+    :root {
+      --card-w: 156px;
+      --card-h: 212px;
+      --gap: 10px;
+    }
+    .hero-island { top: 36px; width: calc(100vw - 60px); }
+    .hero-island::before { border-radius: 42px; }
+    .hero-pill { gap: 12px; padding: 15px 12px 15px 18px; }
+    .hero-logo { height: 44px; }
+    .hero-btn { padding: 8px 13px; font-size: 12.5px; }
+    .hero-mission { padding: 15px 18px 18px; font-size: 15px; }
+    .overlay { overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
+    .overlay::-webkit-scrollbar { display: none; }
+    .overlay-panels { flex-direction: column; height: auto; min-height: 100%; }
+    .overlay-left { flex: none; height: auto; padding: 32px 16px 16px; }
+    .overlay-card-frame { padding: 0 8px; }
+    .overlay-card { max-width: calc(100vw - 48px); }
+    .overlay-right { flex: none; height: auto; overflow: visible; border-left: none; border-top: 1px solid rgba(255,255,255,0.06); }
+    .rp-content { height: auto; overflow-y: visible; }
+    .right-scroll-viewport { position: relative; inset: auto; min-height: 60vh; }
+    .overlay-dog-name { font-size: 16px; }
+    .overlay-info { padding: 12px 8px 4px; }
+    .overlay-close { top: 10px; left: 10px; width: 54px; height: 54px; font-size: 27px; }
+    .vo-arrow { display: none !important; }
+    .overlay-shop-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 10px; right: 16px;
+      height: 54px;
+      padding: 0 20px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #1a1a1e;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+      z-index: 210;
+      box-shadow: 0 2px 10px rgba(245,197,66,0.25);
+    }
+    .rp-section-header .rp-shop-btn { display: none; }
+  }
+
+  /* ── Redesigned Right Panel: Steal / Block Cards ── */
+  .rp-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 28px 24px 40px;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .rp-content::-webkit-scrollbar { display: none; }
+  .rp-content > * { flex-shrink: 0; }
+
+  .rp-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .rp-section-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #f0ece4;
+    font-family: 'Jost', system-ui, sans-serif;
+    line-height: 1.2;
+  }
+  .rp-shop-btn {
+    display: inline-block;
+    padding: 9px 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 10px rgba(245,197,66,0.25);
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .rp-shop-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 18px rgba(245,197,66,0.4);
+  }
+  .rp-desc-plain {
+    font-size: 20px;
+    color: rgba(240,236,228,0.75);
+    line-height: 1.55;
+    margin-top: 8px;
+  }
+  .rp-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin: 0;
+  }
+  .rp-see-it-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #f0ece4;
+    font-family: 'Jost', system-ui, sans-serif;
+    line-height: 1.2;
+  }
+
+  .rp-video-grid {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .rp-video-thumb {
+    aspect-ratio: 9 / 16;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .rp-video-thumb:hover { transform: scale(1.04); }
+  .rp-vt-bg { position: absolute; inset: 0; }
+  .rp-vt-bg video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rp-vlb-video-area video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rp-vt-play {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rp-vt-play::after {
+    content: '';
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .rp-vt-play::before {
+    content: '';
+    position: absolute;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 7px 0 7px 13px;
+    border-color: transparent transparent transparent white;
+    z-index: 1;
+    margin-left: 3px;
+  }
+
+  .rp-banner-link {
+    display: block;
+    margin-top: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+  }
+  .rp-banner-link:hover { transform: scale(1.02); }
+  .rp-banner-link img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ── Video lightbox (inside right panel) ── */
+  .rp-video-lightbox {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.88);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .rp-video-lightbox.rp-vlb-visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .rp-vlb-topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    z-index: 11;
+  }
+  .rp-back-btn {
+    display: inline-block;
+    padding: 9px 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 10px rgba(245,197,66,0.25);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .rp-back-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 18px rgba(245,197,66,0.4);
+  }
+  .rp-vlb-player {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 70px 24px 24px;
+  }
+  .rp-vlb-video-area {
+    aspect-ratio: 9 / 16;
+    max-height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .rp-vlb-play {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rp-vlb-play::after {
+    content: '';
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .rp-vlb-play::before {
+    content: '';
+    position: absolute;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 13px 0 13px 24px;
+    border-color: transparent transparent transparent white;
+    z-index: 1;
+    margin-left: 5px;
+  }
+
+  /* ── Full-Screen Video Overlay ── */
+  .video-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.92);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .video-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .vo-topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 20px 24px;
+  }
+  .vo-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 10px rgba(245,197,66,0.25);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .vo-pill:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 18px rgba(245,197,66,0.4);
+  }
+  .vo-pill:active { transform: scale(0.95); }
+  /* ── Carousel stage: fills space between topbar and bottom bar ── */
+  .vo-carousel-stage {
+    position: absolute;
+    top: 80px; left: 0; right: 0; bottom: 160px;
+    overflow: hidden;
+  }
+  /* Track slides as one unit; items scale/fade within it */
+  .vo-track {
+    position: absolute;
+    top: 0; left: 0;
+  }
+  .vo-carousel-item {
+    position: absolute;
+    top: 0; left: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #1a1a1e;
+    cursor: pointer;
+    transform-origin: center center;
+  }
+  .vo-carousel-item.active { cursor: default; }
+  .vo-carousel-item video {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+  }
+  /* ── Arrow nav buttons ── */
+  .vo-arrow {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: none;
+    color: white;
+    font-size: 32px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .vo-arrow:hover { background: rgba(255,255,255,0.22); }
+  .vo-arrow:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+  .vo-arrow-prev { left: 20px; }
+  .vo-arrow-next { right: 20px; }
+  /* ── Dot indicators ── */
+  .vo-dots {
+    display: flex; gap: 8px;
+    align-items: center; justify-content: center;
+  }
+  .vo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .vo-dot.active {
+    background: var(--accent);
+    transform: scale(1.35);
+  }
+  .vo-close {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: none;
+    cursor: pointer;
+    z-index: 12;
+    transition: background 0.2s;
+  }
+  .vo-close:hover {
+    background: rgba(255,255,255,0.2);
+  }
+  .vo-close::before,
+  .vo-close::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 24px; height: 2px;
+    background: #fff;
+    border-radius: 1px;
+  }
+  .vo-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+  .vo-close::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+  .vo-play-icon {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vo-play-icon::after {
+    content: '';
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .vo-play-icon::before {
+    content: '';
+    position: absolute;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 15px 0 15px 28px;
+    border-color: transparent transparent transparent white;
+    z-index: 1;
+    margin-left: 6px;
+  }
+  .vo-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px 32px;
+  }
+  .vo-shared-by {
+    font-size: 14px;
+    color: rgba(240,236,228,0.5);
+    font-weight: 500;
+  }
+  .vo-boop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    box-shadow: 0 2px 12px rgba(245,197,66,0.3);
+  }
+  .vo-boop-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 20px rgba(245,197,66,0.45);
+  }
+  .vo-boop-btn:active { transform: scale(0.95); }
+  .vo-boop-btn.booped { animation: boopPop 0.35s ease; }
+  .vo-boop-count {
+    background: rgba(0,0,0,0.15);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+
+  /* ───── How to Play / FAQ Overlay ───── */
+  .howto-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 200;
+    background: var(--bg);
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 0.3s ease;
+  }
+  .howto-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .howto-close {
+    position: fixed;
+    z-index: 210;
+  }
+
+  /* Shop Now button — fixed to the top-right corner, always visible while this overlay is open */
+  .howto-shop-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 210;
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 10px rgba(245,197,66,0.25);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .howto-shop-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 18px rgba(245,197,66,0.4);
+  }
+
+  /* Two-column layout: left column stays in place, right column scrolls on its own */
+  .howto-content {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+    gap: 56px;
+  }
+
+  .howto-left {
+    flex: 0 0 460px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    padding: 100px 0 40px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .howto-left::-webkit-scrollbar { display: none; }
+
+  .howto-right {
+    flex: 1 1 auto;
+    height: 100%;
+    padding: 0 0 40px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .howto-right::-webkit-scrollbar { display: none; }
+
+  .howto-heading {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+  /* Only the "FAQ" heading sticks as the right column scrolls — category labels scroll normally.
+     The 100px top clearance lives inside this sticky box (not in .howto-right's padding) so the
+     box's own opaque background covers that whole region as it scrolls — no bleed-through gap. */
+  .howto-right > .howto-heading {
+    position: sticky;
+    top: 0;
+    background: #1e2028;
+    z-index: 3;
+    margin: 0 0 8px;
+    padding: 100px 0 28px;
+  }
+  .howto-video-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: auto;
+    max-width: 100%;
+    align-self: flex-start;
+    aspect-ratio: 9 / 16;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+    margin: 0 0 20px;
+  }
+  .howto-video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .howto-instructions-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 10px rgba(245,197,66,0.25);
+    text-decoration: none;
+    align-self: flex-start;
+  }
+  .howto-instructions-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 18px rgba(245,197,66,0.4);
+  }
+
+  .faq-group { margin-bottom: 32px; }
+  .faq-group:last-child { margin-bottom: 0; }
+  .faq-category {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    opacity: 0.95;
+    margin-bottom: 12px;
+  }
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    list-style: none;
+  }
+  .faq-question::-webkit-details-marker { display: none; }
+  .faq-question:hover { color: var(--accent); }
+  .faq-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+  }
+  .faq-item[open] .faq-icon { transform: rotate(45deg); }
+  .faq-answer {
+    padding: 0 18px 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 600px) {
+    .howto-overlay {
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .howto-overlay::-webkit-scrollbar { display: none; }
+    .howto-content {
+      display: block;
+      height: auto;
+      max-width: 100%;
+      padding: 90px 18px 60px;
+      gap: 0;
+    }
+    .howto-left {
+      flex: none;
+      height: auto;
+      padding: 0 0 48px;
+      overflow: visible;
+      justify-content: flex-start;
+    }
+    .howto-right {
+      flex: none;
+      height: auto;
+      padding: 0;
+      overflow: visible;
+    }
+    .howto-heading { font-size: 24px; }
+    .howto-right > .howto-heading {
+      position: static;
+      background: none;
+      margin-bottom: 24px;
+      padding: 0;
+    }
+    .howto-video-wrap {
+      flex: none;
+      align-self: center;
+      width: min(100%, 280px);
+      height: auto;
+      margin: 0 auto 20px;
+    }
+    .howto-shop-btn { top: 10px; right: 10px; padding: 9px 18px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="hero-island">
+  <div class="hero-pill">
+    <img class="hero-logo" src="images/Pupcup-logo-horizontal.svg" alt="Pupcup">
+    <div class="hero-actions">
+      <a class="hero-btn hero-btn-howto" href="howtoplay/">How to Play</a>
+      <a class="hero-btn hero-btn-buy" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now</a>
+    </div>
+  </div>
+  <div class="hero-mission">A card game that brings people together to bark, growl, and howl with laughter.</div>
+</div>
+
+<!-- Infinite Canvas -->
+<div id="canvas-viewport">
+  <div id="canvas-world"></div>
+</div>
+
+<!-- Card Overlay (Two-Panel) -->
+<div class="overlay" id="overlay">
+  <button class="overlay-close" id="overlayClose">&times;</button>
+  <a class="overlay-shop-btn" id="overlayShopBtn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+  <div class="overlay-panels" id="overlayPanels">
+
+    <!-- LEFT PANEL: Card image + info + boop -->
+    <div class="overlay-left" id="overlayLeft">
+      <div class="overlay-card-frame">
+        <div class="overlay-card" id="overlayCard">
+          <div id="overlayMedia"></div>
+        </div>
+        <div class="overlay-info">
+          <div class="overlay-dog-name" id="overlayDogName"></div>
+          <div class="overlay-class-label" id="overlayClassLabel"></div>
+          <div class="overlay-owner" id="overlayOwner"></div>
+          <button class="boop-btn" id="boopBtn">
+            <span class="boop-paw">&#x1f43e;</span>
+            <span class="boop-label">Boop</span>
+            <span class="boop-count" id="boopCount">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Rule media scroll OR marketing wireframe -->
+    <div class="overlay-right" id="overlayRight">
+      <!-- Content injected by JS -->
+    </div>
+
+  </div>
+</div>
+
+<!-- Super Boop FX layers are now inside the overlay-left panel (injected by JS) -->
+
+<!-- Video Overlay (Full-Screen Carousel) -->
+<div class="video-overlay" id="videoOverlay">
+  <button class="vo-close" id="voClose" aria-label="Close"></button>
+  <div class="vo-topbar">
+    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+  </div>
+  <button class="vo-arrow vo-arrow-prev" id="voArrowPrev" aria-label="Previous video">&#8249;</button>
+  <button class="vo-arrow vo-arrow-next" id="voArrowNext" aria-label="Next video">&#8250;</button>
+  <div class="vo-carousel-stage" id="voCarouselStage"></div>
+  <div class="vo-bottom">
+    <div class="vo-dots" id="voDots"></div>
+    <div class="vo-shared-by" id="voSharedBy"></div>
+    <button class="vo-boop-btn" id="voBoopBtn">
+      <span>🐾</span>
+      <span>Boop</span>
+      <span class="vo-boop-count" id="voBoopCount">0</span>
+    </button>
+  </div>
+</div>
+
+<!-- Photo Overlay (Full-Screen Carousel) -->
+<div class="video-overlay" id="photoOverlay">
+  <button class="vo-close" id="poClose" aria-label="Close"></button>
+  <div class="vo-topbar">
+    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+  </div>
+  <button class="vo-arrow vo-arrow-prev" id="poArrowPrev" aria-label="Previous photo">&#8249;</button>
+  <button class="vo-arrow vo-arrow-next" id="poArrowNext" aria-label="Next photo">&#8250;</button>
+  <div class="vo-carousel-stage" id="poCarouselStage"></div>
+  <div class="vo-bottom">
+    <div class="vo-dots" id="poDots"></div>
+    <div class="vo-shared-by" id="poSharedBy"></div>
+    <button class="vo-boop-btn" id="poBoopBtn">
+      <span>🐾</span>
+      <span>Boop</span>
+      <span class="vo-boop-count" id="poBoopCount">0</span>
+    </button>
+  </div>
+</div>
+
+<!-- How to Play / FAQ Overlay -->
+<div class="howto-overlay" id="howtoOverlay">
+  <button class="overlay-close howto-close" id="howtoClose" aria-label="Close">&times;</button>
+  <a class="howto-shop-btn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+  <div class="howto-content" id="howtoContent">
+
+    <div class="howto-left">
+      <h2 class="howto-heading">How to Play</h2>
+      <div class="howto-video-wrap">
+        <iframe src="https://player.vimeo.com/video/1159306597" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="How to Play Pupcup"></iframe>
+      </div>
+      <a class="howto-instructions-btn" href="instructions/PlayPupcup-Original-Nov16.pdf" target="_blank" rel="noopener">View Instructions</a>
+    </div>
+
+    <div class="howto-right">
+      <h2 class="howto-heading">FAQ</h2>
+
+      <div class="faq-group">
+        <h3 class="faq-category">General</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Who can Play Pupcup?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Anyone who can add 10, 20, and 30s together and subtract 5s and 10s. Some content may not be suitable for kids under 13.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>How many people can play?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Best with 4–6 players. Adjust the total score goal for larger groups.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>How long does the game take?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Multiple rounds, 10–15 minutes for small groups, 15–30 for larger groups.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>How do you win?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">First to reach 100 points (or your group's goal). Recommended: 2–3 players: 150–200pts, 4–6 players: 100pts, 7+ players: 80pts.</div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-category">Rules</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Why play a Rule card?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">They get people laughing. Rules cause players to bark, restrict words, or limit actions.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>When can you play a Rule?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Instead of a point or steal card. Announce it aloud and place it in front of you.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Can you get penalized for breaking a rule while reading it aloud?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Yes.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Who has to follow the rules?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">All players except: (1) you're exempt from your own rules, (2) Shield card holders are exempt from all rules.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>When does the rule take effect?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">As soon as the player reads it aloud and puts it down.</div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-category">Penalty Cards</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>What are Penalty cards?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Drawn when you break a rule and get caught. Mostly -5pt cards, some -10pt, one -20pt.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>What do I do with Penalty cards?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Place face up in front of you. Discard matching point cards that cancel out.</div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-category">Steal Cards</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>What are Steal cards?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Take one face-up card from any player, or a random card from their hand.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>What can I steal?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Point cards, Rules, Shield, or anything in their hand.</div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-category">Blocks</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>When do you play a Block card?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Only out of turn, when someone plays a Steal against you.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Can you block another block?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Yes, blocks can be chained.</div>
+        </details>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Hint -->
+<div class="hint" id="hint">Drag to explore &middot; Tap a card to view</div>
+
+<!-- Shared Boop FX layers — used by every Boop button on the page -->
+<div class="boop-fx" id="boopFx"></div>
+<div class="super-boop-flash" id="superBoopFlash"></div>
+<div class="super-boop-fx" id="superBoopFx"></div>
+
+<!-- Auto-generated list of videos per folder (see scripts/gen-video-manifest.py). -->
+<script src="images/videos/manifest.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════
+   CARD & MEDIA DATA
+   ═══════════════════════════════════════════════════
+   Each item has a "type" field:
+     - "card"  → a Pupcup game card (steal/block/rule)
+     - "photo" → a photo of someone playing
+     - "video" → a video of someone playing
+
+   For cards:
+     dogName, ownerName, cardType, image (path or null)
+
+   For photos:
+     caption (shown as title), credit (shown as owner),
+     image (path or null)
+
+   For videos:
+     caption, credit, video (path to mp4/webm or null),
+     poster (optional thumbnail image path)
+
+   Drop images into "images/" and videos into "videos/"
+   next to this HTML file.
+   ═══════════════════════════════════════════════════ */
+
+const CARD_DATA = {
+  founding: [
+    // ── RULE Cards (Pages 1-7) ──
+    { type: "card", dogName: "Frida Puplo",       ownerName: "Chihuahua, Mexico City",       cardType: "rule",  image: "cards-web/founding/card-01.jpg", imageHD: "cards-hd/founding/card-01.jpg" },
+    { type: "card", dogName: "Pupstein",           ownerName: "German Shepherd, Berlin",       cardType: "rule",  image: "cards-web/founding/card-02.jpg", imageHD: "cards-hd/founding/card-02.jpg" },
+    { type: "card", dogName: "Pupquiao",           ownerName: "Boxer, Manila",                 cardType: "rule",  image: "cards-web/founding/card-03.jpg", imageHD: "cards-hd/founding/card-03.jpg" },
+    { type: "card", dogName: "Lady Puppa",         ownerName: "French Bulldog, Los Angeles",   cardType: "rule",  image: "cards-web/founding/card-04.jpg", imageHD: "cards-hd/founding/card-04.jpg" },
+    { type: "card", dogName: "K-Pup",              ownerName: "Yorkie, Seoul",                 cardType: "rule",  image: "cards-web/founding/card-05.jpg", imageHD: "cards-hd/founding/card-05.jpg" },
+    { type: "card", dogName: "RuPup",              ownerName: "Poodle, New York City",         cardType: "rule",  image: "cards-web/founding/card-06.jpg", imageHD: "cards-hd/founding/card-06.jpg" },
+    { type: "card", dogName: "Queen Elizapup",     ownerName: "Pembroke Welsh Corgi, Dog Park in the Sky", cardType: "rule",  image: "cards-web/founding/card-07.jpg", imageHD: "cards-hd/founding/card-07.jpg" },
+
+    // ── STEAL Cards (Pages 8-21) ──
+    { type: "card", dogName: "Popcorn",            ownerName: "Golden Retriever, San Antonio", cardType: "steal", image: "cards-web/founding/card-08.jpg", imageHD: "cards-hd/founding/card-08.jpg" },
+    { type: "card", dogName: "Shadow",             ownerName: "German Shepherd, Palm Springs", cardType: "steal", image: "cards-web/founding/card-09.jpg", imageHD: "cards-hd/founding/card-09.jpg" },
+    { type: "card", dogName: "Charlie",            ownerName: "Jack Russell Terrier, San Jose",cardType: "steal", image: "cards-web/founding/card-10.jpg", imageHD: "cards-hd/founding/card-10.jpg" },
+    { type: "card", dogName: "Butchoi",            ownerName: "Shih Tzu, Manila",              cardType: "steal", image: "cards-web/founding/card-11.jpg", imageHD: "cards-hd/founding/card-11.jpg" },
+    { type: "card", dogName: "Nono & Vuitton",     ownerName: "Mixed Breeds, Castillejos",     cardType: "steal", image: "cards-web/founding/card-12.jpg", imageHD: "cards-hd/founding/card-12.jpg" },
+    { type: "card", dogName: "Coco",               ownerName: "German Shepherd, Honolulu",     cardType: "steal", image: "cards-web/founding/card-13.jpg", imageHD: "cards-hd/founding/card-13.jpg" },
+    { type: "card", dogName: "Bluue, Blue, Gunner & Toby", ownerName: "Vancouver, WA",        cardType: "steal", image: "cards-web/founding/card-14.jpg", imageHD: "cards-hd/founding/card-14.jpg" },
+    { type: "card", dogName: "Kya & Gage",         ownerName: "Goldendoodle, San Antonio",     cardType: "steal", image: "cards-web/founding/card-15.jpg", imageHD: "cards-hd/founding/card-15.jpg" },
+    { type: "card", dogName: "Johanna, Mochie & Scruffy",  ownerName: "San Antonio, TX",      cardType: "steal", image: "cards-web/founding/card-16.jpg", imageHD: "cards-hd/founding/card-16.jpg" },
+    { type: "card", dogName: "Daisy",              ownerName: "Jack Russell Terrier, San Antonio", cardType: "steal", image: "cards-web/founding/card-17.jpg", imageHD: "cards-hd/founding/card-17.jpg" },
+    { type: "card", dogName: "Max",                ownerName: "Goldendoodle, Clermont, FL",    cardType: "steal", image: "cards-web/founding/card-18.jpg", imageHD: "cards-hd/founding/card-18.jpg" },
+    { type: "card", dogName: "Foxy",               ownerName: "Pomeranian, Downey, CA",        cardType: "steal", image: "cards-web/founding/card-19.jpg", imageHD: "cards-hd/founding/card-19.jpg" },
+    { type: "card", dogName: "Dallas & Luke",      ownerName: "Goldendoodle, Chino, CA",       cardType: "steal", image: "cards-web/founding/card-20.jpg", imageHD: "cards-hd/founding/card-20.jpg" },
+    { type: "card", dogName: "Pixel",              ownerName: "Australian Shepherd, Wilmington",cardType: "steal", image: "cards-web/founding/card-21.jpg", imageHD: "cards-hd/founding/card-21.jpg" },
+
+    // ── BLOCK Cards (Pages 22-28) ──
+    { type: "card", dogName: "Oak & Koa",          ownerName: "Australian Shepherd, Mission Viejo", cardType: "block", image: "cards-web/founding/card-22.jpg", imageHD: "cards-hd/founding/card-22.jpg" },
+    { type: "card", dogName: "Maximus",            ownerName: "Bichon Shih-Tzu, San Diego",    cardType: "block", image: "cards-web/founding/card-23.jpg", imageHD: "cards-hd/founding/card-23.jpg" },
+    { type: "card", dogName: "Lucky",              ownerName: "Jack Russell Terrier, San Antonio", cardType: "block", image: "cards-web/founding/card-24.jpg", imageHD: "cards-hd/founding/card-24.jpg" },
+    { type: "card", dogName: "Marley, Mochi & Mia",ownerName: "Newport Beach, CA",             cardType: "block", image: "cards-web/founding/card-25.jpg", imageHD: "cards-hd/founding/card-25.jpg" },
+    { type: "card", dogName: "Whoopi",             ownerName: "Rat Terrier, San Antonio",      cardType: "block", image: "cards-web/founding/card-26.jpg", imageHD: "cards-hd/founding/card-26.jpg" },
+    { type: "card", dogName: "Lola",               ownerName: "Cocker Spaniel, Sylmar, CA",    cardType: "block", image: "cards-web/founding/card-27.jpg", imageHD: "cards-hd/founding/card-27.jpg" },
+    { type: "card", dogName: "Duke",               ownerName: "Labrador Retriever, Chester, SD",cardType: "block", image: "cards-web/founding/card-28.jpg", imageHD: "cards-hd/founding/card-28.jpg" },
+
+    // ── Photos (12 total, 6 randomly shown per load) ──
+    { type: "photo", caption: "Game Night Chaos",       credit: "The Morgan Family", image: null, rule: "Frida Puplo" },
+    { type: "photo", caption: "Steal Face Reaction",    credit: "Marcus L.",         image: null, rule: "Pupquiao" },
+    { type: "photo", caption: "Block Card Showdown",    credit: "Kennedy A.",        image: null, rule: "Queen Elizapup" },
+    { type: "photo", caption: "No Peeking Moment",      credit: "Ana R.",            image: null, rule: "Frida Puplo" },
+    { type: "photo", caption: "Strategy Session",        credit: "Kennedy A.",        image: null, rule: "Pupstein" },
+    { type: "photo", caption: "Rapid Fire Round",        credit: "The Morgans",       image: null, rule: "Pupquiao" },
+    { type: "photo", caption: "Diva Moment",             credit: "Sarah M.",          image: null, rule: "Lady Puppa" },
+    { type: "photo", caption: "Fan Moment",              credit: "Vilmar M.",         image: null, rule: "K-Pup" },
+    { type: "photo", caption: "Runway Walk",             credit: "Jordan L.",         image: null, rule: "RuPup" },
+    { type: "photo", caption: "Royal Decree",            credit: "Kennedy A.",        image: null, rule: "Queen Elizapup" },
+    { type: "photo", caption: "The Thinker",             credit: "Vilmar M.",         image: null, rule: "Pupstein" },
+    { type: "photo", caption: "Quick Draw",              credit: "Team Pupcup",       image: null, rule: "Pupquiao" },
+
+    // ── Videos (12 total, 3 randomly shown per load) ──
+    { type: "video", caption: "Steal Clip 1",            credit: "Placeholder",       video: "images/placeholder-steal-1.MP4", poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "Steal Clip 2",            credit: "Placeholder",       video: "images/placeholder-steal-2.MP4", poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "Steal Clip 3",            credit: "Placeholder",       video: "images/placeholder-steal-3.MP4", poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "Block Clip 1",            credit: "Placeholder",       video: "images/placeholder-block-1.MP4", poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "Block Clip 2",            credit: "Placeholder",       video: "images/placeholder-block-2.MP4", poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "Block Clip 3",            credit: "Placeholder",       video: "images/placeholder-block-3.MP4", poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "Rule Clip 1",             credit: "Placeholder",       video: "images/placeholder-rule-1.MP4",  poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "Rule Clip 2",             credit: "Placeholder",       video: "images/placeholder-rule-2.MP4",  poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "Rule Clip 3",             credit: "Placeholder",       video: "images/placeholder-rule-3.MP4",  poster: null, rule: null }, // PLACEHOLDER HOME VIDEO - remove when real videos are added
+    { type: "video", caption: "First Time Playing!",     credit: "Sarah & Friends",   video: null, poster: null, rule: "Lady Puppa" },
+    { type: "video", caption: "Caught Peeking!",         credit: "The Garcias",       video: null, poster: null, rule: "Frida Puplo" },
+    { type: "video", caption: "Big Brain Play",          credit: "Dave & Co.",        video: null, poster: null, rule: "Pupstein" },
+    { type: "video", caption: "Speed Playing",           credit: "Alex T.",           video: null, poster: null, rule: "Pupquiao" },
+    { type: "video", caption: "Dramatic Reveal",         credit: "The Garcias",       video: null, poster: null, rule: "Lady Puppa" },
+    { type: "video", caption: "Dance Break",             credit: "Team Pupcup",       video: null, poster: null, rule: "K-Pup" },
+    { type: "video", caption: "Sashay Away",             credit: "The Morgans",       video: null, poster: null, rule: "RuPup" },
+    { type: "video", caption: "Crown Moment",            credit: "Vilmar M.",         video: null, poster: null, rule: "Queen Elizapup" },
+    { type: "video", caption: "Epic Peek Fail",          credit: "Team Pupcup",       video: null, poster: null, rule: "Frida Puplo" },
+    { type: "video", caption: "Fastest Steal Ever",      credit: "Jordan L.",         video: null, poster: null, rule: "Pupquiao" },
+    { type: "video", caption: "Lip Sync Battle",         credit: "Dave & Co.",        video: null, poster: null, rule: "RuPup" },
+    { type: "video", caption: "Pupcup at the Park",      credit: "Vilmar M.",         video: null, poster: null, rule: null },
+  ],
+  "2026": [
+    // Class of 2026 — add new custom dogs here as they're designed!
+    // For now, placeholder entries:
+    { type: "card", dogName: "Coming Soon",  ownerName: "Your dog could be here!", cardType: "rule",  image: null },
+    { type: "card", dogName: "Coming Soon",  ownerName: "Your dog could be here!", cardType: "steal", image: null },
+    { type: "card", dogName: "Coming Soon",  ownerName: "Your dog could be here!", cardType: "block", image: null },
+    // ── Photos & Videos ──
+    { type: "video", caption: "Pupcup at the Park",   credit: "Vilmar M.",   video: null, poster: null },
+    { type: "photo", caption: "Block Card Showdown",   credit: "Kennedy A.",  image: null },
+  ]
+};
+
+/* ═══════════════════════════════════════════════════
+   RULE CARD MEDIA — per-rule photos/videos for the
+   right panel scrolling gallery. Drop real assets in
+   and update paths below.
+   ═══════════════════════════════════════════════════ */
+/* Each media item has a `rule` tag linking it to a rule card's dogName.
+   When a rule card opens, its tagged media fills the right panel.
+   When a photo/video opens, other media with the same `rule` tag fills the right panel. */
+const RULE_MEDIA = {
+  "Frida Puplo":     [
+    { type: "photo", caption: "No Peeking Moment",    credit: "Ana R.",        image: null, rule: "Frida Puplo" },
+    { type: "video", caption: "Caught Peeking!",      credit: "The Garcias",   video: null, poster: null, rule: "Frida Puplo" },
+    { type: "photo", caption: "Sneaky Eyes",           credit: "Jordan L.",     image: null, rule: "Frida Puplo" },
+    { type: "photo", caption: "Cards Face Down",       credit: "Sarah M.",      image: null, rule: "Frida Puplo" },
+    { type: "video", caption: "Epic Peek Fail",        credit: "Team Pupcup",   video: null, poster: null, rule: "Frida Puplo" },
+  ],
+  "Pupstein":        [
+    { type: "photo", caption: "Thinking Hard",         credit: "Marcus L.",     image: null, rule: "Pupstein" },
+    { type: "video", caption: "Big Brain Play",        credit: "Dave & Co.",    video: null, poster: null, rule: "Pupstein" },
+    { type: "photo", caption: "Strategy Session",      credit: "Kennedy A.",    image: null, rule: "Pupstein" },
+    { type: "photo", caption: "The Thinker",           credit: "Vilmar M.",     image: null, rule: "Pupstein" },
+  ],
+  "Pupquiao":        [
+    { type: "photo", caption: "Rapid Fire Round",      credit: "The Morgans",   image: null, rule: "Pupquiao" },
+    { type: "video", caption: "Speed Playing",         credit: "Alex T.",       video: null, poster: null, rule: "Pupquiao" },
+    { type: "photo", caption: "Card Slam",             credit: "Chris W.",      image: null, rule: "Pupquiao" },
+    { type: "photo", caption: "Quick Draw",            credit: "Team Pupcup",   image: null, rule: "Pupquiao" },
+    { type: "video", caption: "Fastest Steal Ever",    credit: "Jordan L.",     video: null, poster: null, rule: "Pupquiao" },
+  ],
+  "Lady Puppa":      [
+    { type: "photo", caption: "Diva Moment",           credit: "Sarah M.",      image: null, rule: "Lady Puppa" },
+    { type: "video", caption: "Dramatic Reveal",       credit: "The Garcias",   video: null, poster: null, rule: "Lady Puppa" },
+    { type: "photo", caption: "Fabulous Play",         credit: "Kennedy A.",    image: null, rule: "Lady Puppa" },
+    { type: "photo", caption: "Style Points",          credit: "Ana R.",        image: null, rule: "Lady Puppa" },
+  ],
+  "K-Pup":           [
+    { type: "photo", caption: "Fan Moment",            credit: "Vilmar M.",     image: null, rule: "K-Pup" },
+    { type: "video", caption: "Dance Break",           credit: "Team Pupcup",   video: null, poster: null, rule: "K-Pup" },
+    { type: "photo", caption: "Star Power",            credit: "Marcus L.",     image: null, rule: "K-Pup" },
+    { type: "photo", caption: "Idol Energy",           credit: "Alex T.",       image: null, rule: "K-Pup" },
+  ],
+  "RuPup":           [
+    { type: "photo", caption: "Runway Walk",           credit: "Jordan L.",     image: null, rule: "RuPup" },
+    { type: "video", caption: "Sashay Away",           credit: "The Morgans",   video: null, poster: null, rule: "RuPup" },
+    { type: "photo", caption: "Werk It",               credit: "Chris W.",      image: null, rule: "RuPup" },
+    { type: "photo", caption: "The Reveal",            credit: "Sarah M.",      image: null, rule: "RuPup" },
+    { type: "video", caption: "Lip Sync Battle",       credit: "Dave & Co.",    video: null, poster: null, rule: "RuPup" },
+  ],
+  "Queen Elizapup":  [
+    { type: "photo", caption: "Royal Decree",          credit: "Kennedy A.",    image: null, rule: "Queen Elizapup" },
+    { type: "video", caption: "Crown Moment",          credit: "Vilmar M.",     video: null, poster: null, rule: "Queen Elizapup" },
+    { type: "photo", caption: "The Queen's Gambit",    credit: "The Garcias",   image: null, rule: "Queen Elizapup" },
+    { type: "photo", caption: "Regal Pose",            credit: "Ana R.",        image: null, rule: "Queen Elizapup" },
+  ],
+};
+
+// Helper: find related media for a photo/video by its rule tag
+function getRelatedMedia(item) {
+  if (item.rule && RULE_MEDIA[item.rule]) return RULE_MEDIA[item.rule];
+  // Fallback: search all rule media for items with matching rule
+  for (const [, media] of Object.entries(RULE_MEDIA)) {
+    if (media.some(m => m.caption === item.caption)) return media;
+  }
+  return [];
+}
+
+/* ═══════════════════════════════════════════════════
+   INFINITE CANVAS ENGINE
+   ═══════════════════════════════════════════════════ */
+
+const viewport = document.getElementById('canvas-viewport');
+const world    = document.getElementById('canvas-world');
+const overlay  = document.getElementById('overlay');
+
+let bodyScrollLockCount = 0;
+function lockBodyScroll() {
+  bodyScrollLockCount++;
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+  document.body.style.height = '100%';
+}
+function unlockBodyScroll() {
+  bodyScrollLockCount = Math.max(0, bodyScrollLockCount - 1);
+  if (bodyScrollLockCount === 0) {
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+  }
+}
+const hint     = document.getElementById('hint');
+
+// Layout constants (computed from CSS vars)
+const rootStyle = getComputedStyle(document.documentElement);
+const CARD_W    = parseInt(rootStyle.getPropertyValue('--card-w'));
+const CARD_H    = parseInt(rootStyle.getPropertyValue('--card-h'));
+const GAP       = parseInt(rootStyle.getPropertyValue('--gap'));
+const CELL_W    = CARD_W + GAP;
+const CELL_H    = CARD_H + GAP;
+
+// State
+let currentClass = 'founding';
+let cardItems = [];      // only type === "card" (shuffled)
+let mediaItems = [];     // only type === "photo" | "video" (shuffled)
+let cells = new Map();   // DOM pool: key "col,row" -> element
+let camX = 0, camY = 0; // camera position
+
+// Visible range
+function getVisibleRange() {
+  const vw = viewport.clientWidth;
+  const vh = viewport.clientHeight;
+  const bufferCols = 2;
+  const bufferRows = 2;
+  const halfCols = Math.ceil(vw / (2 * CELL_W)) + bufferCols;
+  const halfRows = Math.ceil(vh / (2 * CELL_H)) + bufferRows;
+  const startCol = Math.floor(camX / CELL_W) - halfCols;
+  const endCol   = Math.floor(camX / CELL_W) + halfCols;
+  const startRow = Math.floor(camY / CELL_H) - halfRows;
+  const endRow   = Math.floor(camY / CELL_H) + halfRows;
+  return { startCol, endCol, startRow, endRow };
+}
+
+function pmod(n, m) { return ((n % m) + m) % m; }
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Simple deterministic hash for a grid position — produces well-distributed values
+function hashPos(col, row) {
+  let h = (col * 374761393 + row * 668265263) | 0;
+  h = ((h ^ (h >> 13)) * 1274126177) | 0;
+  h = (h ^ (h >> 16)) | 0;
+  return h;
+}
+
+/*
+ * Card placement with GUARANTEED spacing:
+ * No two identical cards/media within a 5×8 neighborhood.
+ *
+ * Strategy: Modular coloring with combined shuffled pool.
+ *
+ * Each cell gets a "color" = pmod(row,5)*8 + pmod(col,8) → 0..39
+ * Two cells sharing a color are always ≥5 rows and ≥8 columns apart,
+ * so they can NEVER appear in the same 5×8 neighborhood.
+ *
+ * 40 color slots accommodate all 37 items (28 cards + 6 photos + 3 videos)
+ * with room to grow. Every cell in a 5×8 window maps to a different item.
+ * Mathematically impossible to have duplicates.
+ *
+ * Visual variety comes from the shuffle — each page load reorders the
+ * pool, giving different card arrangements every time.
+ */
+
+// Combined pool of all items (cards + media), shuffled per class load
+let allItemsPool = [];
+
+// Get item data for a grid position — pure function, zero state
+function getItemAt(col, row) {
+  const N = allItemsPool.length;
+  if (N === 0) return null;
+  // Color: guaranteed unique within any 5×8 window
+  const color = pmod(row, 5) * 8 + pmod(col, 8); // 0..39
+  return allItemsPool[color % N];
+}
+
+// ───── Entrance animation state ─────
+let isRevealing = false;  // true during initial load / class switch
+let revealSeed = 0;      // random seed per load for stagger variety
+
+// ───── Create a cell DOM element based on item type ─────
+function createCell(col, row) {
+  const item = getItemAt(col, row);
+  if (!item) return null;
+
+  const el = document.createElement('div');
+  el.className = 'card-cell';
+  el.style.width  = CARD_W + 'px';
+  el.style.height = CARD_H + 'px';
+
+  // Inner wrapper for hover effect (separate from position transform)
+  const inner = document.createElement('div');
+  inner.className = 'card-inner';
+
+  if (item.type === 'card') {
+    buildCardCell(inner, item);
+  } else if (item.type === 'photo') {
+    buildPhotoCell(inner, item);
+  } else if (item.type === 'video') {
+    buildVideoCell(inner, item);
+  }
+
+  el.appendChild(inner);
+
+  // Staggered reveal animation
+  if (isRevealing) {
+    // Mix grid position with a random seed so each refresh has a different sequence
+    const h = Math.abs(hashPos(col * 7 + revealSeed, row * 13 + (revealSeed >> 8)));
+    const delay = (h % 2500) / 1000; // 0 to 2.5 seconds
+    inner.style.animationDelay = delay + 's';
+    inner.classList.add('revealed');
+    // After animation ends, switch to reveal-done so hover transforms work
+    inner.addEventListener('animationend', () => {
+      inner.classList.remove('revealed');
+      inner.classList.add('reveal-done');
+      inner.style.animationDelay = '';
+    }, { once: true });
+  } else {
+    // Cards added during panning skip the entrance animation
+    inner.classList.add('reveal-done');
+  }
+
+  // Click handler
+  inner.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openOverlay(item);
+  });
+
+  return el;
+}
+
+function buildCardCell(el, item) {
+  if (item.image) {
+    const img = document.createElement('img');
+    img.src = item.image;
+    img.alt = item.dogName;
+    img.loading = 'lazy';
+    img.onerror = function() {
+      // Fallback to placeholder if image fails to load
+      this.remove();
+      const ph = document.createElement('div');
+      ph.className = 'card-placeholder';
+      ph.innerHTML = `<div class="paw">&#x1f43e;</div><div>${item.dogName}</div>`;
+      el.insertBefore(ph, el.firstChild);
+    };
+    el.appendChild(img);
+  } else {
+    const ph = document.createElement('div');
+    ph.className = 'card-placeholder';
+    ph.innerHTML = `<div class="paw">&#x1f43e;</div><div>${item.dogName}</div>`;
+    el.appendChild(ph);
+  }
+}
+
+// Bright colors for photo/video placeholders (excludes magenta-ish tones)
+const MEDIA_COLORS = [
+  '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c',
+  '#e67e22', '#00bcd4', '#8bc34a', '#ff9800', '#673ab7',
+  '#009688', '#ffeb3b', '#03a9f4', '#4caf50', '#ff5722',
+];
+function randomMediaColor() {
+  return MEDIA_COLORS[Math.floor(Math.random() * MEDIA_COLORS.length)];
+}
+
+function buildPhotoCell(el, item) {
+  if (item.image) {
+    const img = document.createElement('img');
+    img.src = item.image;
+    img.alt = item.caption;
+    img.loading = 'lazy';
+    el.appendChild(img);
+  } else {
+    const ph = document.createElement('div');
+    ph.className = 'card-placeholder';
+    ph.style.background = randomMediaColor();
+    ph.style.color = 'white';
+    ph.innerHTML = `<div class="paw">&#x1f4f8;</div><div>${item.caption}</div>`;
+    el.appendChild(ph);
+  }
+  const badge = document.createElement('div');
+  badge.className = 'card-type-badge badge-photo';
+  badge.textContent = 'photo';
+  el.appendChild(badge);
+}
+
+function buildVideoCell(el, item) {
+  if (item.poster) {
+    const img = document.createElement('img');
+    img.src = item.poster;
+    img.alt = item.caption;
+    img.loading = 'lazy';
+    el.appendChild(img);
+  } else if (item.video) {
+    const vid = document.createElement('video');
+    vid.src = item.video;
+    vid.muted = true;
+    vid.preload = 'metadata';
+    vid.playsInline = true;
+    el.appendChild(vid);
+  } else {
+    const ph = document.createElement('div');
+    ph.className = 'card-placeholder';
+    ph.style.background = randomMediaColor();
+    ph.style.color = 'white';
+    ph.innerHTML = `<div class="paw">&#x1f3ac;</div><div>${item.caption}</div>`;
+    el.appendChild(ph);
+  }
+  // Play button overlay
+  const playBtn = document.createElement('div');
+  playBtn.className = 'play-btn';
+  el.appendChild(playBtn);
+
+  const badge = document.createElement('div');
+  badge.className = 'card-type-badge badge-video';
+  badge.textContent = 'video';
+  el.appendChild(badge);
+}
+
+// Position a cell in world space
+function positionCell(el, col, row) {
+  const x = col * CELL_W;
+  const y = row * CELL_H;
+  el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+}
+
+// Render: add/remove cells to fill the viewport
+function render() {
+  const { startCol, endCol, startRow, endRow } = getVisibleRange();
+
+  const visibleKeys = new Set();
+  for (let c = startCol; c <= endCol; c++) {
+    for (let r = startRow; r <= endRow; r++) {
+      visibleKeys.add(`${c},${r}`);
+    }
+  }
+
+  for (const [key, el] of cells) {
+    if (!visibleKeys.has(key)) {
+      el.remove();
+      cells.delete(key);
+    }
+  }
+
+  for (let c = startCol; c <= endCol; c++) {
+    for (let r = startRow; r <= endRow; r++) {
+      const key = `${c},${r}`;
+      if (!cells.has(key)) {
+        const el = createCell(c, r);
+        if (el) {
+          positionCell(el, c, r);
+          world.appendChild(el);
+          cells.set(key, el);
+        }
+      }
+    }
+  }
+
+  world.style.transform = `translate3d(${-camX}px, ${-camY}px, 0)`;
+}
+
+/* ───── Drag / Touch Panning ───── */
+let isDragging = false;
+let dragStartX, dragStartY;
+let camStartX, camStartY;
+let hasMoved = false;
+
+let velX = 0, velY = 0;
+let lastMoveTime = 0, lastMoveX = 0, lastMoveY = 0;
+let momentumRAF = null;
+
+function startDrag(px, py) {
+  isDragging = true;
+  hasMoved = false;
+  dragStartX = px; dragStartY = py;
+  camStartX = camX; camStartY = camY;
+  lastMoveX = px; lastMoveY = py;
+  lastMoveTime = performance.now();
+  velX = 0; velY = 0;
+  if (momentumRAF) cancelAnimationFrame(momentumRAF);
+  viewport.classList.add('dragging');
+}
+
+function moveDrag(px, py) {
+  if (!isDragging) return;
+  const dx = px - dragStartX;
+  const dy = py - dragStartY;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) hasMoved = true;
+
+  camX = camStartX - dx;
+  camY = camStartY - dy;
+
+  const now = performance.now();
+  const dt = now - lastMoveTime;
+  if (dt > 0) {
+    velX = (px - lastMoveX) / dt * 16;
+    velY = (py - lastMoveY) / dt * 16;
+  }
+  lastMoveX = px; lastMoveY = py; lastMoveTime = now;
+  render();
+  hint.classList.add('hidden');
+}
+
+function endDrag() {
+  isDragging = false;
+  viewport.classList.remove('dragging');
+  if (Math.abs(velX) > 0.5 || Math.abs(velY) > 0.5) applyMomentum();
+}
+
+function applyMomentum() {
+  const friction = 0.95;
+  velX *= friction; velY *= friction;
+  camX -= velX; camY -= velY;
+  render();
+  if (Math.abs(velX) > 0.1 || Math.abs(velY) > 0.1) {
+    momentumRAF = requestAnimationFrame(applyMomentum);
+  }
+}
+
+viewport.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+window.addEventListener('mouseup', () => endDrag());
+
+viewport.addEventListener('touchstart', (e) => {
+  const t = e.touches[0]; startDrag(t.clientX, t.clientY);
+}, { passive: true });
+viewport.addEventListener('touchmove', (e) => {
+  const t = e.touches[0]; moveDrag(t.clientX, t.clientY);
+}, { passive: true });
+viewport.addEventListener('touchend', () => endDrag());
+viewport.addEventListener('contextmenu', (e) => e.preventDefault());
+
+/* ───── Overlay (Two-Panel) ───── */
+let activeOverlayVideo = null;
+let currentOverlayItem = null;
+let originalOverlayItem = null; // the card that opened the overlay
+let rightScrollCleanup = null;  // cleanup function for right panel scroll
+
+// Class display names
+const CLASS_LABELS = {
+  founding: 'Founding Class',
+  '2026': 'Class of 2026',
+  '2027': 'Class of 2027',
+  '2028': 'Class of 2028',
+};
+
+// ── Populate left panel with an item ──
+function setLeftPanel(item) {
+  const mediaContainer = document.getElementById('overlayMedia');
+  mediaContainer.innerHTML = '';
+  if (activeOverlayVideo) { activeOverlayVideo.pause(); activeOverlayVideo = null; }
+
+  if (item.type === 'card') {
+    if (item.image) {
+      const img = document.createElement('img');
+      // Use HD image for overlay (2x resolution), fall back to web thumbnail
+      img.src = item.imageHD || item.image;
+      img.alt = item.dogName;
+      mediaContainer.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'card-placeholder-large';
+      ph.innerHTML = `<div class="paw">&#x1f43e;</div><div>${item.dogName}</div>`;
+      mediaContainer.appendChild(ph);
+    }
+    document.getElementById('overlayDogName').textContent = item.dogName;
+
+    document.getElementById('overlayOwner').innerHTML = `<span>Proud pup of</span> ${item.ownerName}`;
+
+  } else if (item.type === 'photo') {
+    if (item.image) {
+      const img = document.createElement('img');
+      img.src = item.image; img.alt = item.caption;
+      mediaContainer.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'card-placeholder-large';
+      ph.innerHTML = `<div class="paw">&#x1f4f8;</div><div>${item.caption}</div>`;
+      mediaContainer.appendChild(ph);
+    }
+    document.getElementById('overlayDogName').textContent = item.caption;
+
+    document.getElementById('overlayOwner').innerHTML = `<span>Shared by</span> ${item.credit}`;
+
+  } else if (item.type === 'video') {
+    if (item.video) {
+      const vid = document.createElement('video');
+      vid.src = item.video; vid.controls = true; vid.autoplay = true; vid.playsInline = true;
+      vid.style.cssText = 'width:100%;aspect-ratio:2.75/3.75;object-fit:cover;background:#000;display:block;';
+      mediaContainer.appendChild(vid);
+      activeOverlayVideo = vid;
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'card-placeholder-large';
+      ph.innerHTML = `<div class="paw">&#x1f3ac;</div><div>${item.caption}</div>`;
+      mediaContainer.appendChild(ph);
+    }
+    document.getElementById('overlayDogName').textContent = item.caption;
+
+    document.getElementById('overlayOwner').innerHTML = `<span>Shared by</span> ${item.credit}`;
+  }
+
+  // Set class label
+  document.getElementById('overlayClassLabel').textContent =
+    CLASS_LABELS[currentClass] || currentClass;
+
+  currentOverlayItem = item;
+  const boopKey = getBoopKey(item);
+  document.getElementById('boopCount').textContent = boopCounts[boopKey] || 0;
+  document.getElementById('boopFx').innerHTML = '';
+}
+
+// ── Rule card → video folder slug (for auto-read video galleries) ──
+const RULE_DOG_SLUG = {
+  "Frida Puplo": "frida-puplo",
+  "Pupstein": "pupstein",
+  "Pupquiao": "pupquiao",
+  "Lady Puppa": "lady-puppa",
+  "K-Pup": "k-pup",
+  "RuPup": "rupup",
+  "Queen Elizapup": "queen-elizapup",
+};
+
+// Fallback clips, used only until real videos are added to images/videos/
+const PLACEHOLDER_VIDEOS = {
+  steal: ['images/placeholder-steal-1.MP4', 'images/placeholder-steal-2.MP4', 'images/placeholder-steal-3.MP4'],
+  block: ['images/placeholder-block-1.MP4', 'images/placeholder-block-2.MP4', 'images/placeholder-block-3.MP4'],
+  rule:  ['images/placeholder-rule-1.MP4',  'images/placeholder-rule-2.MP4',  'images/placeholder-rule-3.MP4'],
+};
+
+/* Pick up to `count` videos for a steal/block/rule card from window.VIDEO_MANIFEST
+   (built from the images/videos/ folders). A rule card pulls its own folder's clips
+   first, backfilling empty slots with other rules' clips, then general clips. When
+   3+ clips are available the shown set is randomized on each open. Falls back to
+   placeholder clips only when no real videos exist yet. */
+function selectVideosFor(item, count) {
+  count = count || 3;
+  const m = window.VIDEO_MANIFEST;
+  const type = (item && item.cardType) || 'rule';
+  const placeholders = PLACEHOLDER_VIDEOS[type] || PLACEHOLDER_VIDEOS.rule;
+  if (!m) return placeholders;
+
+  const rules = m.rules || {};
+  const allRuleClips = Object.keys(rules).reduce((acc, k) => acc.concat(rules[k] || []), []);
+  const everything = allRuleClips.concat(m.steal || [], m.block || [], m.general || []);
+
+  let primary = [];
+  let backfill = [];
+  if (type === 'steal') {
+    primary = (m.steal || []).slice();
+    backfill = (m.general || []).concat(allRuleClips, m.block || []);
+  } else if (type === 'block') {
+    primary = (m.block || []).slice();
+    backfill = (m.general || []).concat(allRuleClips, m.steal || []);
+  } else {
+    const slug = RULE_DOG_SLUG[item && item.dogName];
+    primary = (rules[slug] || []).slice();
+    let others = [];
+    Object.keys(rules).forEach(k => { if (k !== slug) others = others.concat(rules[k] || []); });
+    backfill = others.concat(m.general || []);
+  }
+
+  let chosen = shuffle(primary).slice(0, count);
+  if (chosen.length < count) {
+    const seen = {};
+    chosen.forEach(v => { seen[v] = true; });
+    const extra = shuffle(backfill).filter(v => !seen[v]).slice(0, count - chosen.length);
+    chosen = chosen.concat(extra);
+  }
+  if (chosen.length === 0) chosen = shuffle(everything).slice(0, count);
+  if (chosen.length === 0) return placeholders;
+  return chosen;
+}
+
+// Reverse lookup: folder slug -> dog display name
+function slugToDogName(slug) {
+  for (const name in RULE_DOG_SLUG) { if (RULE_DOG_SLUG[name] === slug) return name; }
+  return null;
+}
+
+// Build grid video items from the folder manifest (the real clips in images/videos/).
+// Each becomes a playable video card; rule clips carry their dog name.
+function buildManifestVideoItems() {
+  const m = window.VIDEO_MANIFEST;
+  if (!m) return [];
+  const items = [];
+  const rules = m.rules || {};
+  Object.keys(rules).forEach(function(slug) {
+    const dog = slugToDogName(slug);
+    (rules[slug] || []).forEach(function(path) {
+      items.push({ type: 'video', video: path, poster: null,
+                   caption: dog ? dog + "’s Rule" : 'Rule', rule: dog });
+    });
+  });
+  (m.steal || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: null, caption: 'Steal in Action', rule: null }); });
+  (m.block || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: null, caption: 'Block in Action', rule: null }); });
+  (m.general || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: null, caption: 'Game Night', rule: null }); });
+  return items;
+}
+
+// ── Build right panel: steal/block/rule info + video grid ──
+function buildMarketingPanel(rightEl, item) {
+  rightEl.innerHTML = '';
+
+  const isSteal = item && item.cardType === 'steal';
+  const isBlock = item && item.cardType === 'block';
+  const isRule  = item && item.cardType === 'rule';
+
+  // Fallback for untagged media
+  if (!isSteal && !isBlock && !isRule) {
+    const wrap = document.createElement('div');
+    wrap.className = 'right-marketing';
+    const box1 = document.createElement('div');
+    box1.className = 'marketing-box';
+    box1.innerHTML = `<div class="marketing-icon">&#x1f3a8;</div><div class="marketing-title">Create Your Custom Card</div><div class="marketing-sub">Turn your pup into a Pupcup card with custom artwork</div>`;
+    const box2 = document.createElement('div');
+    box2.className = 'marketing-box';
+    box2.innerHTML = `<div class="marketing-icon">&#x1f0cf;</div><div class="marketing-title">Buy the Card Game</div><div class="marketing-sub">Get Pupcup for your next game night</div>`;
+    wrap.appendChild(box1);
+    wrap.appendChild(box2);
+    rightEl.appendChild(wrap);
+    return;
+  }
+
+  const accentColor = isSteal ? '#f5c542' : isBlock ? '#e74c3c' : '#4f8ef7';
+  const typeLabel   = isSteal ? 'STEAL'  : isBlock ? 'BLOCK'  : 'RULE';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'rp-content';
+  wrap.style.setProperty('--rp-accent', accentColor);
+
+  // ── 1. How It Works header + Shop Now button ──
+  const headerRow = document.createElement('div');
+  headerRow.className = 'rp-section-header';
+
+  const howTitle = document.createElement('div');
+  howTitle.className = 'rp-section-title';
+  howTitle.textContent = 'How It Works';
+
+  const shopBtn = document.createElement('a');
+  shopBtn.className = 'rp-shop-btn';
+  shopBtn.href = 'https://play-pupcup.myshopify.com/';
+  shopBtn.target = '_blank';
+  shopBtn.rel = 'noopener';
+  shopBtn.textContent = 'Shop Now →';
+
+  headerRow.appendChild(howTitle);
+  headerRow.appendChild(shopBtn);
+  wrap.appendChild(headerRow);
+
+  // ── 2. Description ──
+  const descEl = document.createElement('div');
+  descEl.className = 'rp-desc-plain';
+  const descRest = isSteal
+    ? ' cards let you take any point card or rule card on the table.'
+    : isBlock
+    ? ' cards let you block a card when another player is playing a steal against you.'
+    : ' cards change the game for everyone. Other players must follow the rule — but you\'re exempt from your own.';
+  descEl.innerHTML = `<span style="color:${accentColor};font-weight:700;">${typeLabel}</span>${descRest}`;
+  wrap.appendChild(descEl);
+
+  const divider = document.createElement('hr');
+  divider.className = 'rp-divider';
+  wrap.appendChild(divider);
+
+  // ── 3. See It In Action ──
+  const seeTitle = document.createElement('div');
+  seeTitle.className = 'rp-see-it-title';
+  seeTitle.textContent = 'See It In Action';
+  wrap.appendChild(seeTitle);
+
+  // 3-column video thumbnail grid
+  const videoGrid = document.createElement('div');
+  videoGrid.className = 'rp-video-grid';
+
+  const videoSrcs = selectVideosFor(item, 3);
+
+  for (let i = 0; i < videoSrcs.length; i++) {
+    const thumb = document.createElement('div');
+    thumb.className = 'rp-video-thumb';
+
+    const bg = document.createElement('div');
+    bg.className = 'rp-vt-bg';
+
+    const vid = document.createElement('video');
+    vid.src = videoSrcs[i];
+    vid.muted = true;
+    vid.preload = 'metadata';
+    vid.playsInline = true;
+    bg.appendChild(vid);
+
+    const play = document.createElement('div');
+    play.className = 'rp-vt-play';
+
+    thumb.appendChild(bg);
+    thumb.appendChild(play);
+    thumb.addEventListener('click', () => openVideoLightbox(rightEl, videoSrcs[i]));
+    videoGrid.appendChild(thumb);
+  }
+  wrap.appendChild(videoGrid);
+
+  // ── 4. Banner ──
+  const bannerSrc  = isSteal ? 'images/banner-steal.png.png' : isBlock ? 'images/banner-block.png.png' : 'images/banner-rule.png.png';
+  const bannerHref = isRule ? 'https://play-pupcup.myshopify.com/' : 'https://playpupcup.com/vip';
+  const bannerLink = document.createElement('a');
+  bannerLink.className = 'rp-banner-link';
+  bannerLink.href = bannerHref;
+  bannerLink.target = '_blank';
+  bannerLink.rel = 'noopener';
+  const bannerImg = document.createElement('img');
+  bannerImg.src = bannerSrc;
+  bannerImg.alt = '';
+  bannerLink.appendChild(bannerImg);
+  wrap.appendChild(bannerLink);
+
+  rightEl.appendChild(wrap);
+}
+
+function openVideoLightbox(rightEl, videoSrc) {
+  const lb = document.createElement('div');
+  lb.className = 'rp-video-lightbox';
+
+  // Top bar: ← Back (left) + Shop Now (right)
+  const topbar = document.createElement('div');
+  topbar.className = 'rp-vlb-topbar';
+
+  const backBtn = document.createElement('button');
+  backBtn.className = 'rp-back-btn';
+  backBtn.textContent = '← Back';
+
+  const shopBtn = document.createElement('a');
+  shopBtn.className = 'rp-shop-btn';
+  shopBtn.href = 'https://play-pupcup.myshopify.com/';
+  shopBtn.target = '_blank';
+  shopBtn.rel = 'noopener';
+  shopBtn.textContent = 'Shop Now →';
+
+  topbar.appendChild(backBtn);
+  topbar.appendChild(shopBtn);
+  lb.appendChild(topbar);
+
+  // Centered video area
+  const playerWrap = document.createElement('div');
+  playerWrap.className = 'rp-vlb-player';
+
+  const videoArea = document.createElement('div');
+  videoArea.className = 'rp-vlb-video-area';
+
+  if (videoSrc) {
+    const vid = document.createElement('video');
+    vid.src = videoSrc;
+    vid.controls = true;
+    vid.autoplay = true;
+    vid.playsInline = true;
+    videoArea.appendChild(vid);
+  } else {
+    const playIcon = document.createElement('div');
+    playIcon.className = 'rp-vlb-play';
+    videoArea.appendChild(playIcon);
+  }
+
+  playerWrap.appendChild(videoArea);
+  lb.appendChild(playerWrap);
+
+  rightEl.appendChild(lb);
+
+  // Fade in: defer one frame so the initial opacity:0 is painted first
+  requestAnimationFrame(() => requestAnimationFrame(() => lb.classList.add('rp-vlb-visible')));
+
+  // Back: pause video, fade out, then remove
+  backBtn.addEventListener('click', () => {
+    const vid = lb.querySelector('video');
+    if (vid) vid.pause();
+    lb.classList.remove('rp-vlb-visible');
+    lb.addEventListener('transitionend', () => lb.remove(), { once: true });
+  });
+}
+
+// ── Build right panel: infinite vertical scroll for rule card media ──
+function buildRuleMediaPanel(rightEl, ruleMedia) {
+  rightEl.innerHTML = '';
+
+  const vp = document.createElement('div');
+  vp.className = 'right-scroll-viewport';
+  const worldEl = document.createElement('div');
+  worldEl.className = 'right-scroll-world';
+  vp.appendChild(worldEl);
+  rightEl.appendChild(vp);
+
+  // ── Layout constants ──
+  const COLS = 2;
+  const CELL_GAP = 6;
+  const items = ruleMedia;
+  if (!items || items.length === 0) { buildMarketingPanel(rightEl); return; }
+
+  // Each cell: staggered heights for visual interest
+  const CELL_HEIGHTS = [160, 200, 180, 220, 170, 190];
+  const rowHeight = (idx) => CELL_HEIGHTS[idx % CELL_HEIGHTS.length];
+
+  // Virtual rows: each row has COLS items; items repeat infinitely
+  function getRowTop(rowIdx) {
+    let top = 0;
+    for (let r = 0; r < rowIdx; r++) top += rowHeight(r) + CELL_GAP;
+    return top;
+  }
+  function getRowHeight(rowIdx) { return rowHeight(rowIdx); }
+  // Total height of one full cycle of rows
+  const itemsPerCycle = Math.ceil(items.length / COLS);
+  let cycleHeight = 0;
+  for (let r = 0; r < itemsPerCycle; r++) cycleHeight += rowHeight(r) + CELL_GAP;
+
+  let scrollY = 0;
+  const cellMap = new Map();
+
+  function getMediaColors() {
+    return ['#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c',
+            '#e67e22', '#00bcd4', '#8bc34a', '#ff9800', '#673ab7'];
+  }
+  const mColors = getMediaColors();
+
+  function renderRight() {
+    const vpH = vp.clientHeight || 500;
+    const startY = scrollY - 100;
+    const endY = scrollY + vpH + 100;
+
+    // Figure out which rows are visible
+    const visibleKeys = new Set();
+
+    // Scan rows around current scroll position
+    // Normalize scrollY into cycle space for row calculation
+    for (let probeY = startY; probeY < endY; probeY += 50) {
+      // Which cycle-local offset?
+      const normY = ((probeY % cycleHeight) + cycleHeight) % cycleHeight;
+      let accum = 0;
+      for (let r = 0; r < itemsPerCycle; r++) {
+        const rh = getRowHeight(r);
+        if (normY >= accum && normY < accum + rh + CELL_GAP) {
+          // This row is near probeY. Find its absolute position.
+          const cycleIdx = Math.floor(probeY / cycleHeight);
+          const absTop = cycleIdx * cycleHeight + accum;
+          for (let c = 0; c < COLS; c++) {
+            const itemIdx = (r * COLS + c) % items.length;
+            const key = `${cycleIdx},${r},${c}`;
+            visibleKeys.add(key);
+            if (!cellMap.has(key)) {
+              const cell = buildRightCell(items[itemIdx], rh, c, COLS, CELL_GAP, mColors);
+              cell.style.top = absTop + 'px';
+              cell.style.height = rh + 'px';
+              worldEl.appendChild(cell);
+              cellMap.set(key, cell);
+            }
+          }
+        }
+        accum += rh + CELL_GAP;
+      }
+    }
+
+    // Remove off-screen cells
+    for (const [key, el] of cellMap) {
+      if (!visibleKeys.has(key)) { el.remove(); cellMap.delete(key); }
+    }
+
+    worldEl.style.transform = `translateY(${-scrollY}px)`;
+  }
+
+  function buildRightCell(mediaItem, h, colIdx, cols, gap, colors) {
+    const cell = document.createElement('div');
+    cell.className = 'right-cell';
+    const cellW = `calc((100% - ${(cols - 1) * gap}px) / ${cols})`;
+    cell.style.width = cellW;
+    cell.style.left = colIdx === 0 ? '0' : `calc(${cellW} + ${gap}px)`;
+
+    if (mediaItem.type === 'photo' && mediaItem.image) {
+      const img = document.createElement('img');
+      img.src = mediaItem.image; img.loading = 'lazy';
+      cell.appendChild(img);
+    } else if (mediaItem.type === 'video' && (mediaItem.video || mediaItem.poster)) {
+      if (mediaItem.poster) {
+        const img = document.createElement('img'); img.src = mediaItem.poster; img.loading = 'lazy';
+        cell.appendChild(img);
+      }
+    } else {
+      // Placeholder
+      const ph = document.createElement('div');
+      ph.className = 'right-placeholder';
+      const color = colors[Math.abs(hashPos(mediaItem.caption.length, colIdx)) % colors.length];
+      ph.style.background = color;
+      const icon = mediaItem.type === 'video' ? '&#x1f3ac;' : '&#x1f4f8;';
+      ph.innerHTML = `<div class="right-icon">${icon}</div>`;
+      cell.appendChild(ph);
+    }
+
+    // Caption overlay
+    const cap = document.createElement('div');
+    cap.className = 'right-caption';
+    cap.textContent = mediaItem.caption;
+    cell.appendChild(cap);
+
+    // Click: replace left panel with this media
+    cell.addEventListener('click', () => {
+      setLeftPanel(mediaItem);
+    });
+
+    return cell;
+  }
+
+  // ── Right panel drag/touch scroll ──
+  let rDragging = false, rStartY = 0, rScrollStart = 0, rHasMoved = false;
+  let rVel = 0, rLastY = 0, rLastTime = 0, rMomRAF = null;
+
+  function rStartDrag(py) {
+    rDragging = true; rHasMoved = false;
+    rStartY = py; rScrollStart = scrollY;
+    rLastY = py; rLastTime = performance.now(); rVel = 0;
+    if (rMomRAF) cancelAnimationFrame(rMomRAF);
+    vp.classList.add('dragging');
+  }
+  function rMoveDrag(py) {
+    if (!rDragging) return;
+    const dy = py - rStartY;
+    if (Math.abs(dy) > 3) rHasMoved = true;
+    scrollY = rScrollStart - dy;
+    const now = performance.now();
+    const dt = now - rLastTime;
+    if (dt > 0) { rVel = (py - rLastY) / dt * 16; }
+    rLastY = py; rLastTime = now;
+    renderRight();
+  }
+  function rEndDrag() {
+    rDragging = false;
+    vp.classList.remove('dragging');
+    if (Math.abs(rVel) > 0.5) rApplyMomentum();
+  }
+  function rApplyMomentum() {
+    rVel *= 0.95;
+    scrollY -= rVel;
+    renderRight();
+    if (Math.abs(rVel) > 0.1) { rMomRAF = requestAnimationFrame(rApplyMomentum); }
+  }
+
+  const onMD = (e) => { e.stopPropagation(); rStartDrag(e.clientY); };
+  const onMM = (e) => rMoveDrag(e.clientY);
+  const onMU = () => rEndDrag();
+  const onTS = (e) => { rStartDrag(e.touches[0].clientY); };
+  const onTM = (e) => { rMoveDrag(e.touches[0].clientY); };
+  const onTE = () => rEndDrag();
+  const onWheel = (e) => { e.preventDefault(); scrollY += e.deltaY; renderRight(); };
+
+  vp.addEventListener('mousedown', onMD);
+  window.addEventListener('mousemove', onMM);
+  window.addEventListener('mouseup', onMU);
+  vp.addEventListener('touchstart', onTS, { passive: true });
+  vp.addEventListener('touchmove', onTM, { passive: true });
+  vp.addEventListener('touchend', onTE);
+  vp.addEventListener('wheel', onWheel, { passive: false });
+
+  // Initial render
+  renderRight();
+
+  // Return cleanup function
+  rightScrollCleanup = () => {
+    if (rMomRAF) cancelAnimationFrame(rMomRAF);
+    vp.removeEventListener('mousedown', onMD);
+    window.removeEventListener('mousemove', onMM);
+    window.removeEventListener('mouseup', onMU);
+    vp.removeEventListener('touchstart', onTS);
+    vp.removeEventListener('touchmove', onTM);
+    vp.removeEventListener('touchend', onTE);
+    vp.removeEventListener('wheel', onWheel);
+    for (const [, el] of cellMap) el.remove();
+    cellMap.clear();
+  };
+}
+
+// ── Main overlay open ──
+function openOverlay(item) {
+  if (hasMoved) return;
+  if (item.type === 'video') { openVideoOverlay(item); return; }
+  if (item.type === 'photo') { openPhotoOverlay(item); return; }
+
+  // Cleanup previous right panel
+  if (rightScrollCleanup) { rightScrollCleanup(); rightScrollCleanup = null; }
+
+  originalOverlayItem = item;
+  setLeftPanel(item);
+
+  // Build right panel based on item type
+  const rightEl = document.getElementById('overlayRight');
+
+  if ((item.type === 'photo' || item.type === 'video') && item.rule) {
+    // Photo/video with a rule tag → show related media scroll
+    const related = getRelatedMedia(item);
+    buildRuleMediaPanel(rightEl, related);
+  } else {
+    // Steal/block/rule cards or untagged media → marketing panel
+    buildMarketingPanel(rightEl, item);
+  }
+
+  overlay.classList.add('active');
+  lockBodyScroll();
+}
+
+function closeOverlay() {
+  currentOverlayItem = null;
+  originalOverlayItem = null;
+  if (activeOverlayVideo) { activeOverlayVideo.pause(); activeOverlayVideo = null; }
+  if (rightScrollCleanup) { rightScrollCleanup(); rightScrollCleanup = null; }
+  document.getElementById('overlayRight').innerHTML = '';
+  overlay.classList.remove('active');
+  unlockBodyScroll();
+}
+
+// ── Full-Screen Video Carousel ──
+let currentVideoItem = null;
+let voVideoItems = [];
+let voActiveIdx = 0;
+let voDomIdx = 3;        // active position in the clone-expanded track
+
+function openVideoOverlay(item) {
+  voVideoItems = mediaItems.filter(i => i.type === 'video');
+  if (voVideoItems.length === 0) return;
+  voActiveIdx = voVideoItems.findIndex(v => v === item);
+  if (voActiveIdx === -1) voActiveIdx = 0;
+  currentVideoItem = voVideoItems[voActiveIdx];
+  buildVoCarousel();
+  document.getElementById('videoOverlay').classList.add('active');
+  lockBodyScroll();
+}
+
+function buildVoCarousel() {
+  const stage = document.getElementById('voCarouselStage');
+  stage.innerHTML = '';
+
+  const n = voVideoItems.length;
+  const C = Math.min(3, Math.max(0, n - 1)); // clones per side
+
+  const track = document.createElement('div');
+  track.className = 'vo-track';
+  track.id = 'voTrack';
+  stage.appendChild(track);
+
+  function makeVoItem(item, logicalIdx, domIdx) {
+    const el = document.createElement('div');
+    el.className = 'vo-carousel-item';
+    if (item.video) {
+      const vid = document.createElement('video');
+      vid.src = item.video;
+      if (item.poster) vid.poster = item.poster;
+      vid.playsInline = true;
+      el.appendChild(vid);
+    } else {
+      const icon = document.createElement('div');
+      icon.className = 'vo-play-icon';
+      el.appendChild(icon);
+    }
+    el.addEventListener('click', () => {
+      if (domIdx === voDomIdx) return;
+      navigateToDomVo(domIdx, logicalIdx);
+    });
+    return el;
+  }
+
+  // Head clones: last C items prepended (DOM 0..C-1)
+  for (let i = n - C; i < n; i++) {
+    track.appendChild(makeVoItem(voVideoItems[i], i, i - (n - C)));
+  }
+  // Real items (DOM C..C+n-1)
+  voVideoItems.forEach((item, i) => track.appendChild(makeVoItem(item, i, C + i)));
+  // Tail clones: first C items appended (DOM C+n..C+n+C-1)
+  for (let i = 0; i < C; i++) {
+    track.appendChild(makeVoItem(voVideoItems[i], i, C + n + i));
+  }
+
+  voDomIdx = voActiveIdx + C;
+
+  const showArrows = n > 1;
+  document.getElementById('voArrowPrev').style.display = showArrows ? '' : 'none';
+  document.getElementById('voArrowNext').style.display = showArrows ? '' : 'none';
+  document.getElementById('voArrowPrev').disabled = false;
+  document.getElementById('voArrowNext').disabled = false;
+
+  layoutVoCarousel(false);
+  updateVoDots();
+  updateVoBottom();
+}
+
+function layoutVoCarousel(animate) {
+  const stage = document.getElementById('voCarouselStage');
+  const track = document.getElementById('voTrack');
+  const W = stage.offsetWidth;
+  const H = stage.offsetHeight;
+  if (!W || !H || !track) return;
+
+  const centerH = H * 0.90;
+  const centerW = centerH * (9 / 16);
+
+  const scaleAt = (rel) => {
+    const a = Math.abs(rel);
+    if (a === 0) return 1.00;
+    if (a === 1) return 0.78;
+    if (a === 2) return 0.60;
+    return 0.45;
+  };
+  const opacityAt = (rel) => {
+    const a = Math.abs(rel);
+    if (a === 0) return 1;
+    if (a === 1) return 0.60;
+    if (a === 2) return 0.35;
+    return 0;
+  };
+
+  // The 5 visible slots (rel -2..2), proportionally sized and tightly grouped
+  const visibleRels = [-2, -1, 0, 1, 2];
+  const widths = {};
+  visibleRels.forEach(rel => { widths[rel] = scaleAt(rel) * centerW; });
+  const sumW = visibleRels.reduce((s, rel) => s + widths[rel], 0);
+  const gap  = centerW * 0.04;
+  const groupW = sumW + gap * (visibleRels.length - 1);
+
+  const left = {};
+  let cursor = (W - groupW) / 2;
+  visibleRels.forEach((rel, i) => {
+    left[rel] = cursor;
+    cursor += widths[rel] + (i < visibleRels.length - 1 ? gap : 0);
+  });
+
+  track.style.transition = 'none';
+  track.style.transform  = 'none';
+  track.style.left = '0';
+  track.style.top  = '0';
+
+  track.querySelectorAll('.vo-carousel-item').forEach((el, domIdx) => {
+    const rel     = domIdx - voDomIdx;
+    const visible = Math.abs(rel) <= 2;
+    const scale   = scaleAt(rel);
+    const alpha   = opacityAt(rel);
+    const w = scale * centerW;
+    const h = scale * centerH;
+
+    el.style.transition = animate
+      ? 'left 0.4s ease, top 0.4s ease, width 0.4s ease, height 0.4s ease, opacity 0.4s ease'
+      : 'none';
+    el.style.transform  = 'none';
+    el.style.width       = w + 'px';
+    el.style.height      = h + 'px';
+    el.style.top          = ((H - h) / 2) + 'px';
+    el.style.left          = (visible ? left[rel] : (rel < 0 ? -w : W)) + 'px';
+    el.style.opacity     = alpha;
+    el.style.pointerEvents = visible ? 'auto' : 'none';
+    el.style.zIndex      = rel === 0 ? '2' : '1';
+    el.className          = rel === 0 ? 'vo-carousel-item active' : 'vo-carousel-item';
+
+    const vid = el.querySelector('video');
+    if (vid) {
+      if (rel === 0) {
+        vid.muted = false; vid.controls = true; vid.play().catch(() => {});
+      } else {
+        vid.muted = true; vid.controls = false; vid.pause();
+      }
+    }
+  });
+}
+
+// Travels through the clone zone so wrapping feels seamless
+function navigateToDomVo(targetDomIdx, logicalIdx) {
+  const n = voVideoItems.length;
+  const C = Math.min(3, Math.max(0, n - 1));
+  if (targetDomIdx < 0 || targetDomIdx > n + 2 * C - 1) return;
+
+  voDomIdx = targetDomIdx;
+  voActiveIdx = logicalIdx;
+  currentVideoItem = voVideoItems[voActiveIdx];
+  layoutVoCarousel(true);
+  updateVoDots();
+  updateVoBottom();
+
+  // After the slide animation, silently snap from clone zone to real zone
+  if (voDomIdx < C || voDomIdx >= C + n) {
+    const snapTo = voActiveIdx + C;
+    setTimeout(() => {
+      voDomIdx = snapTo;
+      layoutVoCarousel(false);
+    }, 400);
+  }
+}
+
+// Direct jump to a logical index — used by dots (stays in real zone)
+function navigateVo(logicalIdx) {
+  const C = Math.min(3, Math.max(0, voVideoItems.length - 1));
+  voActiveIdx = logicalIdx;
+  voDomIdx = logicalIdx + C;
+  currentVideoItem = voVideoItems[voActiveIdx];
+  layoutVoCarousel(true);
+  updateVoDots();
+  updateVoBottom();
+}
+
+function updateVoDots() {
+  const container = document.getElementById('voDots');
+  container.innerHTML = '';
+  const show = voVideoItems.length > 1;
+  container.style.display = show ? 'flex' : 'none';
+  if (!show) return;
+  voVideoItems.forEach((_, idx) => {
+    const dot = document.createElement('button');
+    dot.className = 'vo-dot' + (idx === voActiveIdx ? ' active' : '');
+    dot.setAttribute('aria-label', `Video ${idx + 1}`);
+    dot.addEventListener('click', (e) => { e.stopPropagation(); navigateVo(idx); });
+    container.appendChild(dot);
+  });
+}
+
+function updateVoBottom() {
+  const item = currentVideoItem;
+  if (!item) return;
+  const name = item.submittedBy || item.dogName || item.credit || '';
+  document.getElementById('voSharedBy').textContent = name ? `Shared by ${name}` : '';
+  document.getElementById('voBoopCount').textContent = boopCounts[getBoopKey(item)] || 0;
+}
+
+function closeVideoOverlay() {
+  document.querySelectorAll('#voCarouselStage video').forEach(v => v.pause());
+  currentVideoItem = null;
+  voVideoItems = [];
+  const vo = document.getElementById('videoOverlay');
+  vo.classList.remove('active');
+  vo.addEventListener('transitionend', () => {
+    document.getElementById('voCarouselStage').innerHTML = '';
+    document.getElementById('voDots').innerHTML = '';
+  }, { once: true });
+  unlockBodyScroll();
+}
+
+// ── Full-Screen Photo Carousel ──
+let currentPhotoItem = null;
+let poPhotoItems = [];
+let poActiveIdx = 0;
+let poDomIdx = 3;
+
+function openPhotoOverlay(item) {
+  const allPhotos = (CARD_DATA[currentClass] || []).filter(i => i.type === 'photo');
+  poPhotoItems = allPhotos.length > 0 ? allPhotos : mediaItems.filter(i => i.type === 'photo');
+  if (poPhotoItems.length === 0) return;
+  poActiveIdx = poPhotoItems.findIndex(p => p === item);
+  if (poActiveIdx === -1) poActiveIdx = 0;
+  currentPhotoItem = poPhotoItems[poActiveIdx];
+  buildPoCarousel();
+  document.getElementById('photoOverlay').classList.add('active');
+  lockBodyScroll();
+}
+
+function buildPoCarousel() {
+  const stage = document.getElementById('poCarouselStage');
+  stage.innerHTML = '';
+
+  const n = poPhotoItems.length;
+  const C = Math.min(3, Math.max(0, n - 1));
+
+  const track = document.createElement('div');
+  track.className = 'vo-track';
+  track.id = 'poTrack';
+  stage.appendChild(track);
+
+  function makePoItem(item, logicalIdx, domIdx) {
+    const el = document.createElement('div');
+    el.className = 'vo-carousel-item';
+    if (item.image) {
+      const img = document.createElement('img');
+      img.src = item.image;
+      img.alt = item.caption || '';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      el.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:white;font-size:15px;font-weight:600;text-align:center;padding:20px;';
+      ph.style.background = randomMediaColor();
+      ph.innerHTML = `<div style="font-size:48px">📸</div><div>${item.caption || ''}</div>`;
+      el.appendChild(ph);
+    }
+    el.addEventListener('click', () => {
+      if (domIdx === poDomIdx) return;
+      navigateToDomPo(domIdx, logicalIdx);
+    });
+    return el;
+  }
+
+  for (let i = n - C; i < n; i++) {
+    track.appendChild(makePoItem(poPhotoItems[i], i, i - (n - C)));
+  }
+  poPhotoItems.forEach((item, i) => track.appendChild(makePoItem(item, i, C + i)));
+  for (let i = 0; i < C; i++) {
+    track.appendChild(makePoItem(poPhotoItems[i], i, C + n + i));
+  }
+
+  poDomIdx = poActiveIdx + C;
+
+  const showArrows = n > 1;
+  document.getElementById('poArrowPrev').style.display = showArrows ? '' : 'none';
+  document.getElementById('poArrowNext').style.display = showArrows ? '' : 'none';
+  document.getElementById('poArrowPrev').disabled = false;
+  document.getElementById('poArrowNext').disabled = false;
+
+  layoutPoCarousel(false);
+  updatePoDots();
+  updatePoBottom();
+}
+
+function layoutPoCarousel(animate) {
+  const stage = document.getElementById('poCarouselStage');
+  const track = document.getElementById('poTrack');
+  const W = stage.offsetWidth;
+  const H = stage.offsetHeight;
+  if (!W || !H || !track) return;
+
+  const centerH = H * 0.90;
+  const centerW = centerH * (9 / 16);
+
+  const scaleAt = (rel) => {
+    const a = Math.abs(rel);
+    if (a === 0) return 1.00;
+    if (a === 1) return 0.78;
+    if (a === 2) return 0.60;
+    return 0.45;
+  };
+  const opacityAt = (rel) => {
+    const a = Math.abs(rel);
+    if (a === 0) return 1;
+    if (a === 1) return 0.60;
+    if (a === 2) return 0.35;
+    return 0;
+  };
+
+  // The 5 visible slots (rel -2..2), proportionally sized and tightly grouped
+  const visibleRels = [-2, -1, 0, 1, 2];
+  const widths = {};
+  visibleRels.forEach(rel => { widths[rel] = scaleAt(rel) * centerW; });
+  const sumW = visibleRels.reduce((s, rel) => s + widths[rel], 0);
+  const gap  = centerW * 0.04;
+  const groupW = sumW + gap * (visibleRels.length - 1);
+
+  const left = {};
+  let cursor = (W - groupW) / 2;
+  visibleRels.forEach((rel, i) => {
+    left[rel] = cursor;
+    cursor += widths[rel] + (i < visibleRels.length - 1 ? gap : 0);
+  });
+
+  track.style.transition = 'none';
+  track.style.transform  = 'none';
+  track.style.left = '0';
+  track.style.top  = '0';
+
+  track.querySelectorAll('.vo-carousel-item').forEach((el, domIdx) => {
+    const rel     = domIdx - poDomIdx;
+    const visible = Math.abs(rel) <= 2;
+    const scale   = scaleAt(rel);
+    const alpha   = opacityAt(rel);
+    const w = scale * centerW;
+    const h = scale * centerH;
+
+    el.style.transition = animate
+      ? 'left 0.4s ease, top 0.4s ease, width 0.4s ease, height 0.4s ease, opacity 0.4s ease'
+      : 'none';
+    el.style.transform  = 'none';
+    el.style.width       = w + 'px';
+    el.style.height      = h + 'px';
+    el.style.top          = ((H - h) / 2) + 'px';
+    el.style.left          = (visible ? left[rel] : (rel < 0 ? -w : W)) + 'px';
+    el.style.opacity     = alpha;
+    el.style.pointerEvents = visible ? 'auto' : 'none';
+    el.style.zIndex      = rel === 0 ? '2' : '1';
+    el.className          = rel === 0 ? 'vo-carousel-item active' : 'vo-carousel-item';
+  });
+}
+
+function navigateToDomPo(targetDomIdx, logicalIdx) {
+  const n = poPhotoItems.length;
+  const C = Math.min(3, Math.max(0, n - 1));
+  if (targetDomIdx < 0 || targetDomIdx > n + 2 * C - 1) return;
+
+  poDomIdx = targetDomIdx;
+  poActiveIdx = logicalIdx;
+  currentPhotoItem = poPhotoItems[poActiveIdx];
+  layoutPoCarousel(true);
+  updatePoDots();
+  updatePoBottom();
+
+  if (poDomIdx < C || poDomIdx >= C + n) {
+    const snapTo = poActiveIdx + C;
+    setTimeout(() => {
+      poDomIdx = snapTo;
+      layoutPoCarousel(false);
+    }, 400);
+  }
+}
+
+function navigatePo(logicalIdx) {
+  const C = Math.min(3, Math.max(0, poPhotoItems.length - 1));
+  poActiveIdx = logicalIdx;
+  poDomIdx = logicalIdx + C;
+  currentPhotoItem = poPhotoItems[poActiveIdx];
+  layoutPoCarousel(true);
+  updatePoDots();
+  updatePoBottom();
+}
+
+function updatePoDots() {
+  const container = document.getElementById('poDots');
+  container.innerHTML = '';
+  const show = poPhotoItems.length > 1;
+  container.style.display = show ? 'flex' : 'none';
+  if (!show) return;
+  poPhotoItems.forEach((_, idx) => {
+    const dot = document.createElement('button');
+    dot.className = 'vo-dot' + (idx === poActiveIdx ? ' active' : '');
+    dot.setAttribute('aria-label', `Photo ${idx + 1}`);
+    dot.addEventListener('click', (e) => { e.stopPropagation(); navigatePo(idx); });
+    container.appendChild(dot);
+  });
+}
+
+function updatePoBottom() {
+  const item = currentPhotoItem;
+  if (!item) return;
+  const name = item.submittedBy || item.credit || item.dogName || '';
+  document.getElementById('poSharedBy').textContent = name ? `Shared by ${name}` : '';
+  document.getElementById('poBoopCount').textContent = boopCounts[getBoopKey(item)] || 0;
+}
+
+function closePhotoOverlay() {
+  currentPhotoItem = null;
+  poPhotoItems = [];
+  const po = document.getElementById('photoOverlay');
+  po.classList.remove('active');
+  po.addEventListener('transitionend', () => {
+    document.getElementById('poCarouselStage').innerHTML = '';
+    document.getElementById('poDots').innerHTML = '';
+  }, { once: true });
+  unlockBodyScroll();
+}
+
+document.getElementById('videoOverlay').addEventListener('click', (e) => {
+  if (!e.target.closest('.vo-carousel-item, .vo-topbar, .vo-bottom, .vo-close, .vo-arrow')) {
+    closeVideoOverlay();
+  }
+});
+document.getElementById('voClose').addEventListener('click', closeVideoOverlay);
+document.getElementById('voArrowPrev').addEventListener('click', (e) => {
+  e.stopPropagation();
+  navigateToDomVo(voDomIdx - 1, (voActiveIdx - 1 + voVideoItems.length) % voVideoItems.length);
+});
+document.getElementById('voArrowNext').addEventListener('click', (e) => {
+  e.stopPropagation();
+  navigateToDomVo(voDomIdx + 1, (voActiveIdx + 1) % voVideoItems.length);
+});
+
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) closeOverlay();
+});
+document.getElementById('overlayClose').addEventListener('click', closeOverlay);
+// Click on left panel background (not on the card frame) closes overlay
+// Click on left panel background closes overlay.
+// Only keep overlay open if the click landed on the card, info, or boop button.
+document.getElementById('overlayLeft').addEventListener('click', (e) => {
+  const card = document.getElementById('overlayCard');
+  const info = document.querySelector('.overlay-info');
+  const boopBtn = document.getElementById('boopBtn');
+  if (card && card.contains(e.target)) return;
+  if (info && info.contains(e.target)) return;
+  if (boopBtn && boopBtn.contains(e.target)) return;
+  closeOverlay();
+});
+// ── Photo overlay event listeners ──
+document.getElementById('photoOverlay').addEventListener('click', (e) => {
+  if (!e.target.closest('.vo-carousel-item, .vo-topbar, .vo-bottom, .vo-close, .vo-arrow')) {
+    closePhotoOverlay();
+  }
+});
+document.getElementById('poClose').addEventListener('click', closePhotoOverlay);
+document.getElementById('poArrowPrev').addEventListener('click', (e) => {
+  e.stopPropagation();
+  navigateToDomPo(poDomIdx - 1, (poActiveIdx - 1 + poPhotoItems.length) % poPhotoItems.length);
+});
+document.getElementById('poArrowNext').addEventListener('click', (e) => {
+  e.stopPropagation();
+  navigateToDomPo(poDomIdx + 1, (poActiveIdx + 1) % poPhotoItems.length);
+});
+document.getElementById('poBoopBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  triggerBoop(currentPhotoItem, document.getElementById('poBoopBtn'), 'poBoopCount');
+});
+
+// ── How to Play / FAQ overlay ──
+function openHowtoOverlay() {
+  document.getElementById('howtoOverlay').classList.add('active');
+  lockBodyScroll();
+}
+function closeHowtoOverlay() {
+  document.getElementById('howtoOverlay').classList.remove('active');
+  unlockBodyScroll();
+}
+// The header's "How to Play" now links to the standalone /howtoplay page, so the
+// old open button may be absent — guard it. (Overlay markup is kept but orphaned.)
+const _howtoOpenBtn = document.getElementById('howtoOpenBtn');
+if (_howtoOpenBtn) _howtoOpenBtn.addEventListener('click', openHowtoOverlay);
+document.getElementById('howtoClose').addEventListener('click', closeHowtoOverlay);
+document.getElementById('howtoOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('howtoOverlay')) closeHowtoOverlay();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeOverlay(); closeVideoOverlay(); closePhotoOverlay(); closeHowtoOverlay(); }
+  if (document.getElementById('videoOverlay').classList.contains('active')) {
+    if (e.key === 'ArrowLeft')
+      navigateToDomVo(voDomIdx - 1, (voActiveIdx - 1 + voVideoItems.length) % voVideoItems.length);
+    if (e.key === 'ArrowRight')
+      navigateToDomVo(voDomIdx + 1, (voActiveIdx + 1) % voVideoItems.length);
+  }
+  if (document.getElementById('photoOverlay').classList.contains('active')) {
+    if (e.key === 'ArrowLeft')
+      navigateToDomPo(poDomIdx - 1, (poActiveIdx - 1 + poPhotoItems.length) % poPhotoItems.length);
+    if (e.key === 'ArrowRight')
+      navigateToDomPo(poDomIdx + 1, (poActiveIdx + 1) % poPhotoItems.length);
+  }
+});
+window.addEventListener('resize', () => {
+  if (document.getElementById('videoOverlay').classList.contains('active')) layoutVoCarousel(false);
+  if (document.getElementById('photoOverlay').classList.contains('active')) layoutPoCarousel(false);
+});
+
+// ── Carousel swipe support (mobile) ──
+function addSwipeNav(stageEl, onSwipeLeft, onSwipeRight) {
+  const SWIPE_THRESHOLD = 40;
+  let startX = 0, startY = 0, tracking = false;
+
+  stageEl.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+
+  stageEl.addEventListener('touchend', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx < 0) onSwipeLeft(); else onSwipeRight();
+  }, { passive: true });
+}
+
+addSwipeNav(
+  document.getElementById('voCarouselStage'),
+  () => navigateToDomVo(voDomIdx + 1, (voActiveIdx + 1) % voVideoItems.length),
+  () => navigateToDomVo(voDomIdx - 1, (voActiveIdx - 1 + voVideoItems.length) % voVideoItems.length)
+);
+addSwipeNav(
+  document.getElementById('poCarouselStage'),
+  () => navigateToDomPo(poDomIdx + 1, (poActiveIdx + 1) % poPhotoItems.length),
+  () => navigateToDomPo(poDomIdx - 1, (poActiveIdx - 1 + poPhotoItems.length) % poPhotoItems.length)
+);
+
+/* ───── Boop System ───── */
+
+// ── Persistent storage via localStorage ──
+const BOOP_STORAGE_KEY = 'pupcup_boops';
+const BOOP_DAILY_KEY   = 'pupcup_daily_boops';
+const DAILY_BOOP_LIMIT = Infinity; // TODO: set to 100 for production
+
+function loadBoopCounts() {
+  try {
+    return JSON.parse(localStorage.getItem(BOOP_STORAGE_KEY)) || {};
+  } catch { return {}; }
+}
+
+function saveBoopCounts(counts) {
+  try { localStorage.setItem(BOOP_STORAGE_KEY, JSON.stringify(counts)); } catch {}
+}
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+function getDailyBoops() {
+  try {
+    const data = JSON.parse(localStorage.getItem(BOOP_DAILY_KEY)) || {};
+    const today = getTodayKey();
+    if (data.date !== today) return { date: today, count: 0 };
+    return data;
+  } catch { return { date: getTodayKey(), count: 0 }; }
+}
+
+function saveDailyBoops(data) {
+  try { localStorage.setItem(BOOP_DAILY_KEY, JSON.stringify(data)); } catch {}
+}
+
+const boopCounts = loadBoopCounts();
+
+function getBoopKey(item) {
+  return item.dogName || item.caption || 'unknown';
+}
+
+// ── Video overlay event listeners ──
+
+document.getElementById('voBoopBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  triggerBoop(currentVideoItem, document.getElementById('voBoopBtn'), 'voBoopCount');
+});
+
+// ── Rapid-click detection for Super Boop ──
+let rapidBoopTimes = [];  // timestamps of recent boops
+const RAPID_WINDOW = 2500;  // 2.5 second window
+const RAPID_THRESHOLD = 10; // 10 clicks = super boop
+
+function checkSuperBoop() {
+  const now = Date.now();
+  rapidBoopTimes.push(now);
+  // Only keep clicks within the window
+  rapidBoopTimes = rapidBoopTimes.filter(t => now - t < RAPID_WINDOW);
+  return rapidBoopTimes.length >= RAPID_THRESHOLD;
+}
+
+// ── Shared boop handler — used by every Boop button on the page ──
+function triggerBoop(item, btn, countElId) {
+  if (!item) return;
+
+  // Check daily limit
+  const daily = getDailyBoops();
+  if (daily.count >= DAILY_BOOP_LIMIT) {
+    btn.style.animation = 'none';
+    void btn.offsetWidth;
+    btn.classList.add('boop-maxed');
+    setTimeout(() => btn.classList.remove('boop-maxed'), 600);
+    return;
+  }
+
+  // Increment & persist
+  const key = getBoopKey(item);
+  boopCounts[key] = (boopCounts[key] || 0) + 1;
+  saveBoopCounts(boopCounts);
+
+  daily.count++;
+  saveDailyBoops(daily);
+
+  document.getElementById(countElId).textContent = boopCounts[key];
+
+  // Pop animation on button
+  btn.classList.remove('booped');
+  void btn.offsetWidth;
+  btn.classList.add('booped');
+
+  // Particles originate from this button's on-screen position
+  const rect = btn.getBoundingClientRect();
+  const originX = rect.left + rect.width / 2;
+  const originY = rect.top + rect.height / 2;
+
+  // Check for Super Boop easter egg
+  const isSuper = checkSuperBoop();
+
+  if (isSuper) {
+    // SUPER BOOP — all three at 200% scale, screen-filling
+    rapidBoopTimes = []; // reset so it doesn't re-trigger every click
+    spawnSuperBoop();
+  } else {
+    // Normal random animation
+    const fx = [spawnPawBurst, spawnBoneRain, spawnTailWagRipple];
+    fx[Math.floor(Math.random() * fx.length)](false, originX, originY);
+  }
+}
+
+document.getElementById('boopBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  triggerBoop(currentOverlayItem, document.getElementById('boopBtn'), 'boopCount');
+});
+
+// ── Super Boop: all three animations at once, 200% grander ──
+function spawnSuperBoop() {
+  // Flash the screen gold briefly
+  const flash = document.getElementById('superBoopFlash');
+  flash.classList.add('active');
+  setTimeout(() => flash.classList.remove('active'), 600);
+
+  // Fire all three at super scale
+  spawnPawBurst(true);
+  setTimeout(() => spawnBoneRain(true), 100);
+  setTimeout(() => spawnTailWagRipple(true), 200);
+}
+
+// ── Animation: Paw Burst ──
+function spawnPawBurst(isSuper, originX, originY) {
+  const container = isSuper ? document.getElementById('superBoopFx') : document.getElementById('boopFx');
+  const pawEmojis = ['\u{1F43E}', '\u{1F9B4}', '\u2728', '\u{1F49B}', '\u{1F43E}', '\u{1F436}'];
+  const count = isSuper ? 36 : 12;
+  const distMult = isSuper ? 2.5 : 1;
+  const sizeMult = isSuper ? 1.8 : 1;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('span');
+    el.className = 'paw-particle';
+    if (isSuper) el.classList.add('super');
+    el.textContent = pawEmojis[Math.floor(Math.random() * pawEmojis.length)];
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+    const dist = (60 + Math.random() * 100) * distMult;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist;
+    const rot = Math.random() * 360;
+    const dur = (isSuper ? 1.0 : 0.6) + Math.random() * 0.4;
+    el.style.setProperty('--tx', tx + 'px');
+    el.style.setProperty('--ty', ty + 'px');
+    el.style.setProperty('--rot', rot + 'deg');
+    el.style.setProperty('--dur', dur + 's');
+    el.style.fontSize = (22 * sizeMult) + 'px';
+    if (isSuper) {
+      el.style.left = '50%';
+      el.style.top = '50%';
+    } else {
+      el.style.left = originX + 'px';
+      el.style.top = originY + 'px';
+    }
+    el.style.animationDelay = (Math.random() * (isSuper ? 0.3 : 0.15)) + 's';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), (dur + 0.3) * 1000);
+  }
+}
+
+// ── Animation: Bone Rain ──
+function spawnBoneRain(isSuper, originX) {
+  const container = isSuper ? document.getElementById('superBoopFx') : document.getElementById('boopFx');
+  const boneEmojis = ['\u{1F9B4}', '\u{1F43E}', '\u{1F436}', '\u2B50', '\u{1F49B}', '\u{1F3BE}'];
+  const count = isSuper ? 40 : 14;
+  const spread = 320;
+  const leftBase = isSuper ? 0 : originX - spread / 2;
+  const w = isSuper ? window.innerWidth : spread;
+  const sizeMult = isSuper ? 1.8 : 1;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('span');
+    el.className = 'bone-particle';
+    if (isSuper) el.classList.add('super');
+    el.textContent = boneEmojis[Math.floor(Math.random() * boneEmojis.length)];
+    const fall = (300 + Math.random() * 200) * (isSuper ? 3 : 1);
+    const rot = -180 + Math.random() * 360;
+    const dur = (isSuper ? 1.4 : 0.8) + Math.random() * 0.6;
+    el.style.left = (leftBase + Math.random() * w) + 'px';
+    el.style.fontSize = (20 * sizeMult) + 'px';
+    el.style.setProperty('--fall', fall + 'px');
+    el.style.setProperty('--rot', rot + 'deg');
+    el.style.setProperty('--dur', dur + 's');
+    el.style.animationDelay = (Math.random() * (isSuper ? 0.8 : 0.4)) + 's';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), (dur + 1) * 1000);
+  }
+}
+
+// ── Animation: Tail Wag Ripple ──
+function spawnTailWagRipple(isSuper, originX, originY) {
+  const container = isSuper ? document.getElementById('superBoopFx') : document.getElementById('boopFx');
+  const ringCount = isSuper ? 6 : 3;
+  const pawCount  = isSuper ? 20 : 8;
+  const sizeMult  = isSuper ? 2.2 : 1;
+
+  for (let i = 0; i < ringCount; i++) {
+    const ring = document.createElement('div');
+    ring.className = 'ripple-ring';
+    if (isSuper) ring.classList.add('super');
+    const scale = (3 + i * 2.5) * (isSuper ? 2.5 : 1);
+    const dur = (0.6 + i * 0.25) * (isSuper ? 1.5 : 1);
+    ring.style.setProperty('--scale', scale);
+    ring.style.setProperty('--dur', dur + 's');
+    ring.style.animationDelay = (i * 0.12) + 's';
+    if (isSuper) {
+      ring.style.left = '50%';
+      ring.style.top = '50%';
+      ring.style.bottom = 'auto';
+      ring.style.borderWidth = '4px';
+    } else {
+      ring.style.left = originX + 'px';
+      ring.style.top = originY + 'px';
+      ring.style.bottom = 'auto';
+    }
+    container.appendChild(ring);
+    setTimeout(() => ring.remove(), (dur + 0.2) * 1000);
+  }
+
+  const pawEmojis = ['\u{1F43E}', '\u{1F49B}', '\u2728', '\u{1F436}'];
+  for (let i = 0; i < pawCount; i++) {
+    const el = document.createElement('span');
+    el.className = 'ripple-paw';
+    if (isSuper) el.classList.add('super');
+    el.textContent = pawEmojis[Math.floor(Math.random() * pawEmojis.length)];
+    const angle = (Math.PI * 2 * i) / pawCount;
+    const dist = (50 + Math.random() * 80) * (isSuper ? 3 : 1);
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist - (isSuper ? 0 : 40);
+    const dur = (isSuper ? 1.2 : 0.7) + Math.random() * 0.3;
+    el.style.setProperty('--tx', tx + 'px');
+    el.style.setProperty('--ty', ty + 'px');
+    el.style.setProperty('--dur', dur + 's');
+    el.style.fontSize = (16 * sizeMult) + 'px';
+    if (isSuper) {
+      el.style.left = '50%';
+      el.style.top = '50%';
+      el.style.bottom = 'auto';
+    } else {
+      el.style.left = originX + 'px';
+      el.style.top = originY + 'px';
+    }
+    el.style.animationDelay = (0.1 + Math.random() * (isSuper ? 0.5 : 0.2)) + 's';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), (dur + 0.5) * 1000);
+  }
+}
+
+
+function loadClass(cls) {
+  for (const [key, el] of cells) { el.remove(); }
+  cells.clear();
+  const all = CARD_DATA[cls] || [];
+  cardItems  = all.filter(i => i.type === 'card');
+  // Photos are hidden for now. Grid videos come from the real clips in
+  // images/videos/ (via the manifest), shuffled each load. Show 8 per load
+  // (a lighter video density) out of the full set.
+  const videos = shuffle(buildManifestVideoItems());
+  mediaItems = videos.slice(0, 8);
+  allItemsPool = shuffle([...cardItems, ...mediaItems]);
+
+  camX = 0; camY = 0;
+
+  // Enable staggered reveal with a fresh random seed
+  revealSeed = (Math.random() * 2147483647) | 0;
+  isRevealing = true;
+  render();
+  // Turn off revealing after 3s so cards added by panning appear instantly
+  setTimeout(() => { isRevealing = false; }, 3000);
+}
+
+/* ───── Init ───── */
+function init() {
+  loadClass(currentClass);
+  window.addEventListener('resize', () => render());
+}
+
+init();
+</script>
+</body>
+</html>

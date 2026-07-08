@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Play — Pupcup</title>
+<meta name="description" content="How to play Pupcup — watch the how-to video, read the rules, and browse the full FAQ.">
+<meta property="og:title" content="How to Play — Pupcup">
+<meta property="og:description" content="Watch the how-to video, read the rules, and browse the full FAQ for Pupcup.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+<style>
+  /* ───── Reset & Base ───── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1e2028;
+    --surface: #1a1a1e;
+    --accent: #f5c542;
+    --text: #f0ece4;
+    --text-muted: #9a9a9e;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Jost', system-ui, sans-serif;
+    color: var(--text);
+  }
+  a { text-decoration: none; }
+
+  /* ───── Standalone How to Play / FAQ page ───── */
+  .howto-page {
+    position: relative;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* Pupcup logo, top-left (replaces the overlay's close button) */
+  .howto-logo {
+    position: fixed;
+    top: 20px; left: 24px;
+    z-index: 210;
+    display: inline-flex;
+  }
+  .howto-logo img { height: 36px; width: auto; display: block; }
+
+  /* Shop Now button — fixed to the top-right corner */
+  .howto-shop-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 210;
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 10px rgba(245,197,66,0.25);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .howto-shop-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 18px rgba(245,197,66,0.4);
+  }
+
+  /* Two-column layout: left column stays in place, right column scrolls on its own */
+  .howto-content {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+    gap: 56px;
+  }
+
+  .howto-left {
+    flex: 0 0 460px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    padding: 100px 0 40px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .howto-left::-webkit-scrollbar { display: none; }
+
+  .howto-right {
+    flex: 1 1 auto;
+    height: 100%;
+    padding: 0 0 40px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .howto-right::-webkit-scrollbar { display: none; }
+
+  .howto-heading {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+  /* Only the "FAQ" heading sticks as the right column scrolls. */
+  .howto-right > .howto-heading {
+    position: sticky;
+    top: 0;
+    background: #1e2028;
+    z-index: 3;
+    margin: 0 0 8px;
+    padding: 100px 0 28px;
+  }
+  .howto-video-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: auto;
+    max-width: 100%;
+    align-self: flex-start;
+    aspect-ratio: 9 / 16;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+    margin: 0 0 20px;
+  }
+  .howto-video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .howto-instructions-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1a1e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 10px rgba(245,197,66,0.25);
+    text-decoration: none;
+    align-self: flex-start;
+  }
+  .howto-instructions-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 18px rgba(245,197,66,0.4);
+  }
+
+  .faq-group { margin-bottom: 32px; }
+  .faq-group:last-child { margin-bottom: 0; }
+  .faq-category {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    opacity: 0.95;
+    margin-bottom: 12px;
+  }
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    list-style: none;
+  }
+  .faq-question::-webkit-details-marker { display: none; }
+  .faq-question:hover { color: var(--accent); }
+  .faq-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+  }
+  .faq-item[open] .faq-icon { transform: rotate(45deg); }
+  .faq-answer {
+    padding: 0 18px 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 600px) {
+    .howto-page {
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .howto-page::-webkit-scrollbar { display: none; }
+    .howto-content {
+      display: block;
+      height: auto;
+      max-width: 100%;
+      padding: 90px 18px 60px;
+      gap: 0;
+    }
+    .howto-left {
+      flex: none;
+      height: auto;
+      padding: 0 0 48px;
+      overflow: visible;
+      justify-content: flex-start;
+    }
+    .howto-right {
+      flex: none;
+      height: auto;
+      padding: 0;
+      overflow: visible;
+    }
+    .howto-heading { font-size: 24px; }
+    .howto-right > .howto-heading {
+      position: static;
+      background: none;
+      margin-bottom: 24px;
+      padding: 0;
+    }
+    .howto-video-wrap {
+      flex: none;
+      align-self: center;
+      width: min(100%, 280px);
+      height: auto;
+      margin: 0 auto 20px;
+    }
+    .howto-logo { top: 12px; left: 14px; }
+    .howto-logo img { height: 28px; }
+    .howto-shop-btn { top: 10px; right: 10px; padding: 9px 18px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="howto-page">
+
+  <!-- Pupcup logo, top-left (links back to the homepage) -->
+  <a class="howto-logo" href="../" aria-label="Pupcup home"><img src="../images/logo.svg" alt="Pupcup"></a>
+  <a class="howto-shop-btn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Shop Now →</a>
+
+  <div class="howto-content">
+
+    <div class="howto-left">
+      <h2 class="howto-heading">How to Play</h2>
+      <div class="howto-video-wrap">
+        <iframe src="https://player.vimeo.com/video/1159306597" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="How to Play Pupcup"></iframe>
+      </div>
+      <a class="howto-instructions-btn" href="../instructions/PlayPupcup-Original-Nov16.pdf" target="_blank" rel="noopener">View Instructions</a>
+    </div>
+
+    <div class="howto-right">
+      <h2 class="howto-heading">FAQ</h2>
+
+      <div class="faq-group">
+        <h3 class="faq-category">General</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Who can Play Pupcup?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Anyone who can add 10, 20, and 30s together and subtract 5s and 10s. Some content may not be suitable for kids under 13.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>How many people can play?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Best with 4–6 players. Adjust the total score goal for larger groups.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>How long does the game take?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Multiple rounds, 10–15 minutes for small groups, 15–30 for larger groups.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>How do you win?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">First to reach 100 points (or your group's goal). Recommended: 2–3 players: 150–200pts, 4–6 players: 100pts, 7+ players: 80pts.</div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-category">Rules</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Why play a Rule card?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">They get people laughing. Rules cause players to bark, restrict words, or limit actions.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>When can you play a Rule?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Instead of a point or steal card. Announce it aloud and place it in front of you.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Can you get penalized for breaking a rule while reading it aloud?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Yes.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Who has to follow the rules?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">All players except: (1) you're exempt from your own rules, (2) Shield card holders are exempt from all rules.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>When does the rule take effect?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">As soon as the player reads it aloud and puts it down.</div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-category">Penalty Cards</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>What are Penalty cards?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Drawn when you break a rule and get caught. Mostly -5pt cards, some -10pt, one -20pt.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>What do I do with Penalty cards?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Place face up in front of you. Discard matching point cards that cancel out.</div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-category">Steal Cards</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>What are Steal cards?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Take one face-up card from any player, or a random card from their hand.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>What can I steal?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Point cards, Rules, Shield, or anything in their hand.</div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-category">Blocks</h3>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>When do you play a Block card?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Only out of turn, when someone plays a Steal against you.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question"><span>Can you block another block?</span><span class="faq-icon">+</span></summary>
+          <div class="faq-answer">Yes, blocks can be chained.</div>
+        </details>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

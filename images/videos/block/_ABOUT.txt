@@ -1,0 +1,2 @@
+BLOCK cards — drop clips of block cards being played here.
+Shown in "See It In Action" on any block card.
