@@ -871,14 +871,19 @@
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      /* Run the carousel to the screen's right edge (panel has 24px side padding). */
+      /* Full-bleed carousel: extend past the panel's 24px padding to both screen
+         edges, but keep the first video aligned under the heading via padding. */
+      margin-left: -24px;
       margin-right: -24px;
-      padding-right: 24px;
+      padding-left: 24px;
+      padding-right: 0;
+      scroll-padding-left: 24px;
     }
     .rp-video-grid::-webkit-scrollbar { display: none; }
     .rp-video-thumb {
       flex: 0 0 auto;
-      width: calc((100% - 12px) / 3 * 1.5);
+      /* 50% larger than the old 3-up size, pinned to viewport so it stays constant. */
+      width: calc(50vw - 30px);
       scroll-snap-align: start;
     }
     /* No tap-enlarge on touch (kept on desktop). */
