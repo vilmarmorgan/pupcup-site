@@ -108,7 +108,7 @@
     padding: 18px 28px 22px;
     text-align: center;
     color: #3c3733;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 500;
     line-height: 1.35;
   }
@@ -691,12 +691,12 @@
       --card-h: 212px;
       --gap: 10px;
     }
-    .hero-island { top: 36px; width: calc(100vw - 60px); }
+    .hero-island { top: 36px; width: 90vw; }
     .hero-island::before { border-radius: 42px; }
     .hero-pill { gap: 12px; padding: 15px 12px 15px 18px; }
     .hero-logo { height: 33px; }
-    .hero-btn { padding: 8px 13px; font-size: 12.5px; }
-    .hero-mission { padding: 15px 18px 18px; font-size: 15px; }
+    .hero-btn { padding: 10px 16px; font-size: 14px; }
+    .hero-mission { padding: 15px 18px 18px; font-size: 16px; }
     .rp-banner-link { margin-bottom: 112px; }
     .overlay { overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
     .overlay::-webkit-scrollbar { display: none; }
@@ -706,7 +706,7 @@
     .overlay-card-frame { padding: 0 8px; }
     .overlay-card { max-width: calc(100vw - 48px); }
     .overlay-right { flex: none; height: auto; overflow: visible; border-left: none; border-top: none; }
-    .rp-content { height: auto; overflow-y: visible; padding-top: 20px; }
+    .rp-content { height: auto; overflow-y: visible; padding: 20px 24px 40px; }
     .right-scroll-viewport { position: relative; inset: auto; min-height: 60vh; }
     .overlay-dog-name { font-size: 16px; }
     .overlay-info { padding: 12px 8px 4px; }
@@ -740,7 +740,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 80px 24px 40px;
+    padding: 80px 40px 40px;
     height: 100%;
     overflow-y: auto;
     scrollbar-width: none;
@@ -755,7 +755,7 @@
     gap: 12px;
   }
   /* Desktop: pin Buy Now to the top-right so "How It Works" can start lower */
-  .rp-section-header .rp-shop-btn { position: absolute; top: 28px; right: 24px; }
+  .rp-section-header .rp-shop-btn { position: absolute; top: 28px; right: 40px; }
   .rp-section-title {
     font-size: 32px;
     font-weight: 700;
@@ -764,8 +764,10 @@
     line-height: 1.2;
   }
   .rp-shop-btn {
-    display: inline-block;
-    padding: 9px 22px;
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 24px;
     border-radius: 999px;
     background: var(--accent);
     color: #1a1a1e;
@@ -790,6 +792,7 @@
     line-height: 1.55;
     margin-top: 8px;
   }
+  .rp-desc-plain p + p { margin-top: 14px; }
   .rp-divider {
     border: none;
     border-top: 1px solid rgba(255,255,255,0.08);
@@ -2094,6 +2097,8 @@ let isDragging = false;
 let dragStartX, dragStartY;
 let camStartX, camStartY;
 let hasMoved = false;
+let dragStartTime = 0;
+let lastInputWasTouch = false;
 
 let velX = 0, velY = 0;
 let lastMoveTime = 0, lastMoveX = 0, lastMoveY = 0;
@@ -2102,6 +2107,7 @@ let momentumRAF = null;
 function startDrag(px, py) {
   isDragging = true;
   hasMoved = false;
+  dragStartTime = performance.now();
   dragStartX = px; dragStartY = py;
   camStartX = camX; camStartY = camY;
   lastMoveX = px; lastMoveY = py;
@@ -2147,11 +2153,12 @@ function applyMomentum() {
   }
 }
 
-viewport.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+viewport.addEventListener('mousedown', (e) => { lastInputWasTouch = false; startDrag(e.clientX, e.clientY); });
 window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
 window.addEventListener('mouseup', () => endDrag());
 
 viewport.addEventListener('touchstart', (e) => {
+  lastInputWasTouch = true;
   const t = e.touches[0]; startDrag(t.clientX, t.clientY);
 }, { passive: true });
 viewport.addEventListener('touchmove', (e) => {
@@ -2332,6 +2339,49 @@ function buildManifestVideoItems() {
 }
 
 // ── Build right panel: steal/block/rule info + video grid ──
+// Personalized "How It Works" copy for each rule card, keyed by dog name.
+// Each entry is two paragraphs: the rule, then the "You're exempt..." note.
+const RULE_DESCRIPTIONS = {
+  "RuPup": [
+    `Play RuPup's Rule and no other player can say the word "I" for the rest of the round, even during normal conversation. Catch someone slipping and they draw a Penalty card that deducts from their score. Turns out "I" is a hard habit to quit.`,
+    `You're exempt from your own rule, but only as long as you own the card. If another player steals it and you can't Block, they take over the rule, and suddenly you're the one biting your tongue. 🤐`
+  ],
+  "Queen Elizapup": [
+    `Play Queen Elizapup's Rule and you become royalty, immune to every other player's Rule for the rest of the round, even during normal conversation. While the crown is yours, no rule shall touch thee.`,
+    `But uneasy lies the paw that wears the crown. You're protected only as long as you own the card, and should a rival seize it with a steal you cannot Block, the crown and its immunity depart for a new sovereign. 👑`
+  ],
+  "Pupquiao": [
+    `Play Pupquiao's Rule and no other player can point with their fingers, hands, fists, or cards for the rest of the round, even during normal conversation. Need to gesture at something? Pucker up and point with your lips, snout style. Catch someone pointing the old way and they draw a Penalty card that deducts from their score.`,
+    `You're exempt from your own rule, but only as long as you own the card. If someone steals it and you can't Block, you'll be the one puckering at the snacks across the table. 😘`
+  ],
+  "Lady Puppa": [
+    `Play Lady Puppa's Rule and every player must growl each time they play a card for the rest of the round, main turns and Blocks included. Forget to growl and you draw a Penalty card that deducts from your score. It starts out intimidating and ends up adorable, every single time.`,
+    `You're exempt from your own rule, but only as long as you own the card. Lose it to a steal you can't Block, and now you're the one growling like you mean it. 🐶`
+  ],
+  "Pupstein": [
+    `Play Pupstein's Rule and every player must bark before answering any question for the rest of the round, even during normal conversation. Miss the bark and you draw a Penalty card that deducts from your score. Pro tip: slip a casual question into the conversation and watch people answer without a single woof.`,
+    `You're exempt from your own rule, but only as long as you own the card. If someone steals it and you can't Block, you'll be barking before you can say "yes." 🤓`
+  ],
+  "Frida Puplo": [
+    `Play Frida Puplo's Rule and no other player can touch their head for the rest of the round, even during normal conversation. Hair and glasses are fair game, everything else is off limits. Get caught and you draw a Penalty card that deducts from your score. Fair warning: the second this rule drops, everyone's head mysteriously starts to itch.`,
+    `You're exempt from your own rule, but only as long as you own the card. Lose it to a steal you can't Block, and good luck ignoring that sudden itch. 💆`
+  ],
+  "K-Pup": [
+    `Play K-Pup's Rule and no other player can show their teeth for the rest of the round, even during normal conversation. Smiles, laughs, big reactions, all a liability now. Flash those pearly whites and you draw a Penalty card that deducts from your score. This is the toughest rule in the deck, which is exactly why its owner loves it.`,
+    `You're exempt from your own rule, but only as long as you own the card. If someone steals it and you can't Block, you'll be grinning with your lips sealed like everyone else. 😁`
+  ],
+};
+
+const STEAL_DESCRIPTION = [
+  `Play a Steal card on your turn, in place of a Point or Rule, and take any face-up card sitting in front of another player. Grab a fat point card to leap ahead, or hijack a Rule so the exemption becomes yours. Nothing on the table is safe.`,
+  `Just know steals cut both ways. Unless your target throws down a Block, the card is yours, but with plenty of Steals in the deck, whatever you take can always be taken right back. 😈`
+];
+
+const BLOCK_DESCRIPTION = [
+  `Play a Block card the instant another player tries to Steal from you, and their move dies on the spot while your card stays right where it is. It's the only card you can play out of turn, so timing is everything.`,
+  `Blocks can even cancel other Blocks, so a standoff can chain back and forth until someone blinks. There are only half as many Blocks as Steals though, so save yours for the cards actually worth defending. 🛡️`
+];
+
 function buildMarketingPanel(rightEl, item) {
   rightEl.innerHTML = '';
 
@@ -2384,12 +2434,21 @@ function buildMarketingPanel(rightEl, item) {
   // ── 2. Description ──
   const descEl = document.createElement('div');
   descEl.className = 'rp-desc-plain';
-  const descRest = isSteal
-    ? ' cards let you take any point card or rule card on the table.'
-    : isBlock
-    ? ' cards let you block a card when another player is playing a steal against you.'
-    : ' cards change the game for everyone. Other players must follow the rule — but you\'re exempt from your own.';
-  descEl.innerHTML = `<span style="color:${accentColor};font-weight:700;">${typeLabel}</span>${descRest}`;
+  let descParas = null;
+  if (isRule) descParas = RULE_DESCRIPTIONS[item && item.dogName];
+  else if (isSteal) descParas = STEAL_DESCRIPTION;
+  else if (isBlock) descParas = BLOCK_DESCRIPTION;
+  if (descParas) {
+    // Personalized copy: each paragraph rendered separately
+    descEl.innerHTML = descParas.map(p => `<p>${p}</p>`).join('');
+  } else {
+    const descRest = isSteal
+      ? ' cards let you take any point card or rule card on the table.'
+      : isBlock
+      ? ' cards let you block a card when another player is playing a steal against you.'
+      : ' cards change the game for everyone. Other players must follow the rule — but you\'re exempt from your own.';
+    descEl.innerHTML = `<span style="color:${accentColor};font-weight:700;">${typeLabel}</span>${descRest}`;
+  }
   wrap.appendChild(descEl);
 
   const divider = document.createElement('hr');
@@ -2711,6 +2770,9 @@ function buildRuleMediaPanel(rightEl, ruleMedia) {
 // ── Main overlay open ──
 function openOverlay(item) {
   if (hasMoved) return;
+  // On touch, only open on a quick, deliberate tap — a slow/hesitant touch while
+  // panning shouldn't open a card. (Desktop clicks are unaffected.)
+  if (lastInputWasTouch && performance.now() - dragStartTime > 300) return;
   if (item.type === 'video') { openVideoOverlay(item); return; }
   if (item.type === 'photo') { openPhotoOverlay(item); return; }
 
