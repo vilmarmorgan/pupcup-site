@@ -1421,7 +1421,7 @@
     <img class="hero-logo" src="images/Pupcup-logo-horizontal.svg" alt="Pupcup">
     <div class="hero-actions">
       <a class="hero-btn hero-btn-howto" href="howtoplay/">How to Play</a>
-      <a class="hero-btn hero-btn-buy" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now</a>
+      <a class="hero-btn hero-btn-buy" href="https://play-pupcup.myshopify.com/" rel="noopener">Buy Now</a>
     </div>
   </div>
   <div class="hero-mission">A card game that brings people together to bark, growl, and howl with laughter.</div>
@@ -1435,7 +1435,7 @@
 <!-- Card Overlay (Two-Panel) -->
 <div class="overlay" id="overlay">
   <button class="overlay-close" id="overlayClose">&times;</button>
-  <a class="overlay-shop-btn" id="overlayShopBtn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now →</a>
+  <a class="overlay-shop-btn" id="overlayShopBtn" href="https://play-pupcup.myshopify.com/" rel="noopener">Buy Now →</a>
   <div class="overlay-panels" id="overlayPanels">
 
     <!-- LEFT PANEL: Card image + info + boop -->
@@ -1471,7 +1471,7 @@
 <div class="video-overlay" id="videoOverlay">
   <button class="vo-close" id="voClose" aria-label="Close"></button>
   <div class="vo-topbar">
-    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now →</a>
+    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" rel="noopener">Buy Now →</a>
   </div>
   <button class="vo-arrow vo-arrow-prev" id="voArrowPrev" aria-label="Previous video">&#8249;</button>
   <button class="vo-arrow vo-arrow-next" id="voArrowNext" aria-label="Next video">&#8250;</button>
@@ -1491,7 +1491,7 @@
 <div class="video-overlay" id="photoOverlay">
   <button class="vo-close" id="poClose" aria-label="Close"></button>
   <div class="vo-topbar">
-    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now →</a>
+    <a class="vo-pill" href="https://play-pupcup.myshopify.com/" rel="noopener">Buy Now →</a>
   </div>
   <button class="vo-arrow vo-arrow-prev" id="poArrowPrev" aria-label="Previous photo">&#8249;</button>
   <button class="vo-arrow vo-arrow-next" id="poArrowNext" aria-label="Next photo">&#8250;</button>
@@ -1510,7 +1510,7 @@
 <!-- How to Play / FAQ Overlay -->
 <div class="howto-overlay" id="howtoOverlay">
   <button class="overlay-close howto-close" id="howtoClose" aria-label="Close">&times;</button>
-  <a class="howto-shop-btn" href="https://play-pupcup.myshopify.com/" target="_blank" rel="noopener">Buy Now →</a>
+  <a class="howto-shop-btn" href="https://play-pupcup.myshopify.com/" rel="noopener">Buy Now →</a>
   <div class="howto-content" id="howtoContent">
 
     <div class="howto-left">
@@ -2427,7 +2427,7 @@ function buildMarketingPanel(rightEl, item) {
   const shopBtn = document.createElement('a');
   shopBtn.className = 'rp-shop-btn';
   shopBtn.href = 'https://play-pupcup.myshopify.com/';
-  shopBtn.target = '_blank';
+  shopBtn.target = '_self';
   shopBtn.rel = 'noopener';
   shopBtn.textContent = 'Buy Now →';
 
@@ -2501,7 +2501,7 @@ function buildMarketingPanel(rightEl, item) {
   const bannerLink = document.createElement('a');
   bannerLink.className = 'rp-banner-link';
   bannerLink.href = bannerHref;
-  bannerLink.target = '_blank';
+  bannerLink.target = '_self';
   bannerLink.rel = 'noopener';
   const bannerImg = document.createElement('img');
   bannerImg.src = bannerSrc;
@@ -2527,7 +2527,7 @@ function openVideoLightbox(rightEl, videoSrc) {
   const shopBtn = document.createElement('a');
   shopBtn.className = 'rp-shop-btn';
   shopBtn.href = 'https://play-pupcup.myshopify.com/';
-  shopBtn.target = '_blank';
+  shopBtn.target = '_self';
   shopBtn.rel = 'noopener';
   shopBtn.textContent = 'Buy Now →';
 
