@@ -28,6 +28,6 @@
       </g>
     </symbol>
   </defs>
-  <rect width="1000" height="1000" fill="#ffffff"/>
+  <rect width="1000" height="1000" rx="200" fill="#ffffff"/>
   <use width="292.42814" height="415.5574" transform="translate(220 102.10372) scale(1.915)" xlink:href="#Logo-Icon"/>
 </svg>
