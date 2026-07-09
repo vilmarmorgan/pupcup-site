@@ -3,11 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pupcup — Home</title>
-<meta name="description" content="Pupcup — a card game featuring illustrated dogs. Explore the gallery of every pup in the deck.">
-<meta property="og:title" content="Pupcup — Home">
-<meta property="og:description" content="A card game featuring illustrated dogs. Explore the infinite gallery.">
+<title>Pupcup: The Hilarious Dog Card Game for Game Night</title>
+<meta name="description" content="Pupcup is the illustrated dog card game that brings people together to bark, growl, and howl with laughter. Play rule, steal, and block cards to outwit your friends, starring real pups from around the world.">
+<meta name="keywords" content="Pupcup, dog card game, party card game, game night, family card game, funny card game, card games for adults, card games for families">
+<meta name="author" content="Pupcup">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#1e2028">
+<link rel="canonical" href="https://playpupcup.com/">
+
+<!-- Open Graph (Facebook, iMessage, LinkedIn) -->
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Pupcup">
+<meta property="og:title" content="Pupcup: The Hilarious Dog Card Game for Game Night">
+<meta property="og:description" content="The illustrated dog card game that brings people together to bark, growl, and howl with laughter. Play rules, steal cards, and block your friends.">
+<meta property="og:url" content="https://playpupcup.com/">
+<meta property="og:image" content="https://playpupcup.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Pupcup, a card game that brings people together to bark, growl, and howl with laughter.">
+
+<!-- Twitter / X Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pupcup: The Hilarious Dog Card Game for Game Night">
+<meta name="twitter:description" content="The illustrated dog card game that gets everyone barking, growling, and howling with laughter.">
+<meta name="twitter:image" content="https://playpupcup.com/og-image.png">
+
+<!-- Structured data for Google -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Pupcup",
+  "description": "The illustrated dog card game that brings people together to bark, growl, and howl with laughter. Play rule, steal, and block cards to outwit your friends.",
+  "brand": { "@type": "Brand", "name": "Pupcup" },
+  "category": "Card Game",
+  "url": "https://playpupcup.com/",
+  "image": "https://playpupcup.com/og-image.png"
+}
+</script>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -2324,6 +2357,10 @@ function slugToDogName(slug) {
 
 // Build grid video items from the folder manifest (the real clips in images/videos/).
 // Each becomes a playable video card; rule clips carry their dog name.
+// Each video has a pre-generated poster JPEG alongside it (same name, .jpg).
+// Using a real poster image gives reliable thumbnails everywhere, including
+// iOS Safari, which often refuses to paint the video's own #t= frame.
+function posterFor(path) { return path.replace(/\.(mp4|mov|m4v)$/i, '.jpg'); }
 function buildManifestVideoItems() {
   const m = window.VIDEO_MANIFEST;
   if (!m) return [];
@@ -2332,13 +2369,13 @@ function buildManifestVideoItems() {
   Object.keys(rules).forEach(function(slug) {
     const dog = slugToDogName(slug);
     (rules[slug] || []).forEach(function(path) {
-      items.push({ type: 'video', video: path, poster: null,
+      items.push({ type: 'video', video: path, poster: posterFor(path),
                    caption: dog ? dog + "’s Rule" : 'Rule', rule: dog });
     });
   });
-  (m.steal || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: null, caption: 'Steal in Action', rule: null }); });
-  (m.block || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: null, caption: 'Block in Action', rule: null }); });
-  (m.general || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: null, caption: 'Game Night', rule: null }); });
+  (m.steal || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: posterFor(path), caption: 'Steal in Action', rule: null }); });
+  (m.block || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: posterFor(path), caption: 'Block in Action', rule: null }); });
+  (m.general || []).forEach(function(path) { items.push({ type: 'video', video: path, poster: posterFor(path), caption: 'Game Night', rule: null }); });
   return items;
 }
 
@@ -2450,7 +2487,7 @@ function buildMarketingPanel(rightEl, item) {
       ? ' cards let you take any point card or rule card on the table.'
       : isBlock
       ? ' cards let you block a card when another player is playing a steal against you.'
-      : ' cards change the game for everyone. Other players must follow the rule — but you\'re exempt from your own.';
+      : ' cards change the game for everyone. Other players must follow the rule, but you\'re exempt from your own.';
     descEl.innerHTML = `<span style="color:${accentColor};font-weight:700;">${typeLabel}</span>${descRest}`;
   }
   wrap.appendChild(descEl);

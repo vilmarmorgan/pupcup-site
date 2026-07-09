@@ -28,7 +28,7 @@ jobs:
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Compress new videos
+      - name: Compress new videos and generate posters
         run: bash scripts/compress-videos.sh
 
       - name: Commit compressed videos

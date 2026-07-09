@@ -94,6 +94,35 @@ done
 
 echo "Done. Compressed/updated: $processed, skipped (already done): $skipped"
 
+# ── Generate poster thumbnails for the homepage grid ──
+# The grid shows a still image for each video. A real poster image renders
+# reliably on every browser, including iOS Safari, which often refuses to paint
+# a video's own frame as a thumbnail. For every clip we ensure a <name>.jpg
+# poster exists, regenerating it whenever the video is newer than its poster.
+# The site derives the poster path by swapping the video extension for .jpg,
+# so no manifest change is needed.
+echo "Generating video posters..."
+posters=0
+while IFS= read -r -d '' v; do
+  poster="${v%.*}.jpg"
+  # Up to date already? (poster exists and video is not newer than it)
+  if [ -f "$poster" ] && [ ! "$v" -nt "$poster" ]; then
+    continue
+  fi
+  dur="$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$v" 2>/dev/null || echo 0)"
+  # Grab a frame ~25% into the clip (min 0.5s) to avoid intro/black frames.
+  t="$(awk -v d="$dur" 'BEGIN{ t=d*0.25; if(t<0.5)t=0.5; if(d>0.2 && t>d-0.1)t=d-0.1; if(t<0)t=0; printf "%.2f", t }')"
+  if ffmpeg -y -loglevel error -ss "$t" -i "$v" -frames:v 1 -vf "scale=480:-2" -q:v 4 "$poster"; then
+    echo "  poster: ${poster##*/} (t=${t}s)"
+    posters=$((posters + 1))
+  else
+    echo "  WARN: could not make poster for $v" >&2
+  fi
+done < <(find images/videos -type f \
+          \( -iname '*.mp4' -o -iname '*.mov' -o -iname '*.m4v' -o -iname '*.webm' \) \
+          -print0)
+echo "Posters generated/updated: $posters"
+
 # Regenerate the video manifest the site reads (lists clips per folder).
 if command -v python3 >/dev/null 2>&1; then
   python3 "$(dirname "$0")/gen-video-manifest.py" images/videos || \
