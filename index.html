@@ -174,10 +174,10 @@
   .card-inner {
     width: 100%;
     height: 100%;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
     cursor: pointer;
-    background: #ffffff;
+    background: transparent;
     border: none;
     outline: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
@@ -195,7 +195,10 @@
     .card-inner.reveal-done:hover { transform: none; box-shadow: none; z-index: auto; }
   }
   .card-cell img, .card-cell video {
-    width: 100%; height: 100%;
+    /* Bleed 1px past every edge so the art always fully covers the rounded
+       container — prevents a faint sub-pixel seam on transform-positioned cards. */
+    width: calc(100% + 2px); height: calc(100% + 2px);
+    margin: -1px;
     object-fit: cover;
     display: block;
     pointer-events: none;
@@ -1444,9 +1447,96 @@
     .rp-vlb-player { padding: 74px 14px 20px; }
     .rp-vlb-video-area { max-width: 100%; }
   }
+
+  /* ───── First-visit "tap a card" hint ───── */
+  /* Full-screen dim overlay shown once on first load. pointer-events:none so a
+     tap still reaches the card underneath (and dismisses the hint). */
+  .tap-hint {
+    position: fixed; inset: 0; z-index: 9998;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(10, 11, 15, 0.60);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.45s ease;
+  }
+  .tap-hint.show { opacity: 1; }
+  .tap-hint.hide { opacity: 0; }
+  .tap-hint-box {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 0 24px;
+    transform: translateY(10px); animation: tapHintIn 0.5s ease forwards;
+  }
+  @keyframes tapHintIn { to { transform: translateY(0); } }
+  .tap-anim {
+    position: relative; width: 120px; height: 120px;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 4px;
+  }
+  .tap-ring {
+    position: absolute; width: 58px; height: 58px; border-radius: 50%;
+    border: 3px solid rgba(245, 197, 66, 0.9);
+    animation: tapRing 1.8s ease-out infinite;
+  }
+  .tap-ring.tap-ring2 { animation-delay: 0.9s; }
+  @keyframes tapRing {
+    0% { transform: scale(0.5); opacity: 0.9; }
+    100% { transform: scale(1.9); opacity: 0; }
+  }
+  .tap-finger {
+    font-size: 56px; line-height: 1;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+    animation: tapBob 1.8s ease-in-out infinite;
+  }
+  @keyframes tapBob {
+    0%, 100% { transform: translateY(-6px) scale(1); }
+    50% { transform: translateY(5px) scale(0.9); }
+  }
+  .tap-hint-title {
+    color: #fff; font-weight: 700; font-size: 23px; text-align: center;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+  }
+  .tap-hint-sub {
+    color: rgba(255, 255, 255, 0.82); font-size: 14px; text-align: center;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  }
+  @media (max-width: 600px) {
+    .tap-hint-title { font-size: 20px; }
+    .tap-finger { font-size: 50px; }
+  }
+
+  /* Lingering gold halo on the centered card after the overlay fades.
+     A steady ring keeps it visible even at the dim phase, and the glow breathes. */
+  @keyframes hintHalo {
+    0%, 100% {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14),
+                  0 0 0 3px rgba(245, 197, 66, 0.55),
+                  0 0 12px 3px rgba(245, 197, 66, 0.35);
+    }
+    50% {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14),
+                  0 0 0 4px rgba(245, 197, 66, 0.95),
+                  0 0 30px 10px rgba(245, 197, 66, 0.9);
+    }
+  }
+  .card-cell.hint-pulse { z-index: 6; }
+  .card-cell.hint-pulse .card-inner { animation: hintHalo 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .tap-finger, .tap-ring, .card-cell.hint-pulse .card-inner { animation: none; }
+  }
 </style>
 </head>
 <body>
+
+<!-- First-visit hint: shown once, tells users cards are tappable -->
+<div id="tapHint" class="tap-hint" aria-hidden="true">
+  <div class="tap-hint-box">
+    <div class="tap-anim">
+      <span class="tap-ring"></span>
+      <span class="tap-ring tap-ring2"></span>
+      <span class="tap-finger">&#x1F446;</span>
+    </div>
+    <div class="tap-hint-title">Tap any card to learn more</div>
+  </div>
+</div>
 
 <!-- Top Bar -->
 <div class="hero-island">
@@ -2127,6 +2217,68 @@ function render() {
   }
 
   world.style.transform = `translate3d(${-camX}px, ${-camY}px, 0)`;
+
+  if (tapHintPulseActive) updateHintPulse();
+}
+
+/* ───── First-visit "tap a card" hint ───── */
+// Shown once per browser (localStorage), so it never returns after the user
+// leaves and comes back. A dim overlay with a tapping finger fades after ~3s
+// (or on first interaction), then the centered card keeps a soft gold pulse.
+const TAP_HINT_KEY = 'pupcup_tap_hint_seen_v1';
+let tapHintPulseActive = false;
+let hintPulseEl = null;
+let lastHintPulseCalc = 0;
+
+// Pulse whichever visible card sits closest to the true center of the screen.
+// Measured from actual on-screen rects so it's exact regardless of pan/zoom,
+// and throttled so momentum scrolling stays smooth.
+function updateHintPulse() {
+  if (!tapHintPulseActive) return;
+  const now = performance.now();
+  if (now - lastHintPulseCalc < 120) return;
+  lastHintPulseCalc = now;
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+  let best = null, bestD = Infinity;
+  for (const el of cells.values()) {
+    const r = el.getBoundingClientRect();
+    const dx = (r.left + r.width / 2) - cx;
+    const dy = (r.top + r.height / 2) - cy;
+    const d = dx * dx + dy * dy;
+    if (d < bestD) { bestD = d; best = el; }
+  }
+  if (best !== hintPulseEl) {
+    if (hintPulseEl) hintPulseEl.classList.remove('hint-pulse');
+    if (best) best.classList.add('hint-pulse');
+    hintPulseEl = best;
+  }
+}
+function startHintPulse() { tapHintPulseActive = true; lastHintPulseCalc = 0; updateHintPulse(); }
+function stopHintPulse() {
+  tapHintPulseActive = false;
+  if (hintPulseEl) { hintPulseEl.classList.remove('hint-pulse'); hintPulseEl = null; }
+}
+function initTapHint() {
+  let seen = false;
+  try { seen = !!localStorage.getItem(TAP_HINT_KEY); } catch (e) {}
+  if (seen) return;
+  // Mark seen immediately, so a quick bounce to the store and back won't replay it.
+  try { localStorage.setItem(TAP_HINT_KEY, '1'); } catch (e) {}
+  const hint = document.getElementById('tapHint');
+  if (!hint) return;
+  let dismissed = false;
+  const dismiss = () => {
+    if (dismissed) return; dismissed = true;
+    hint.classList.remove('show');
+    hint.classList.add('hide');
+    setTimeout(() => { if (hint.parentNode) hint.remove(); }, 500);
+    window.removeEventListener('pointerdown', dismiss, true);
+    startHintPulse();
+  };
+  setTimeout(() => { hint.classList.add('show'); }, 650);   // let the grid paint first
+  setTimeout(dismiss, 650 + 3200);                          // auto-hide ~3s after showing
+  window.addEventListener('pointerdown', dismiss, true);    // or on first tap/scroll
 }
 
 /* ───── Drag / Touch Panning ───── */
@@ -2814,6 +2966,7 @@ function openOverlay(item) {
   // On touch, only open on a quick, deliberate tap — a slow/hesitant touch while
   // panning shouldn't open a card. (Desktop clicks are unaffected.)
   if (lastInputWasTouch && performance.now() - dragStartTime > 300) return;
+  stopHintPulse();  // a card was opened; the tap hint has done its job
   if (item.type === 'video') { openVideoOverlay(item); return; }
   if (item.type === 'photo') { openPhotoOverlay(item); return; }
 
@@ -3678,6 +3831,7 @@ function loadClass(cls) {
 function init() {
   loadClass(currentClass);
   window.addEventListener('resize', () => render());
+  initTapHint();
 }
 
 init();
