@@ -871,19 +871,19 @@
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      /* Full-bleed carousel: extend past the panel's 24px padding to both screen
-         edges, but keep the first video aligned under the heading via padding. */
+      /* Full-bleed carousel: flush to both screen edges (offsets the panel's
+         24px side padding), first video starts at the very left edge. */
       margin-left: -24px;
       margin-right: -24px;
-      padding-left: 24px;
+      padding-left: 0;
       padding-right: 0;
-      scroll-padding-left: 24px;
+      scroll-padding-left: 0;
     }
     .rp-video-grid::-webkit-scrollbar { display: none; }
     .rp-video-thumb {
       flex: 0 0 auto;
-      /* 50% larger than the old 3-up size, pinned to viewport so it stays constant. */
-      width: calc(50vw - 30px);
+      /* 20% larger than the previous size so the 2nd video is clearly cut off. */
+      width: calc(60vw - 36px);
       scroll-snap-align: start;
     }
     /* No tap-enlarge on touch (kept on desktop). */
