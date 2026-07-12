@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Kickstarter Backers | Pupcup</title>
+<meta name="description" content="A thank-you wall for the backers who brought Pupcup to life on Kickstarter. Tap a name to see our thanks.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#1e2028">
+<link rel="canonical" href="https://playpupcup.com/kickstarter/">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #1e2028;
+    --text: #1a1a1e;
+    --accent: #f5c542;
+    --cream: #f0ece4;
+    --diam: 190px;
+    --gap: 46px;
+    --name-size: 20px;
+  }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    font-family: 'Jost', system-ui, sans-serif;
+    color: var(--cream);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ───── Floating header island (matches homepage) ───── */
+  .hero-island {
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    width: min(680px, calc(100vw - 28px));
+    display: flex;
+    flex-direction: column;
+  }
+  .hero-island::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 52px;
+    background: rgba(225, 205, 205, 0.9);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    box-shadow: 0 20px 36px rgba(18, 20, 28, 0.26);
+    z-index: 0;
+  }
+  .hero-pill {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 19px 16px 19px 26px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 6px 16px rgba(18, 20, 28, 0.18);
+  }
+  .hero-logo { height: 52px; width: auto; display: block; flex-shrink: 0; }
+  .hero-logo-link { display: block; line-height: 0; flex-shrink: 0; }
+  .hero-left { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .hero-burger {
+    display: flex; flex-direction: column; justify-content: center; gap: 6px;
+    width: 34px; height: 34px; padding: 4px; border: none; background: transparent;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .hero-burger span {
+    display: block; width: 100%; height: 3px; border-radius: 2px;
+    background: #231f20; transition: transform 0.15s ease;
+  }
+  .hero-burger:active { transform: scale(0.92); }
+  .hero-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  .mobile-howto { display: none; }
+
+  .nav-menu {
+    position: fixed; inset: 0; z-index: 500; background: #1e2028;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  .nav-menu.active { opacity: 1; pointer-events: auto; }
+  .nav-menu-links {
+    display: flex; flex-direction: column; align-items: center; gap: 40px; text-align: center;
+  }
+  .nav-menu-links a {
+    font-family: 'Jost', system-ui, sans-serif;
+    font-size: 56px; line-height: 1; font-weight: 700;
+    color: var(--cream, #f0ece4); text-decoration: none;
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+  .nav-menu-links a:hover { color: var(--accent, #f5c542); }
+  .nav-menu-links a:active { transform: scale(0.96); }
+  .nav-menu-close {
+    position: fixed; top: 28px; left: 28px; width: 66px; height: 66px;
+    border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.12);
+    color: #f0ece4; font-size: 38px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .nav-menu-close:hover { background: rgba(255, 255, 255, 0.22); }
+  .nav-menu-close:active { transform: scale(0.94); }
+  .hero-btn {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 22px;
+    border-radius: 100px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .hero-btn:hover { transform: scale(1.04); }
+  .hero-btn:active { transform: scale(0.96); }
+  .hero-btn-howto { background: #231f20; color: #ffffff; }
+  .hero-btn-buy {
+    background: #ff8d1e;
+    color: #231f20;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
+  }
+  .hero-mission {
+    position: relative;
+    z-index: 1;
+    padding: 18px 28px 22px;
+    text-align: center;
+    color: #3c3733;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  /* ───── Page prism background (behind the grid) ───── */
+  .kc-bg-prism {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background: #16171d;
+    pointer-events: none;
+  }
+
+  /* ───── Infinite canvas ───── */
+  #kc-viewport {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+  }
+  #kc-viewport.dragging { cursor: grabbing; }
+  #kc-world { position: absolute; top: 0; left: 0; will-change: transform; }
+
+  .kc-cell {
+    position: absolute;
+    width: var(--diam);
+    height: var(--diam);
+  }
+  .kc-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 14%;
+    font-size: var(--name-size);
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .kc-circle.reveal-done:hover { transform: scale(1.07); }
+  @media (hover: none) { .kc-circle.reveal-done:hover { transform: none; } }
+
+  /* Entrance stagger */
+  .kc-circle { opacity: 0; }
+  .kc-circle.revealed { animation: kcReveal 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+  .kc-circle.reveal-done { opacity: 1; }
+  @keyframes kcReveal {
+    0% { opacity: 0; transform: translateY(18px) scale(0.94); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ───── Thank-you popup ───── */
+  .kc-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: #0d0d10;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .kc-overlay.active { opacity: 1; pointer-events: auto; }
+
+  /* Animated prism glow that drifts around the screen like a screensaver. */
+  .kc-prism { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+  .kc-blob {
+    position: absolute;
+    top: 0; left: 0;
+    width: 62vmax; height: 62vmax;
+    border-radius: 50%;
+    filter: blur(64px);
+    opacity: 0.55;
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .kc-blob.b1 { background: radial-gradient(circle at center, #ff2d78 0%, rgba(255,45,120,0) 66%); animation: kcDrift1 28s ease-in-out infinite; }
+  .kc-blob.b2 { background: radial-gradient(circle at center, #1e8fff 0%, rgba(30,143,255,0) 66%); animation: kcDrift2 35s ease-in-out infinite; }
+  .kc-blob.b3 { background: radial-gradient(circle at center, #37d67a 0%, rgba(55,214,122,0) 66%); animation: kcDrift3 31s ease-in-out infinite; }
+  .kc-blob.b4 { background: radial-gradient(circle at center, #ffcf3f 0%, rgba(255,207,63,0) 66%); animation: kcDrift4 39s ease-in-out infinite; }
+  .kc-blob.b5 { background: radial-gradient(circle at center, #ff8d1e 0%, rgba(255,141,30,0) 66%); animation: kcDrift5 33s ease-in-out infinite; }
+  .kc-blob.b6 { background: radial-gradient(circle at center, #9b5cff 0%, rgba(155,92,255,0) 66%); animation: kcDrift6 44s ease-in-out infinite; }
+  .kc-overlay:not(.active) .kc-blob { animation-play-state: paused; }
+  @keyframes kcDrift1 { 0%,100%{transform:translate(-34vw,-30vh)} 33%{transform:translate(38vw,4vh)} 66%{transform:translate(64vw,52vh)} }
+  @keyframes kcDrift2 { 0%,100%{transform:translate(60vw,-28vh)} 33%{transform:translate(18vw,44vh)} 66%{transform:translate(-30vw,20vh)} }
+  @keyframes kcDrift3 { 0%,100%{transform:translate(52vw,58vh)} 33%{transform:translate(-20vw,64vh)} 66%{transform:translate(6vw,-24vh)} }
+  @keyframes kcDrift4 { 0%,100%{transform:translate(-28vw,50vh)} 33%{transform:translate(46vw,60vh)} 66%{transform:translate(58vw,-16vh)} }
+  @keyframes kcDrift5 { 0%,100%{transform:translate(20vw,-30vh)} 33%{transform:translate(62vw,30vh)} 66%{transform:translate(-24vw,56vh)} }
+  @keyframes kcDrift6 { 0%,100%{transform:translate(-30vw,10vh)} 33%{transform:translate(30vw,64vh)} 66%{transform:translate(64vw,-20vh)} }
+
+  .kc-thanks-circle {
+    position: relative;
+    z-index: 2;
+    width: min(50vh, 88vw);
+    height: min(50vh, 88vw);
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0.9);
+    transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  .kc-overlay.active .kc-thanks-circle { transform: scale(1); }
+  .kc-thanks {
+    width: 74%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: var(--text);
+    gap: 32px;
+  }
+  .kc-t-top, .kc-t-bottom { font-size: 32px; font-weight: 500; line-height: 1.25; }
+  .kc-t-name { font-size: 64px; font-weight: 700; line-height: 1.1; }
+
+  .kc-close {
+    position: fixed;
+    top: 28px;
+    left: 28px;
+    z-index: 320;
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    font-size: 34px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .kc-close:hover { background: rgba(255, 255, 255, 0.22); }
+  .kc-close:active { transform: scale(0.94); }
+
+  @media (max-width: 600px) {
+    :root { --diam: 120px; --gap: 22px; --name-size: 14px; }
+    .hero-island { top: 36px; width: 90vw; }
+    .hero-island::before { border-radius: 42px; }
+    .hero-pill { gap: 12px; padding: 15px 12px 15px 18px; }
+    .hero-logo { height: 33px; }
+    .hero-btn { padding: 10px 16px; font-size: 14px; height: auto; }
+    .hero-btn-howto { display: none; }
+    .mobile-howto {
+      display: inline-flex; align-items: center; justify-content: center;
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 100; padding: 13px 30px; border-radius: 100px;
+      background: #231f20; color: #ffffff; font-weight: 600; font-size: 15px;
+      text-decoration: none; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    .nav-menu-links a { font-size: 40px; }
+    .nav-menu-close { top: 16px; left: 16px; width: 54px; height: 54px; font-size: 30px; }
+    .hero-mission { font-size: 15px; padding: 14px 20px 18px; }
+    .kc-thanks { gap: 22px; }
+    .kc-t-top, .kc-t-bottom { font-size: 22px; }
+    .kc-t-name { font-size: 44px; }
+    .kc-close { top: 16px; left: 16px; width: 54px; height: 54px; font-size: 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kc-circle.revealed { animation: none; opacity: 1; }
+    .kc-blob { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating header -->
+<div class="hero-island">
+  <div class="hero-pill">
+    <div class="hero-left">
+      <button class="hero-burger" id="heroBurger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <a class="hero-logo-link" href="../index.html"><img class="hero-logo" src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
+    </div>
+    <div class="hero-actions">
+      <a class="hero-btn hero-btn-howto" href="../howtoplay/">How to Play</a>
+      <a class="hero-btn hero-btn-buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
+    </div>
+  </div>
+  <div class="hero-mission">Thank you to our Kickstarter backers. You helped make Pupcup real.</div>
+</div>
+
+<!-- Mobile-only How to Play button pinned to the bottom -->
+<a class="mobile-howto" href="../howtoplay/">How to Play</a>
+
+<!-- Full-screen navigation menu -->
+<div class="nav-menu" id="navMenu">
+  <button class="nav-menu-close" id="navMenuClose" aria-label="Close menu">&times;</button>
+  <nav class="nav-menu-links">
+    <a href="../index.html">Home</a>
+    <a href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
+    <a href="../howtoplay/">How to Play</a>
+    <a href="index.html">Kickstarter Backers</a>
+  </nav>
+</div>
+
+<!-- Prism glow behind the whole grid -->
+<div class="kc-bg-prism" aria-hidden="true">
+  <span class="kc-blob b1"></span>
+  <span class="kc-blob b2"></span>
+  <span class="kc-blob b3"></span>
+  <span class="kc-blob b4"></span>
+  <span class="kc-blob b5"></span>
+  <span class="kc-blob b6"></span>
+</div>
+
+<!-- Infinite canvas of backer circles -->
+<div id="kc-viewport">
+  <div id="kc-world"></div>
+</div>
+
+<!-- Thank-you popup -->
+<div class="kc-overlay" id="kcOverlay">
+  <div class="kc-prism" aria-hidden="true">
+    <span class="kc-blob b1"></span>
+    <span class="kc-blob b2"></span>
+    <span class="kc-blob b3"></span>
+    <span class="kc-blob b4"></span>
+    <span class="kc-blob b5"></span>
+    <span class="kc-blob b6"></span>
+  </div>
+  <button class="kc-close" id="kcClose" aria-label="Close">&times;</button>
+  <div class="kc-thanks-circle">
+    <div class="kc-thanks">
+      <div class="kc-t-top">Thank you</div>
+      <div class="kc-t-name" id="kcName"></div>
+      <div class="kc-t-bottom">For supporting our Kickstarter campaign</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ───── Backer names (first name + last initial) ─────
+const NAMES = [
+  "Michael M.", "David G.", "Rene C.", "Sonja M.", "Jacob P.",
+  "Josh M.", "Nils T.", "Elissa L.", "Ashley S.", "Lucas B.",
+  "Oliver K.", "Marie M.", "Miguel L.", "Kristin C.", "Blake B.",
+  "Jonathan C.", "Doug P.", "Josee P.", "Charles H.", "Cole B.",
+  "Nathaniel G.", "Nathaniel A.", "Cheryl B.", "Max J.", "Gerardo U.",
+  "Vickie C.", "Katie S."
+];
+
+// ───── Setup ─────
+const viewport = document.getElementById('kc-viewport');
+const world = document.getElementById('kc-world');
+const rootStyle = getComputedStyle(document.documentElement);
+let DIAM = parseInt(rootStyle.getPropertyValue('--diam'));
+let GAP = parseInt(rootStyle.getPropertyValue('--gap'));
+let CELL = DIAM + GAP;
+
+function readSizes() {
+  const rs = getComputedStyle(document.documentElement);
+  DIAM = parseInt(rs.getPropertyValue('--diam'));
+  GAP = parseInt(rs.getPropertyValue('--gap'));
+  CELL = DIAM + GAP;
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+let pool = shuffle(NAMES);
+
+// Deduplicate across the grid: a repeating tile bigger than the neighborhood so
+// the same name never lands adjacent to itself.
+const PC = 7, PR = 4;
+function pmod(n, m) { return ((n % m) + m) % m; }
+function nameAt(col, row) {
+  const idx = pmod(row, PR) * PC + pmod(col, PC);
+  return pool[idx % pool.length];
+}
+
+let camX = 0, camY = 0;
+const cells = new Map();
+let isRevealing = false;
+let revealSeed = 0;
+
+function hashPos(a, b) {
+  let h = (a * 73856093) ^ (b * 19349663);
+  h = (h ^ (h >> 13)) * 1274126177;
+  return h ^ (h >> 16);
+}
+
+function getVisibleRange() {
+  const vw = viewport.clientWidth, vh = viewport.clientHeight;
+  return {
+    startCol: Math.floor(camX / CELL) - 1,
+    endCol: Math.floor((camX + vw) / CELL) + 1,
+    startRow: Math.floor(camY / CELL) - 1,
+    endRow: Math.floor((camY + vh) / CELL) + 1
+  };
+}
+
+function createCell(col, row) {
+  const name = nameAt(col, row);
+  const el = document.createElement('div');
+  el.className = 'kc-cell';
+  const circle = document.createElement('div');
+  circle.className = 'kc-circle';
+  circle.textContent = name;
+  if (isRevealing) {
+    const h = Math.abs(hashPos(col * 7 + revealSeed, row * 13 + (revealSeed >> 8)));
+    circle.style.animationDelay = ((h % 2200) / 1000) + 's';
+    circle.classList.add('revealed');
+    circle.addEventListener('animationend', () => {
+      circle.classList.remove('revealed');
+      circle.classList.add('reveal-done');
+      circle.style.animationDelay = '';
+    }, { once: true });
+  } else {
+    circle.classList.add('reveal-done');
+  }
+  el.appendChild(circle);
+  el.dataset.name = name;
+  return el;
+}
+
+function positionCell(el, col, row) {
+  el.style.transform = `translate3d(${col * CELL}px, ${row * CELL}px, 0)`;
+}
+
+function render() {
+  const { startCol, endCol, startRow, endRow } = getVisibleRange();
+  const visible = new Set();
+  for (let c = startCol; c <= endCol; c++)
+    for (let r = startRow; r <= endRow; r++) visible.add(c + ',' + r);
+
+  for (const [key, el] of cells) {
+    if (!visible.has(key)) { el.remove(); cells.delete(key); }
+  }
+  for (let c = startCol; c <= endCol; c++) {
+    for (let r = startRow; r <= endRow; r++) {
+      const key = c + ',' + r;
+      if (!cells.has(key)) {
+        const el = createCell(c, r);
+        positionCell(el, c, r);
+        world.appendChild(el);
+        cells.set(key, el);
+      }
+    }
+  }
+  world.style.transform = `translate3d(${-camX}px, ${-camY}px, 0)`;
+}
+
+// ───── Drag / pan / momentum ─────
+let isDown = false, moved = false;
+let startX = 0, startY = 0, camStartX = 0, camStartY = 0;
+let lastX = 0, lastY = 0, lastT = 0, vX = 0, vY = 0, momRAF = null;
+
+viewport.addEventListener('pointerdown', (e) => {
+  isDown = true; moved = false;
+  startX = e.clientX; startY = e.clientY;
+  camStartX = camX; camStartY = camY;
+  lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+  vX = 0; vY = 0;
+  if (momRAF) { cancelAnimationFrame(momRAF); momRAF = null; }
+  viewport.classList.add('dragging');
+});
+viewport.addEventListener('pointermove', (e) => {
+  if (!isDown) return;
+  const dx = e.clientX - startX, dy = e.clientY - startY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+  camX = camStartX - dx; camY = camStartY - dy;
+  const now = performance.now(), dt = now - lastT;
+  if (dt > 0) { vX = (e.clientX - lastX) / dt * 16; vY = (e.clientY - lastY) / dt * 16; }
+  lastX = e.clientX; lastY = e.clientY; lastT = now;
+  render();
+});
+function endDrag() {
+  if (!isDown) return;
+  isDown = false;
+  viewport.classList.remove('dragging');
+  const friction = 0.94;
+  function step() {
+    vX *= friction; vY *= friction;
+    if (Math.abs(vX) < 0.3 && Math.abs(vY) < 0.3) { momRAF = null; return; }
+    camX -= vX; camY -= vY; render();
+    momRAF = requestAnimationFrame(step);
+  }
+  if (Math.abs(vX) > 0.5 || Math.abs(vY) > 0.5) step();
+}
+viewport.addEventListener('pointerup', (e) => {
+  const wasTap = isDown && !moved;
+  endDrag();
+  if (wasTap) {
+    const cell = e.target.closest && e.target.closest('.kc-cell');
+    if (cell && cell.dataset.name) openThanks(cell.dataset.name);
+  }
+});
+viewport.addEventListener('pointercancel', endDrag);
+
+// ───── Thank-you popup ─────
+const overlay = document.getElementById('kcOverlay');
+const nameEl = document.getElementById('kcName');
+function openThanks(name) {
+  nameEl.textContent = name;
+  overlay.classList.add('active');
+}
+function closeThanks() { overlay.classList.remove('active'); }
+document.getElementById('kcClose').addEventListener('click', closeThanks);
+overlay.addEventListener('click', (e) => { if (e.target === overlay) closeThanks(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeThanks(); });
+
+// ───── Init ─────
+function initNavMenu() {
+  const menu = document.getElementById('navMenu');
+  const burger = document.getElementById('heroBurger');
+  const closeBtn = document.getElementById('navMenuClose');
+  if (!menu || !burger) return;
+  burger.addEventListener('click', () => menu.classList.add('active'));
+  closeBtn.addEventListener('click', () => menu.classList.remove('active'));
+  menu.querySelectorAll('.nav-menu-links a').forEach((a) =>
+    a.addEventListener('click', () => menu.classList.remove('active')));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') menu.classList.remove('active'); });
+}
+
+function init() {
+  readSizes();
+  initNavMenu();
+  revealSeed = (Math.random() * 2147483647) | 0;
+  isRevealing = true;
+  render();
+  setTimeout(() => { isRevealing = false; }, 2600);
+}
+window.addEventListener('resize', () => { readSizes(); render(); });
+init();
+</script>
+</body>
+</html>
