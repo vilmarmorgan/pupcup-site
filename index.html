@@ -62,6 +62,11 @@
     --accent: #f5c542;
     --text: #f0ece4;
     --text-muted: #9a9a9e;
+    /* Themeable brand buttons (Rated Arf overrides these) */
+    --buy-bg: #ff8d1e;
+    --buy-text: #231f20;
+    --howto-bg: #231f20;
+    --howto-text: #ffffff;
   }
 
   html, body {
@@ -194,6 +199,12 @@
   }
   .nav-menu-close:hover { background: rgba(255, 255, 255, 0.22); }
   .nav-menu-close:active { transform: scale(0.94); }
+
+  /* Card-only popup mode (Rated Arf pre-launch): show just the centered card. */
+  .mode-card-only .overlay-right { display: none; }
+  .mode-card-only .overlay-left { flex: 1 1 100%; }
+  .mode-card-only .overlay-info { display: none; }
+  .mode-card-only .overlay-shop-btn { display: none; }
   .hero-btn {
     display: inline-flex;
     align-items: center;
@@ -211,10 +222,10 @@
   }
   .hero-btn:hover { transform: scale(1.04); }
   .hero-btn:active { transform: scale(0.96); }
-  .hero-btn-howto { background: #231f20; color: #ffffff; }
+  .hero-btn-howto { background: var(--howto-bg); color: var(--howto-text); }
   .hero-btn-buy {
-    background: #ff8d1e;
-    color: #231f20;
+    background: var(--buy-bg);
+    color: var(--buy-text);
     font-weight: 700;
     box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
   }
@@ -828,8 +839,8 @@
       z-index: 100;
       padding: 13px 30px;
       border-radius: 100px;
-      background: #231f20;
-      color: #ffffff;
+      background: var(--howto-bg);
+      color: var(--howto-text);
       font-weight: 600;
       font-size: 15px;
       text-decoration: none;
@@ -1906,6 +1917,16 @@
 <!-- Auto-generated list of videos per folder (see scripts/gen-video-manifest.py). -->
 <script src="images/videos/manifest.js"></script>
 <script>
+/* ═══════════════════════════════════════════════════
+   SITE CONFIG: the only thing that differs between
+   Pupcup and its sibling site (Rated Arf). Everything
+   below this block is shared, identical code.
+   ═══════════════════════════════════════════════════ */
+const CONFIG = {
+  brand: 'Pupcup',
+  popupMode: 'full',   // 'full' = card + right panel (marketing/media) | 'card-only' = just the centered card, no right panel/info/boop
+};
+
 /* ═══════════════════════════════════════════════════
    CARD & MEDIA DATA
    ═══════════════════════════════════════════════════
@@ -3125,6 +3146,14 @@ function openOverlay(item) {
   originalOverlayItem = item;
   setLeftPanel(item);
 
+  // Card-only mode (e.g. Rated Arf pre-launch): show just the centered card.
+  // The right panel, info line, boop, and shop button are hidden via .mode-card-only CSS.
+  if (CONFIG.popupMode === 'card-only') {
+    overlay.classList.add('active');
+    lockBodyScroll();
+    return;
+  }
+
   // Build right panel based on item type
   const rightEl = document.getElementById('overlayRight');
 
@@ -3991,6 +4020,7 @@ function initNavMenu() {
 }
 
 function init() {
+  if (CONFIG.popupMode === 'card-only') document.documentElement.classList.add('mode-card-only');
   loadClass(currentClass);
   window.addEventListener('resize', () => render());
   initTapHint();
