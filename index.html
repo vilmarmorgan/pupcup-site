@@ -179,6 +179,9 @@
   }
   .nav-menu-links a:hover { color: var(--accent, #f5c542); }
   .nav-menu-links a:active { transform: scale(0.96); }
+  /* "Rated Arf" cross-link + tagline at the bottom of the menu */
+  .nav-menu-arf { display: flex; flex-direction: column; align-items: center; }
+  .nav-menu-arf-sub { font-size: 16px; font-weight: 500; color: var(--text-muted, #9a9a9e); margin-top: 8px; }
   .nav-menu-close {
     position: fixed;
     top: 28px;
@@ -855,6 +858,7 @@
     .overlay::-webkit-scrollbar { display: none; }
     .overlay-panels { flex-direction: column; height: auto; min-height: 100%; }
     .overlay-left { flex: none; height: auto; padding: 80px 16px 16px; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; }
+    .mode-card-only .overlay-left { flex: none; padding-top: 90px; }
     .overlay::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: 74px; background: rgba(20, 20, 24, 0.2); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); z-index: 208; }
     .overlay-card-frame { padding: 0 8px; }
     .overlay-card { max-width: calc(100vw - 48px); }
@@ -1707,6 +1711,7 @@
     <a href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
     <a href="howtoplay/">How to Play</a>
     <a href="kickstarter/">Kickstarter Backers</a>
+    <div class="nav-menu-arf"><a href="https://ratedarf.com/" rel="noopener">Rated Arf</a><span class="nav-menu-arf-sub">Adult-Only NSFW Game</span></div>
   </nav>
 </div>
 
@@ -2458,6 +2463,8 @@ let camStartX, camStartY;
 let hasMoved = false;
 let dragStartTime = 0;
 let lastInputWasTouch = false;
+let momentumActive = false;
+let stoppedMomentum = false;
 
 let velX = 0, velY = 0;
 let lastMoveTime = 0, lastMoveX = 0, lastMoveY = 0;
@@ -2472,6 +2479,8 @@ function startDrag(px, py) {
   lastMoveX = px; lastMoveY = py;
   lastMoveTime = performance.now();
   velX = 0; velY = 0;
+  stoppedMomentum = momentumActive;   // did this touch interrupt a moving scroll?
+  momentumActive = false;
   if (momentumRAF) cancelAnimationFrame(momentumRAF);
   viewport.classList.add('dragging');
 }
@@ -2499,7 +2508,7 @@ function moveDrag(px, py) {
 function endDrag() {
   isDragging = false;
   viewport.classList.remove('dragging');
-  if (Math.abs(velX) > 0.5 || Math.abs(velY) > 0.5) applyMomentum();
+  if (Math.abs(velX) > 0.5 || Math.abs(velY) > 0.5) { momentumActive = true; applyMomentum(); }
 }
 
 function applyMomentum() {
@@ -2509,6 +2518,8 @@ function applyMomentum() {
   render();
   if (Math.abs(velX) > 0.1 || Math.abs(velY) > 0.1) {
     momentumRAF = requestAnimationFrame(applyMomentum);
+  } else {
+    momentumActive = false;
   }
 }
 
@@ -3133,9 +3144,10 @@ function buildRuleMediaPanel(rightEl, ruleMedia) {
 // ── Main overlay open ──
 function openOverlay(item) {
   if (hasMoved) return;
-  // On touch, only open on a quick, deliberate tap — a slow/hesitant touch while
-  // panning shouldn't open a card. (Desktop clicks are unaffected.)
-  if (lastInputWasTouch && performance.now() - dragStartTime > 300) return;
+  // On touch, only open on a quick, deliberate tap. A tap that stops a moving
+  // scroll, or a slow/hesitant touch while panning, shouldn't open a card.
+  if (lastInputWasTouch && stoppedMomentum) return;
+  if (lastInputWasTouch && performance.now() - dragStartTime > 250) return;
   stopHintPulse();  // a card was opened; the tap hint has done its job
   if (item.type === 'video') { openVideoOverlay(item); return; }
   if (item.type === 'photo') { openPhotoOverlay(item); return; }
