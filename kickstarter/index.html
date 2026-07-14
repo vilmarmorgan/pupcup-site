@@ -103,6 +103,9 @@
   }
   .nav-menu-links a:hover { color: var(--accent, #f5c542); }
   .nav-menu-links a:active { transform: scale(0.96); }
+  /* "Rated Arf" cross-link + tagline (injected by shared /nav.js) */
+  .nav-menu-arf { display: flex; flex-direction: column; align-items: center; }
+  .nav-menu-arf-sub { font-size: 16px; font-weight: 500; color: var(--text-muted, #9a9a9e); margin-top: 8px; }
   .nav-menu-close {
     position: fixed; top: 28px; left: 28px; width: 66px; height: 66px;
     border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.12);
@@ -352,12 +355,8 @@
 <!-- Full-screen navigation menu -->
 <div class="nav-menu" id="navMenu">
   <button class="nav-menu-close" id="navMenuClose" aria-label="Close menu">&times;</button>
-  <nav class="nav-menu-links">
-    <a href="../index.html">Home</a>
-    <a href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
-    <a href="../howtoplay/">How to Play</a>
-    <a href="index.html">Kickstarter Backers</a>
-  </nav>
+  <nav class="nav-menu-links"></nav>
+  <script src="/nav.js"></script>
 </div>
 
 <!-- Prism glow behind the whole grid -->
