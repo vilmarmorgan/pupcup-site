@@ -147,29 +147,6 @@
   /* Mobile-only bottom How to Play button */
   .mobile-howto { display: none; }
 
-  /* Animated prism drifting behind the How to Play button text (mobile button is
-     display:none on desktop, so these only ever show on mobile). */
-  .mh-prism { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-  .mh-text { position: relative; z-index: 1; }
-  .mh-blob {
-    position: absolute; top: -50%; left: 0;
-    width: 55%; height: 200%;
-    border-radius: 50%;
-    filter: blur(13px);
-    opacity: 0.75;
-    mix-blend-mode: screen;
-    will-change: transform;
-  }
-  .mh-blob.mb1 { background: radial-gradient(ellipse at center, #ff2d78 0%, rgba(255,45,120,0) 70%); animation: mhDrift1 6s ease-in-out infinite; }
-  .mh-blob.mb2 { background: radial-gradient(ellipse at center, #1e8fff 0%, rgba(30,143,255,0) 70%); animation: mhDrift2 7.5s ease-in-out infinite; }
-  .mh-blob.mb3 { background: radial-gradient(ellipse at center, #37d67a 0%, rgba(55,214,122,0) 70%); animation: mhDrift3 5.5s ease-in-out infinite; }
-  .mh-blob.mb4 { background: radial-gradient(ellipse at center, #ffcf3f 0%, rgba(255,207,63,0) 70%); animation: mhDrift4 8.5s ease-in-out infinite; }
-  @keyframes mhDrift1 { 0%,100%{transform:translateX(-70%)} 50%{transform:translateX(160%)} }
-  @keyframes mhDrift2 { 0%,100%{transform:translateX(170%)} 50%{transform:translateX(0%)} }
-  @keyframes mhDrift3 { 0%,100%{transform:translateX(40%)} 50%{transform:translateX(200%)} }
-  @keyframes mhDrift4 { 0%,100%{transform:translateX(90%)} 50%{transform:translateX(-40%)} }
-  @media (prefers-reduced-motion: reduce) { .mh-blob { animation: none !important; } }
-
   /* Full-screen navigation menu */
   .nav-menu {
     position: fixed;
@@ -267,10 +244,35 @@
     line-height: 1.35;
   }
 
+  /* ───── Animated prism glow behind the card grid ───── */
+  .kc-bg-prism {
+    position: fixed; inset: 0; z-index: 0; overflow: hidden;
+    background: var(--bg); pointer-events: none;
+  }
+  .kc-blob {
+    position: absolute; top: 0; left: 0;
+    width: 98vmax; height: 40vmax; border-radius: 50%;
+    filter: blur(70px); opacity: 0.5; mix-blend-mode: screen; will-change: transform;
+  }
+  .kc-blob.b1 { background: radial-gradient(ellipse at center, #ff2d78 0%, rgba(255,45,120,0) 60%); animation: kcDrift1 20s ease-in-out infinite; }
+  .kc-blob.b2 { background: radial-gradient(ellipse at center, #1e8fff 0%, rgba(30,143,255,0) 60%); animation: kcDrift2 25s ease-in-out infinite; }
+  .kc-blob.b3 { background: radial-gradient(ellipse at center, #37d67a 0%, rgba(55,214,122,0) 60%); animation: kcDrift3 22s ease-in-out infinite; }
+  .kc-blob.b4 { background: radial-gradient(ellipse at center, #ffcf3f 0%, rgba(255,207,63,0) 60%); animation: kcDrift4 27s ease-in-out infinite; }
+  .kc-blob.b5 { background: radial-gradient(ellipse at center, #ff8d1e 0%, rgba(255,141,30,0) 60%); animation: kcDrift5 23s ease-in-out infinite; }
+  .kc-blob.b6 { background: radial-gradient(ellipse at center, #9b5cff 0%, rgba(155,92,255,0) 60%); animation: kcDrift6 31s ease-in-out infinite; }
+  @keyframes kcDrift1 { 0%,100%{transform:translate(-34vw,-30vh) rotate(15deg) scale(1,1)} 33%{transform:translate(38vw,4vh) rotate(-25deg) scale(1.3,0.7)} 66%{transform:translate(64vw,52vh) rotate(55deg) scale(0.85,1.25)} }
+  @keyframes kcDrift2 { 0%,100%{transform:translate(60vw,-28vh) rotate(-20deg) scale(1.1,0.9)} 33%{transform:translate(18vw,44vh) rotate(30deg) scale(0.8,1.3)} 66%{transform:translate(-30vw,20vh) rotate(70deg) scale(1.25,0.8)} }
+  @keyframes kcDrift3 { 0%,100%{transform:translate(52vw,58vh) rotate(40deg) scale(0.9,1.15)} 33%{transform:translate(-20vw,64vh) rotate(-30deg) scale(1.3,0.75)} 66%{transform:translate(6vw,-24vh) rotate(10deg) scale(1,1)} }
+  @keyframes kcDrift4 { 0%,100%{transform:translate(-28vw,50vh) rotate(-10deg) scale(1.2,0.85)} 33%{transform:translate(46vw,60vh) rotate(45deg) scale(0.85,1.3)} 66%{transform:translate(58vw,-16vh) rotate(-40deg) scale(1.15,0.9)} }
+  @keyframes kcDrift5 { 0%,100%{transform:translate(20vw,-30vh) rotate(25deg) scale(1,1.1)} 33%{transform:translate(62vw,30vh) rotate(-35deg) scale(1.3,0.75)} 66%{transform:translate(-24vw,56vh) rotate(60deg) scale(0.9,1.25)} }
+  @keyframes kcDrift6 { 0%,100%{transform:translate(-30vw,10vh) rotate(-30deg) scale(1.15,0.9)} 33%{transform:translate(30vw,64vh) rotate(20deg) scale(0.85,1.3)} 66%{transform:translate(64vw,-20vh) rotate(-55deg) scale(1.25,0.8)} }
+  @media (prefers-reduced-motion: reduce) { .kc-blob { animation: none !important; } }
+
   /* ───── Infinite Canvas ───── */
   #canvas-viewport {
     position: absolute;
     inset: 0;
+    z-index: 1;
     overflow: hidden;
     cursor: grab;
   }
@@ -866,8 +868,6 @@
       font-size: 15px;
       text-decoration: none;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-      overflow: hidden;
-      isolation: isolate;
     }
     .nav-menu-links a { font-size: 40px; }
     .nav-menu-links { gap: 40px; }
@@ -1736,13 +1736,23 @@
 </div>
 
 <!-- Mobile-only How to Play button pinned to the bottom -->
-<a class="mobile-howto" href="howtoplay/"><span class="mh-prism" aria-hidden="true"><span class="mh-blob mb1"></span><span class="mh-blob mb2"></span><span class="mh-blob mb3"></span><span class="mh-blob mb4"></span></span><span class="mh-text">How to Play</span></a>
+<a class="mobile-howto" href="howtoplay/">How to Play</a>
 
 <!-- Full-screen navigation menu -->
 <div class="nav-menu" id="navMenu">
   <button class="nav-menu-close" id="navMenuClose" aria-label="Close menu">&times;</button>
   <nav class="nav-menu-links"></nav>
   <script src="nav.js"></script>
+</div>
+
+<!-- Animated prism glow behind the grid -->
+<div class="kc-bg-prism" aria-hidden="true">
+  <span class="kc-blob b1"></span>
+  <span class="kc-blob b2"></span>
+  <span class="kc-blob b3"></span>
+  <span class="kc-blob b4"></span>
+  <span class="kc-blob b5"></span>
+  <span class="kc-blob b6"></span>
 </div>
 
 <!-- Infinite Canvas -->
