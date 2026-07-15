@@ -1992,6 +1992,11 @@ const CARD_DATA = {
         { value: "-20", image: "cards-web/founding/penalty-20.jpg", imageHD: "cards-hd/founding/penalty-20.jpg" }
       ] },
 
+    // ── POINT Cards (one each of 10 / 20 / 30 shown per community) ──
+    { type: "card", dogName: "10 Points", ownerName: "", cardType: "point", image: "cards-web/founding/point-10.jpg", imageHD: "cards-hd/founding/point-10.jpg" },
+    { type: "card", dogName: "20 Points", ownerName: "", cardType: "point", image: "cards-web/founding/point-20.jpg", imageHD: "cards-hd/founding/point-20.jpg" },
+    { type: "card", dogName: "30 Points", ownerName: "", cardType: "point", image: "cards-web/founding/point-30.jpg", imageHD: "cards-hd/founding/point-30.jpg" },
+
     // ── Photos (12 total, 6 randomly shown per load) ──
     { type: "photo", caption: "Game Night Chaos",       credit: "The Morgan Family", image: null, rule: "Frida Puplo" },
     { type: "photo", caption: "Steal Face Reaction",    credit: "Marcus L.",         image: null, rule: "Pupquiao" },
@@ -2805,8 +2810,14 @@ const BLOCK_DESCRIPTION = [
 
 // NOTE: copy for review — Vilmar to finalize.
 const PENALTY_DESCRIPTION = [
-  `Break a rule, draw a Penalty. Get caught breaking a rule and you pull a penalty card at random from the deck, no choosing, no peeking, no mercy.`,
-  `You might get off easy with a -5, or watch your score crater with a -20. Same little slip-up either way, it's pure luck of the draw. Cross your paws. 🐾`
+  `Break a rule, draw a Penalty card. Get caught breaking a rule and you pull one at random from the deck, no choosing, no peeking, no mercy.`,
+  `You might get off easy with -5 points, or watch your score crater with -20 points. Same little slip-up either way, it's pure luck of the draw. Cross your paws. 🐾`
+];
+
+// NOTE: copy for review — Vilmar to finalize. Shown on all three point cards.
+const POINT_DESCRIPTION = [
+  `Point cards are how you win. Collect and play them to build your score, because the first to reach the finish line takes the round.`,
+  `A standard race runs to 100 points. Big group? Drop the target to around 80 to keep it snappy. Small crew? Stretch it to 150 or even 200 for a longer showdown. Set your finish line, then go get those points. 🏁`
 ];
 
 function buildMarketingPanel(rightEl, item) {
@@ -2816,9 +2827,10 @@ function buildMarketingPanel(rightEl, item) {
   const isBlock   = item && item.cardType === 'block';
   const isRule    = item && item.cardType === 'rule';
   const isPenalty = item && item.cardType === 'penalty';
+  const isPoint   = item && item.cardType === 'point';
 
   // Fallback for untagged media
-  if (!isSteal && !isBlock && !isRule && !isPenalty) {
+  if (!isSteal && !isBlock && !isRule && !isPenalty && !isPoint) {
     const wrap = document.createElement('div');
     wrap.className = 'right-marketing';
     const box1 = document.createElement('div');
@@ -2833,8 +2845,8 @@ function buildMarketingPanel(rightEl, item) {
     return;
   }
 
-  const accentColor = isSteal ? '#f5c542' : isBlock ? '#e74c3c' : isPenalty ? '#e67e22' : '#4f8ef7';
-  const typeLabel   = isSteal ? 'STEAL'  : isBlock ? 'BLOCK'  : isPenalty ? 'PENALTY' : 'RULE';
+  const accentColor = isSteal ? '#f5c542' : isBlock ? '#e74c3c' : isPenalty ? '#e67e22' : isPoint ? '#2ecc71' : '#4f8ef7';
+  const typeLabel   = isSteal ? 'STEAL'  : isBlock ? 'BLOCK'  : isPenalty ? 'PENALTY' : isPoint ? 'POINTS' : 'RULE';
 
   const wrap = document.createElement('div');
   wrap.className = 'rp-content';
@@ -2867,6 +2879,7 @@ function buildMarketingPanel(rightEl, item) {
   else if (isSteal) descParas = STEAL_DESCRIPTION;
   else if (isBlock) descParas = BLOCK_DESCRIPTION;
   else if (isPenalty) descParas = PENALTY_DESCRIPTION;
+  else if (isPoint) descParas = POINT_DESCRIPTION;
   if (descParas) {
     // Personalized copy: each paragraph rendered separately
     descEl.innerHTML = descParas.map(p => `<p>${p}</p>`).join('');
@@ -2924,7 +2937,7 @@ function buildMarketingPanel(rightEl, item) {
 
   // ── 4. Banner ──
   const bannerSrc  = isSteal ? 'images/banner-steal.png.png' : isBlock ? 'images/banner-block.png.png' : 'images/banner-rule.png.png';
-  const bannerHref = (isRule || isPenalty) ? 'https://shop.playpupcup.com/' : 'https://playpupcup.com/vip';
+  const bannerHref = (isRule || isPenalty || isPoint) ? 'https://shop.playpupcup.com/' : 'https://playpupcup.com/vip';
   const bannerLink = document.createElement('a');
   bannerLink.className = 'rp-banner-link';
   bannerLink.href = bannerHref;
