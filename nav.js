@@ -57,14 +57,16 @@
     style.textContent = [
       '.nav-menu-footer{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;',
       'justify-content:space-between;flex-wrap:wrap;gap:10px 24px;padding:18px 40px;',
-      'border-top:1px solid rgba(255,255,255,0.12);font-size:12px;line-height:1.45;',
+      'border-top:1px solid rgba(255,255,255,0.12);font-size:14px;line-height:1.45;',
       'color:var(--text-muted,#9a9a9e);}',
       '.nav-menu-footer-left{display:flex;flex-wrap:wrap;gap:4px 20px;flex:1 1 340px;min-width:0;}',
       '.nav-menu-footer .nmf-copy{white-space:nowrap;}',
       '.nav-menu-footer-right{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}',
       '.nav-menu-footer .nmf-heart{display:inline-block;vertical-align:middle;}',
-      '@media (max-width:600px){.nav-menu-footer{padding:14px 18px;font-size:11px;gap:8px;}',
-      '.nav-menu-footer-left{flex-basis:100%;}}'
+      '@media (max-width:600px){.nav-menu-footer{padding:14px 18px;font-size:14px;gap:8px;}',
+      '.nav-menu-footer-left{flex-basis:100%;}',
+      '.nav-menu{align-items:flex-start;}',
+      '.nav-menu-links{margin-top:80px;}}'
     ].join('');
     document.head.appendChild(style);
   }
