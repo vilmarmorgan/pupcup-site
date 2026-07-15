@@ -9,7 +9,8 @@ window.VIDEO_MANIFEST = {
     "pupquiao": [
       "images/videos/rules/pupquiao/nopointing1.MP4",
       "images/videos/rules/pupquiao/nopointing2.mp4",
-      "images/videos/rules/pupquiao/nopointing3.mp4"
+      "images/videos/rules/pupquiao/nopointing3.mp4",
+      "images/videos/rules/pupquiao/nopointing4.mp4"
     ],
     "pupstein": [
       "images/videos/rules/pupstein/bark1.MP4",
