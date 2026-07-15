@@ -247,7 +247,7 @@
   /* ───── Animated prism glow behind the card grid ───── */
   .kc-bg-prism {
     position: fixed; inset: 0; z-index: 0; overflow: hidden;
-    background: var(--bg); pointer-events: none;
+    background: var(--bg); pointer-events: none; isolation: isolate;
   }
   .kc-blob {
     position: absolute; top: 0; left: 0;

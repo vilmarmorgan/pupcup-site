@@ -80,7 +80,7 @@
       '.nav-menu-footer-left{flex-basis:100%;}',
       '.nav-menu{align-items:flex-start;}',
       '.nav-menu-links{margin-top:80px;}}',
-      '.nav-menu-prism{position:absolute;inset:0;overflow:hidden;z-index:0;background:#1e2028;pointer-events:none;}',
+      '.nav-menu-prism{position:absolute;inset:0;overflow:hidden;z-index:0;background:#1e2028;pointer-events:none;isolation:isolate;}',
       '.nav-menu-links{position:relative;z-index:1;}',
       '.nav-menu-close{z-index:2;}',
       '.nav-menu .kc-blob{position:absolute;top:0;left:0;width:98vmax;height:40vmax;border-radius:50%;filter:blur(70px);opacity:0.5;mix-blend-mode:screen;will-change:transform;}',
