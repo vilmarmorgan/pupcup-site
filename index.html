@@ -2545,6 +2545,7 @@ viewport.addEventListener('contextmenu', (e) => e.preventDefault());
     try {
       v.setAttribute('controlsList', 'nodownload noplaybackrate');
       v.disablePictureInPicture = true;
+      v.loop = true;   // videos repeat automatically instead of stopping at the end
     } catch (e) {}
   }
   document.querySelectorAll('video').forEach(harden);
