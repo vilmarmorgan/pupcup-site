@@ -37,7 +37,7 @@
   var FOOTER_HTML =
     '<div class="nav-menu-footer-left">' +
       '<span class="nmf-copy">©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>' +
-      '<span class="nmf-note">Please note: the videos shown on this site include moments from the early building stages of Pupcup. The cards you see in those videos may be prototypes and not the final product.</span>' +
+      '<span class="nmf-note">Please note: The videos shown on this site may include behind-the-scenes moments from the early building stages of Pupcup. The cards you see in those videos may be prototypes and not the final product.</span>' +
     '</div>' +
     '<div class="nav-menu-footer-right">Made with ' +
       '<svg class="nmf-heart" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>' +
@@ -74,8 +74,8 @@
       '.nav-menu-footer .nmf-copy{white-space:nowrap;}',
       '.nav-menu-footer-right{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}',
       '.nav-menu-footer .nmf-heart{display:inline-block;vertical-align:middle;}',
-      '.nav-menu-footer a{color:inherit;text-decoration:none;}',
-      '.nav-menu-footer a:hover{color:#f0ece4;text-decoration:underline;}',
+      '.nav-menu-footer a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;}',
+      '.nav-menu-footer a:hover{color:#f0ece4;}',
       '@media (max-width:600px){.nav-menu-footer{padding:14px 18px;font-size:14px;gap:8px;}',
       '.nav-menu-footer-left{flex-basis:100%;}',
       '.nav-menu{align-items:flex-start;}',
