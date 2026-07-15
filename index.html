@@ -3364,11 +3364,17 @@ function layoutVoCarousel(animate) {
     const vid = el.querySelector('video');
     if (vid) {
       if (rel === 0) {
-        // Centered video: does NOT autoplay. The viewer taps it to start it
-        // (with sound), and it loops at the end. Nothing plays until tapped.
+        // The viewer clicked a video to open this popup, so autoplay the
+        // centered one with sound and loop it. (Grid and card thumbnails are
+        // still posters — nothing plays until a video is actually opened.)
         vid.controls = true;
         vid.loop = true;
         vid.muted = false;
+        vid.play().catch(() => {
+          // Sound-on autoplay blocked → play muted so it still starts.
+          vid.muted = true;
+          vid.play().catch(() => {});
+        });
       } else {
         // Off to the side: silent, no controls, paused.
         vid.muted = true; vid.controls = false; vid.pause();
