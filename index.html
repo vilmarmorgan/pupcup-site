@@ -2534,6 +2534,32 @@ viewport.addEventListener('touchmove', (e) => {
 viewport.addEventListener('touchend', () => endDrag());
 viewport.addEventListener('contextmenu', (e) => e.preventDefault());
 
+// ── Discourage casual video saving/downloading across the whole site ──
+// Removes the right-click "Save Video As / Copy Video / Open in New Tab" menu,
+// hides the download button in native controls, and disables Picture-in-Picture.
+// Covers videos created dynamically (overlay carousel, lightbox) via an observer.
+// Note: this only stops casual saves — a determined user can still capture a
+// stream the browser has to load to play it.
+(function protectVideos() {
+  function harden(v) {
+    try {
+      v.setAttribute('controlsList', 'nodownload noplaybackrate');
+      v.disablePictureInPicture = true;
+    } catch (e) {}
+  }
+  document.querySelectorAll('video').forEach(harden);
+  new MutationObserver((muts) => {
+    muts.forEach((m) => m.addedNodes.forEach((n) => {
+      if (n.nodeType !== 1) return;
+      if (n.tagName === 'VIDEO') harden(n);
+      else if (n.querySelectorAll) n.querySelectorAll('video').forEach(harden);
+    }));
+  }).observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target && e.target.closest && e.target.closest('video')) e.preventDefault();
+  });
+})();
+
 /* ───── Overlay (Two-Panel) ───── */
 let activeOverlayVideo = null;
 let currentOverlayItem = null;
