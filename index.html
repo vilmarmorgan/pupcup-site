@@ -890,6 +890,7 @@
     .overlay-close { top: 10px; left: 10px; width: 54px; height: 54px; font-size: 27px; }
     .vo-arrow { display: none !important; }
     .vo-bottom { gap: 8px; padding: 8px 16px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+    .vo-carousel-stage { bottom: calc(96px + env(safe-area-inset-bottom)); }
     .overlay-shop-btn {
       display: flex;
       align-items: center;
@@ -1222,6 +1223,17 @@
   .vo-carousel-item video {
     width: 100%; height: 100%;
     object-fit: cover; display: block;
+  }
+  /* Pupcup logo watermark, centered over each video */
+  .vo-watermark {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px; height: auto;
+    opacity: 0.3;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 3;
   }
   /* ── Arrow nav buttons ── */
   .vo-arrow {
@@ -3340,6 +3352,12 @@ function buildVoCarousel() {
       vid.disablePictureInPicture = true;
       vid.setAttribute('controlsList', 'nodownload noplaybackrate');
       el.appendChild(vid);
+      const wm = document.createElement('img');
+      wm.className = 'vo-watermark';
+      wm.src = 'images/logo.svg';
+      wm.alt = '';
+      wm.setAttribute('aria-hidden', 'true');
+      el.appendChild(wm);
     } else {
       const icon = document.createElement('div');
       icon.className = 'vo-play-icon';
@@ -3383,7 +3401,7 @@ function layoutVoCarousel(animate) {
   const H = stage.offsetHeight;
   if (!W || !H || !track) return;
 
-  const centerH = H * 0.90;
+  const centerH = H * (W <= 600 ? 0.98 : 0.90);
   const centerW = centerH * (9 / 16);
 
   const scaleAt = (rel) => {
@@ -3615,7 +3633,7 @@ function layoutPoCarousel(animate) {
   const H = stage.offsetHeight;
   if (!W || !H || !track) return;
 
-  const centerH = H * 0.90;
+  const centerH = H * (W <= 600 ? 0.98 : 0.90);
   const centerW = centerH * (9 / 16);
 
   const scaleAt = (rel) => {
