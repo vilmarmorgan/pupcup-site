@@ -2714,6 +2714,12 @@ function selectVideosFor(item, count) {
   } else if (type === 'block') {
     primary = (m.block || []).slice();
     backfill = (m.general || []).concat(allRuleClips, m.steal || []);
+  } else if (type === 'point') {
+    // Point cards: show block2 first (as soon as the manifest includes it),
+    // then fill the rest with a random mix of everything else.
+    const block2 = everything.find(p => /\/block2\.[^/]+$/i.test(p));
+    primary = block2 ? [block2] : [];
+    backfill = shuffle(everything.filter(p => p !== block2));
   } else {
     const slug = RULE_DOG_SLUG[item && item.dogName];
     primary = (rules[slug] || []).slice();
