@@ -17,16 +17,17 @@
     { label: 'Buy Now', href: 'https://shop.playpupcup.com/', external: true },
     { label: 'How to Play', href: '/howtoplay/' },
     { label: 'Kickstarter Backers', href: '/kickstarter/' },
-    { label: 'Rated Arf', href: 'https://ratedarf.com/', external: true, sub: 'Adult-Only NSFW Game' }
+    { label: 'Rated Arf', href: 'https://ratedarf.com/', external: true, newTab: true, sub: 'Adult-Only NSFW Game' }
   ];
 
   var html = LINKS.map(function (l) {
-    var rel = l.external ? ' rel="noopener"' : '';
+    var attrs = l.external ? ' rel="noopener"' : '';
+    if (l.newTab) attrs += ' target="_blank"';
     if (l.sub) {
-      return '<div class="nav-menu-arf"><a href="' + l.href + '"' + rel + '>' + l.label + '</a>' +
+      return '<div class="nav-menu-arf"><a href="' + l.href + '"' + attrs + '>' + l.label + '</a>' +
              '<span class="nav-menu-arf-sub">' + l.sub + '</span></div>';
     }
-    return '<a href="' + l.href + '"' + rel + '>' + l.label + '</a>';
+    return '<a href="' + l.href + '"' + attrs + '>' + l.label + '</a>';
   }).join('\n    ');
 
   var nav = document.querySelector('.nav-menu-links');
