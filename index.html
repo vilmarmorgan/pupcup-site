@@ -1224,8 +1224,8 @@
     width: 100%; height: 100%;
     object-fit: cover; display: block;
   }
-  /* Pupcup logo watermark, centered over each video */
-  .vo-watermark {
+  /* Pupcup logo watermark, centered over any playing video */
+  .video-watermark {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
@@ -2634,6 +2634,16 @@ function pickPenaltyVariant(variants) {
   return bag[Math.floor(Math.random() * bag.length)];
 }
 
+// Pupcup logo watermark shown centered over any playing video.
+function makeWatermark() {
+  const wm = document.createElement('img');
+  wm.className = 'video-watermark';
+  wm.src = 'images/logo.svg';
+  wm.alt = '';
+  wm.setAttribute('aria-hidden', 'true');
+  return wm;
+}
+
 function setLeftPanel(item) {
   const mediaContainer = document.getElementById('overlayMedia');
   mediaContainer.innerHTML = '';
@@ -2688,6 +2698,7 @@ function setLeftPanel(item) {
       vid.src = item.video; vid.controls = true; vid.autoplay = true; vid.playsInline = true;
       vid.style.cssText = 'width:100%;aspect-ratio:2.75/3.75;object-fit:cover;background:#000;display:block;';
       mediaContainer.appendChild(vid);
+      mediaContainer.appendChild(makeWatermark());
       activeOverlayVideo = vid;
     } else {
       const ph = document.createElement('div');
@@ -3033,6 +3044,7 @@ function openVideoLightbox(rightEl, videoSrc) {
     vid.autoplay = true;
     vid.playsInline = true;
     videoArea.appendChild(vid);
+    videoArea.appendChild(makeWatermark());
   } else {
     const playIcon = document.createElement('div');
     playIcon.className = 'rp-vlb-play';
@@ -3352,12 +3364,7 @@ function buildVoCarousel() {
       vid.disablePictureInPicture = true;
       vid.setAttribute('controlsList', 'nodownload noplaybackrate');
       el.appendChild(vid);
-      const wm = document.createElement('img');
-      wm.className = 'vo-watermark';
-      wm.src = 'images/logo.svg';
-      wm.alt = '';
-      wm.setAttribute('aria-hidden', 'true');
-      el.appendChild(wm);
+      el.appendChild(makeWatermark());
     } else {
       const icon = document.createElement('div');
       icon.className = 'vo-play-icon';
