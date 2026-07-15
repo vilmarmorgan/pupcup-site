@@ -4,7 +4,9 @@ window.VIDEO_MANIFEST = {
     "frida-puplo": [
       "images/videos/rules/frida-puplo/nohead.MP4"
     ],
-    "k-pup": [],
+    "k-pup": [
+      "images/videos/rules/k-pup/teeth1.mp4"
+    ],
     "lady-puppa": [],
     "pupquiao": [
       "images/videos/rules/pupquiao/nopointing1.MP4",
