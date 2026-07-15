@@ -31,7 +31,8 @@ window.VIDEO_MANIFEST = {
     "images/videos/steal/steal2.MP4"
   ],
   "block": [
-    "images/videos/block/block1.mp4"
+    "images/videos/block/block1.mp4",
+    "images/videos/block/block2.mp4"
   ],
   "general": [
     "images/videos/general/general1.MP4",
