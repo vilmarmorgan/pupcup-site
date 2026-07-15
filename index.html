@@ -889,6 +889,7 @@
     .overlay-info { padding: 12px 8px 4px; }
     .overlay-close { top: 10px; left: 10px; width: 54px; height: 54px; font-size: 27px; }
     .vo-arrow { display: none !important; }
+    .vo-bottom { gap: 8px; padding: 8px 16px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
     .overlay-shop-btn {
       display: flex;
       align-items: center;
@@ -1151,7 +1152,7 @@
   .video-overlay {
     position: fixed;
     top: 0; left: 0;
-    width: 100vw; height: 100vh;
+    width: 100vw; height: 100vh; height: 100dvh;
     z-index: 200;
     /* Solid dark-gray backdrop (fully opaque) so the page grid never shows
        through behind the faded side videos. */
