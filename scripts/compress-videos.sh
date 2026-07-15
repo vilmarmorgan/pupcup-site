@@ -98,15 +98,18 @@ echo "Done. Compressed/updated: $processed, skipped (already done): $skipped"
 # The grid shows a still image for each video. A real poster image renders
 # reliably on every browser, including iOS Safari, which often refuses to paint
 # a video's own frame as a thumbnail. For every clip we ensure a <name>.jpg
-# poster exists, regenerating it whenever the video is newer than its poster.
+# poster exists, generating one ONLY when it is missing. An existing .jpg is
+# treated as a dedicated, hand-provided thumbnail and is never overwritten.
 # The site derives the poster path by swapping the video extension for .jpg,
-# so no manifest change is needed.
+# so no manifest change is needed. To refresh an auto-generated poster, delete
+# the .jpg and let this step rebuild it.
 echo "Generating video posters..."
 posters=0
 while IFS= read -r -d '' v; do
   poster="${v%.*}.jpg"
-  # Up to date already? (poster exists and video is not newer than it)
-  if [ -f "$poster" ] && [ ! "$v" -nt "$poster" ]; then
+  # A poster already exists → treat it as a dedicated, hand-provided thumbnail
+  # and leave it alone. Auto-generation only fills clips that have no .jpg yet.
+  if [ -f "$poster" ]; then
     continue
   fi
   dur="$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$v" 2>/dev/null || echo 0)"
