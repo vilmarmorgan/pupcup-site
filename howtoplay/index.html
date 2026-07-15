@@ -126,11 +126,8 @@
     margin-bottom: 24px;
   }
   /* Only the "FAQ" heading sticks as the right column scrolls. */
+  /* Scrolls with the FAQ content (not sticky) so questions never overlap it. */
   .howto-right > .howto-heading {
-    position: sticky;
-    top: 0;
-    background: transparent;
-    z-index: 3;
     margin: 0 0 8px;
     padding: 225px 0 28px;
   }
@@ -235,7 +232,7 @@
       display: block;
       height: auto;
       max-width: 100%;
-      padding: 90px 18px 60px;
+      padding: 180px 18px 60px;
       gap: 0;
     }
     .howto-left {
