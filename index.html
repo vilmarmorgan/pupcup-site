@@ -1983,6 +1983,15 @@ const CARD_DATA = {
     { type: "card", dogName: "Lola",               ownerName: "Cocker Spaniel, Sylmar, CA",    cardType: "block", image: "cards-web/founding/card-27.jpg", imageHD: "cards-hd/founding/card-27.jpg" },
     { type: "card", dogName: "Duke",               ownerName: "Labrador Retriever, Chester, SD",cardType: "block", image: "cards-web/founding/card-28.jpg", imageHD: "cards-hd/founding/card-28.jpg" },
 
+    // ── PENALTY Card (grid shows the front; popup draws a random -5/-10/-20) ──
+    { type: "card", dogName: "Penalty", ownerName: "", cardType: "penalty",
+      image: "cards-web/founding/penalty.jpg", imageHD: "cards-hd/founding/penalty.jpg",
+      penaltyVariants: [
+        { value: "-5",  image: "cards-web/founding/penalty-5.jpg",  imageHD: "cards-hd/founding/penalty-5.jpg" },
+        { value: "-10", image: "cards-web/founding/penalty-10.jpg", imageHD: "cards-hd/founding/penalty-10.jpg" },
+        { value: "-20", image: "cards-web/founding/penalty-20.jpg", imageHD: "cards-hd/founding/penalty-20.jpg" }
+      ] },
+
     // ── Photos (12 total, 6 randomly shown per load) ──
     { type: "photo", caption: "Game Night Chaos",       credit: "The Morgan Family", image: null, rule: "Frida Puplo" },
     { type: "photo", caption: "Steal Face Reaction",    credit: "Marcus L.",         image: null, rule: "Pupquiao" },
@@ -2571,25 +2580,44 @@ const CLASS_LABELS = {
 };
 
 // ── Populate left panel with an item ──
+// Penalty cards draw a random value each open, weighted so -5 and -10 come up
+// more often than -20.
+function pickPenaltyVariant(variants) {
+  const bag = [];
+  variants.forEach(v => {
+    const weight = v.value === '-20' ? 1 : 2;   // -20 is rarer than -5 / -10
+    for (let i = 0; i < weight; i++) bag.push(v);
+  });
+  return bag[Math.floor(Math.random() * bag.length)];
+}
+
 function setLeftPanel(item) {
   const mediaContainer = document.getElementById('overlayMedia');
   mediaContainer.innerHTML = '';
   if (activeOverlayVideo) { activeOverlayVideo.pause(); activeOverlayVideo = null; }
 
   if (item.type === 'card') {
-    if (item.image) {
+    // Penalty cards draw a random point value (-5/-10/-20) each time they open;
+    // regular cards just use their own art and name.
+    let dispImageHD = item.imageHD, dispImage = item.image, dispName = item.dogName;
+    if (item.cardType === 'penalty' && item.penaltyVariants) {
+      const v = pickPenaltyVariant(item.penaltyVariants);
+      dispImageHD = v.imageHD; dispImage = v.image;
+      dispName = 'Penalty ' + v.value;
+    }
+    if (dispImage) {
       const img = document.createElement('img');
       // Use HD image for overlay (2x resolution), fall back to web thumbnail
-      img.src = item.imageHD || item.image;
-      img.alt = item.dogName;
+      img.src = dispImageHD || dispImage;
+      img.alt = dispName;
       mediaContainer.appendChild(img);
     } else {
       const ph = document.createElement('div');
       ph.className = 'card-placeholder-large';
-      ph.innerHTML = `<div class="paw">&#x1f43e;</div><div>${item.dogName}</div>`;
+      ph.innerHTML = `<div class="paw">&#x1f43e;</div><div>${dispName}</div>`;
       mediaContainer.appendChild(ph);
     }
-    document.getElementById('overlayDogName').textContent = item.dogName;
+    document.getElementById('overlayDogName').textContent = dispName;
 
     // "Proud pup of ..." line removed for all cards — location is shown on the card art
     const ownerEl = document.getElementById('overlayOwner');
@@ -2775,15 +2803,22 @@ const BLOCK_DESCRIPTION = [
   `Blocks can even cancel other Blocks, so a standoff can chain back and forth until someone blinks. There are only half as many Blocks as Steals though, so save yours for the cards actually worth defending. 🛡️`
 ];
 
+// NOTE: copy for review — Vilmar to finalize.
+const PENALTY_DESCRIPTION = [
+  `Break a rule, draw a Penalty. Get caught breaking a rule and you pull a penalty card at random from the deck, no choosing, no peeking, no mercy.`,
+  `You might get off easy with a -5, or watch your score crater with a -20. Same little slip-up either way, it's pure luck of the draw. Cross your paws. 🐾`
+];
+
 function buildMarketingPanel(rightEl, item) {
   rightEl.innerHTML = '';
 
-  const isSteal = item && item.cardType === 'steal';
-  const isBlock = item && item.cardType === 'block';
-  const isRule  = item && item.cardType === 'rule';
+  const isSteal   = item && item.cardType === 'steal';
+  const isBlock   = item && item.cardType === 'block';
+  const isRule    = item && item.cardType === 'rule';
+  const isPenalty = item && item.cardType === 'penalty';
 
   // Fallback for untagged media
-  if (!isSteal && !isBlock && !isRule) {
+  if (!isSteal && !isBlock && !isRule && !isPenalty) {
     const wrap = document.createElement('div');
     wrap.className = 'right-marketing';
     const box1 = document.createElement('div');
@@ -2798,8 +2833,8 @@ function buildMarketingPanel(rightEl, item) {
     return;
   }
 
-  const accentColor = isSteal ? '#f5c542' : isBlock ? '#e74c3c' : '#4f8ef7';
-  const typeLabel   = isSteal ? 'STEAL'  : isBlock ? 'BLOCK'  : 'RULE';
+  const accentColor = isSteal ? '#f5c542' : isBlock ? '#e74c3c' : isPenalty ? '#e67e22' : '#4f8ef7';
+  const typeLabel   = isSteal ? 'STEAL'  : isBlock ? 'BLOCK'  : isPenalty ? 'PENALTY' : 'RULE';
 
   const wrap = document.createElement('div');
   wrap.className = 'rp-content';
@@ -2831,6 +2866,7 @@ function buildMarketingPanel(rightEl, item) {
   if (isRule) descParas = RULE_DESCRIPTIONS[item && item.dogName];
   else if (isSteal) descParas = STEAL_DESCRIPTION;
   else if (isBlock) descParas = BLOCK_DESCRIPTION;
+  else if (isPenalty) descParas = PENALTY_DESCRIPTION;
   if (descParas) {
     // Personalized copy: each paragraph rendered separately
     descEl.innerHTML = descParas.map(p => `<p>${p}</p>`).join('');
@@ -2888,7 +2924,7 @@ function buildMarketingPanel(rightEl, item) {
 
   // ── 4. Banner ──
   const bannerSrc  = isSteal ? 'images/banner-steal.png.png' : isBlock ? 'images/banner-block.png.png' : 'images/banner-rule.png.png';
-  const bannerHref = isRule ? 'https://shop.playpupcup.com/' : 'https://playpupcup.com/vip';
+  const bannerHref = (isRule || isPenalty) ? 'https://shop.playpupcup.com/' : 'https://playpupcup.com/vip';
   const bannerLink = document.createElement('a');
   bannerLink.className = 'rp-banner-link';
   bannerLink.href = bannerHref;
