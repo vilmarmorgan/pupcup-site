@@ -1133,7 +1133,9 @@
     top: 0; left: 0;
     width: 100vw; height: 100vh;
     z-index: 200;
-    background: rgba(0, 0, 0, 0.92);
+    /* Solid dark-gray backdrop (fully opaque) so the page grid never shows
+       through behind the faded side videos. */
+    background: var(--bg, #1e2028);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
