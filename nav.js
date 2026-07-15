@@ -36,7 +36,7 @@
   // ── Footer: divider + disclaimer pinned to the bottom of the menu overlay ──
   var FOOTER_HTML =
     '<div class="nav-menu-footer-left">' +
-      '<span class="nmf-copy">©2026 Vilmar Morgan LLC</span>' +
+      '<span class="nmf-copy">©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>' +
       '<span class="nmf-note">Please note: the videos shown on this site include moments from the early building stages of Pupcup. The cards you see in those videos may be prototypes and not the final product.</span>' +
     '</div>' +
     '<div class="nav-menu-footer-right">Made with ' +
@@ -69,17 +69,19 @@
       '.nav-menu-footer{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;',
       'justify-content:space-between;flex-wrap:wrap;gap:10px 24px;padding:18px 40px;',
       'border-top:1px solid rgba(255,255,255,0.12);font-size:14px;line-height:1.45;',
-      'color:var(--text-muted,#9a9a9e);}',
+      'color:var(--text-muted,#9a9a9e);z-index:1;}',
       '.nav-menu-footer-left{display:flex;flex-wrap:wrap;gap:4px 20px;flex:1 1 340px;min-width:0;}',
       '.nav-menu-footer .nmf-copy{white-space:nowrap;}',
       '.nav-menu-footer-right{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}',
       '.nav-menu-footer .nmf-heart{display:inline-block;vertical-align:middle;}',
+      '.nav-menu-footer a{color:inherit;text-decoration:none;}',
+      '.nav-menu-footer a:hover{color:#f0ece4;text-decoration:underline;}',
       '@media (max-width:600px){.nav-menu-footer{padding:14px 18px;font-size:14px;gap:8px;}',
       '.nav-menu-footer-left{flex-basis:100%;}',
       '.nav-menu{align-items:flex-start;}',
       '.nav-menu-links{margin-top:80px;}}',
       '.nav-menu-prism{position:absolute;inset:0;overflow:hidden;z-index:0;background:#1e2028;pointer-events:none;}',
-      '.nav-menu-links,.nav-menu-footer{position:relative;z-index:1;}',
+      '.nav-menu-links{position:relative;z-index:1;}',
       '.nav-menu-close{z-index:2;}',
       '.nav-menu .kc-blob{position:absolute;top:0;left:0;width:98vmax;height:40vmax;border-radius:50%;filter:blur(70px);opacity:0.5;mix-blend-mode:screen;will-change:transform;}',
       '.nav-menu .kc-blob.b1{background:radial-gradient(ellipse at center,#ff2d78 0%,rgba(255,45,120,0) 60%);animation:kcDrift1 20s ease-in-out infinite;}',

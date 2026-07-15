@@ -147,6 +147,29 @@
   /* Mobile-only bottom How to Play button */
   .mobile-howto { display: none; }
 
+  /* Animated prism drifting behind the How to Play button text (mobile button is
+     display:none on desktop, so these only ever show on mobile). */
+  .mh-prism { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .mh-text { position: relative; z-index: 1; }
+  .mh-blob {
+    position: absolute; top: -50%; left: 0;
+    width: 55%; height: 200%;
+    border-radius: 50%;
+    filter: blur(13px);
+    opacity: 0.75;
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .mh-blob.mb1 { background: radial-gradient(ellipse at center, #ff2d78 0%, rgba(255,45,120,0) 70%); animation: mhDrift1 6s ease-in-out infinite; }
+  .mh-blob.mb2 { background: radial-gradient(ellipse at center, #1e8fff 0%, rgba(30,143,255,0) 70%); animation: mhDrift2 7.5s ease-in-out infinite; }
+  .mh-blob.mb3 { background: radial-gradient(ellipse at center, #37d67a 0%, rgba(55,214,122,0) 70%); animation: mhDrift3 5.5s ease-in-out infinite; }
+  .mh-blob.mb4 { background: radial-gradient(ellipse at center, #ffcf3f 0%, rgba(255,207,63,0) 70%); animation: mhDrift4 8.5s ease-in-out infinite; }
+  @keyframes mhDrift1 { 0%,100%{transform:translateX(-70%)} 50%{transform:translateX(160%)} }
+  @keyframes mhDrift2 { 0%,100%{transform:translateX(170%)} 50%{transform:translateX(0%)} }
+  @keyframes mhDrift3 { 0%,100%{transform:translateX(40%)} 50%{transform:translateX(200%)} }
+  @keyframes mhDrift4 { 0%,100%{transform:translateX(90%)} 50%{transform:translateX(-40%)} }
+  @media (prefers-reduced-motion: reduce) { .mh-blob { animation: none !important; } }
+
   /* Full-screen navigation menu */
   .nav-menu {
     position: fixed;
@@ -843,6 +866,8 @@
       font-size: 15px;
       text-decoration: none;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      isolation: isolate;
     }
     .nav-menu-links a { font-size: 40px; }
     .nav-menu-links { gap: 40px; }
@@ -1698,7 +1723,7 @@
 </div>
 
 <!-- Mobile-only How to Play button pinned to the bottom -->
-<a class="mobile-howto" href="howtoplay/">How to Play</a>
+<a class="mobile-howto" href="howtoplay/"><span class="mh-prism" aria-hidden="true"><span class="mh-blob mb1"></span><span class="mh-blob mb2"></span><span class="mh-blob mb3"></span><span class="mh-blob mb4"></span></span><span class="mh-text">How to Play</span></a>
 
 <!-- Full-screen navigation menu -->
 <div class="nav-menu" id="navMenu">
