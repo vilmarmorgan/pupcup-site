@@ -1007,7 +1007,7 @@
     .rp-video-thumb:hover { transform: none; }
   }
   .rp-vt-bg { position: absolute; inset: 0; }
-  .rp-vt-bg video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .rp-vt-bg video, .rp-vt-bg img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
   .rp-vlb-video-area video { width: 100%; height: 100%; object-fit: cover; display: block; }
   .rp-vt-play {
     position: absolute; inset: 0;
@@ -2843,12 +2843,14 @@ function buildMarketingPanel(rightEl, item) {
     const bg = document.createElement('div');
     bg.className = 'rp-vt-bg';
 
-    const vid = document.createElement('video');
-    vid.src = videoSrcs[i] + '#t=0.1';
-    vid.muted = true;
-    vid.preload = 'metadata';
-    vid.playsInline = true;
-    bg.appendChild(vid);
+    // Use the pre-generated poster JPEG that sits alongside each clip (same
+    // image the homepage grid uses) instead of a live video frame. This keeps
+    // thumbnails correct and consistent, and reliable on iOS Safari.
+    const img = document.createElement('img');
+    img.src = posterFor(videoSrcs[i]);
+    img.loading = 'lazy';
+    img.alt = '';
+    bg.appendChild(img);
 
     const play = document.createElement('div');
     play.className = 'rp-vt-play';
