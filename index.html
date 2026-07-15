@@ -3408,8 +3408,14 @@ function layoutVoCarousel(animate) {
   const H = stage.offsetHeight;
   if (!W || !H || !track) return;
 
-  const centerH = H * (W <= 600 ? 0.98 : 0.90);
-  const centerW = centerH * (9 / 16);
+  let centerH = H * (W <= 600 ? 0.98 : 0.90);
+  let centerW = centerH * (9 / 16);
+  if (W <= 600) {
+    // Cap width so the center video never goes edge-to-edge, leaving room for
+    // the dots + Boop bar beneath it (and keeping the side videos peeking).
+    const maxW = W * 0.82;
+    if (centerW > maxW) { centerW = maxW; centerH = centerW * (16 / 9); }
+  }
 
   const scaleAt = (rel) => {
     const a = Math.abs(rel);
@@ -3640,8 +3646,14 @@ function layoutPoCarousel(animate) {
   const H = stage.offsetHeight;
   if (!W || !H || !track) return;
 
-  const centerH = H * (W <= 600 ? 0.98 : 0.90);
-  const centerW = centerH * (9 / 16);
+  let centerH = H * (W <= 600 ? 0.98 : 0.90);
+  let centerW = centerH * (9 / 16);
+  if (W <= 600) {
+    // Cap width so the center video never goes edge-to-edge, leaving room for
+    // the dots + Boop bar beneath it (and keeping the side videos peeking).
+    const maxW = W * 0.82;
+    if (centerW > maxW) { centerW = maxW; centerH = centerW * (16 / 9); }
+  }
 
   const scaleAt = (rel) => {
     const a = Math.abs(rel);
