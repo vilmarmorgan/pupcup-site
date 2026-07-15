@@ -423,10 +423,18 @@
     cursor: pointer;
     z-index: 1;
   }
+  /* Animated prism glow behind the card (its own clipped, isolated layer so the
+     super-boop can still overflow the panel). */
+  .overlay-left-prism {
+    position: absolute; inset: 0; z-index: 0;
+    overflow: hidden; border-radius: inherit;
+    background: #1a1a1e; pointer-events: none; isolation: isolate;
+  }
 
   /* Card + info frame, vertically centered */
   .overlay-card-frame {
     position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1768,6 +1776,14 @@
 
     <!-- LEFT PANEL: Card image + info + boop -->
     <div class="overlay-left" id="overlayLeft">
+      <div class="overlay-left-prism" aria-hidden="true">
+        <span class="kc-blob b1"></span>
+        <span class="kc-blob b2"></span>
+        <span class="kc-blob b3"></span>
+        <span class="kc-blob b4"></span>
+        <span class="kc-blob b5"></span>
+        <span class="kc-blob b6"></span>
+      </div>
       <div class="overlay-card-frame">
         <div class="overlay-card" id="overlayCard">
           <div id="overlayMedia"></div>
