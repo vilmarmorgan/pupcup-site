@@ -8,17 +8,21 @@ window.VIDEO_MANIFEST = {
     "lady-puppa": [],
     "pupquiao": [
       "images/videos/rules/pupquiao/nopointing1.MP4",
-      "images/videos/rules/pupquiao/nopointing2.mp4"
+      "images/videos/rules/pupquiao/nopointing2.mp4",
+      "images/videos/rules/pupquiao/nopointing3.mp4"
     ],
     "pupstein": [
       "images/videos/rules/pupstein/bark1.MP4",
       "images/videos/rules/pupstein/bark2.MP4",
-      "images/videos/rules/pupstein/bark3.mp4"
+      "images/videos/rules/pupstein/bark3.mp4",
+      "images/videos/rules/pupstein/bark4.mp4"
     ],
     "queen-elizapup": [],
     "rupup": [
       "images/videos/rules/rupup/dontsayi.MP4",
-      "images/videos/rules/rupup/dontsayi2.MP4"
+      "images/videos/rules/rupup/dontsayi2.MP4",
+      "images/videos/rules/rupup/dontsayi3.mp4",
+      "images/videos/rules/rupup/dontsayi4.mp4"
     ]
   },
   "steal": [
