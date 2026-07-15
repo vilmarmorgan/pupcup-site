@@ -3260,6 +3260,9 @@ function buildVoCarousel() {
       vid.src = item.video;
       if (item.poster) vid.poster = item.poster;
       vid.playsInline = true;
+      vid.loop = true;
+      vid.disablePictureInPicture = true;
+      vid.setAttribute('controlsList', 'nodownload noplaybackrate');
       el.appendChild(vid);
     } else {
       const icon = document.createElement('div');
@@ -3366,8 +3369,13 @@ function layoutVoCarousel(animate) {
     const vid = el.querySelector('video');
     if (vid) {
       if (rel === 0) {
-        vid.muted = false; vid.controls = true; vid.play().catch(() => {});
+        // Centered video: does NOT autoplay. The viewer taps it to start it
+        // (with sound), and it loops at the end. Nothing plays until tapped.
+        vid.controls = true;
+        vid.loop = true;
+        vid.muted = false;
       } else {
+        // Off to the side: silent, no controls, paused.
         vid.muted = true; vid.controls = false; vid.pause();
       }
     }
