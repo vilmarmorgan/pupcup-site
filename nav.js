@@ -135,13 +135,15 @@
       // Natural height (do NOT grow to fill) so the footer just follows as the last
       // item on the page rather than being pushed to the bottom of the screen.
       '.nav-menu-inner{flex-direction:column;flex:none;min-height:0;}',
-      // 160px gap beneath the menu links, before the story box.
-      '.nav-menu-left{padding:96px 24px 160px;}',
+      // Both halves become simple full-width, content-height blocks when stacked.
+      // (Leaving the left at its desktop flex:1 1 50% collapsed the story box.)
+      // 80px gap beneath the menu links, before the story box.
+      '.nav-menu-left{flex:none;width:100%;padding:96px 24px 80px;}',
       // Menu links centered on mobile (story body below stays left-aligned).
       '.nav-menu-links{margin-top:0;align-items:center;text-align:center;}',
       '.nav-menu-arf{align-items:center;}',
       // Story flows in the page (no separate scroll, natural top position); 160px gap below.
-      '.nav-menu-right{flex:none;overflow:visible;padding:0 24px 160px;}',
+      '.nav-menu-right{flex:none;width:100%;overflow:visible;padding:0 24px 160px;}',
       '.nav-menu-story{margin:0;padding:28px;border-radius:28px;}',
       '.nav-menu-story p{font-size:18px;max-width:none;}',
       '.nav-menu-footer{padding:24px 18px 32px;font-size:14px;gap:8px;}',
