@@ -106,10 +106,10 @@
       '.nav-menu{flex-direction:column;align-items:stretch;justify-content:flex-start;overflow:hidden;}',
       '.nav-menu-inner{position:relative;z-index:1;display:flex;flex-direction:row;align-items:stretch;width:100%;flex:1 1 auto;min-height:0;}',
       '.nav-menu-left{flex:1 1 50%;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden;}',
-      '.nav-menu-right{flex:1 1 50%;display:flex;flex-direction:column;align-items:stretch;overflow-y:auto;padding:80px;}',
+      '.nav-menu-right{flex:1 1 50%;display:flex;flex-direction:column;align-items:stretch;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding:80px;}',
       // Story box grows to fit its content (margin:auto centers it, and lets it
       // scroll from the top within the right half when it is taller than the view).
-      '.nav-menu-story{width:100%;margin:auto 0;box-sizing:border-box;',
+      '.nav-menu-story{width:100%;max-width:800px;margin:auto;box-sizing:border-box;',
       'border:2px solid rgba(255,255,255,0.12);border-radius:40px;',
       'display:flex;flex-direction:column;align-items:flex-start;justify-content:center;',
       'gap:20px;padding:56px;text-align:left;}',
@@ -129,8 +129,12 @@
       // ── Mobile: stack the two halves, allow the overlay to scroll ──
       '@media (max-width:600px){',
       // Mobile: the whole overlay scrolls normally; halves stack (links, story, footer).
-      '.nav-menu{overflow-y:auto;-webkit-overflow-scrolling:touch;}',
-      '.nav-menu-inner{flex-direction:column;flex:1 0 auto;min-height:0;}',
+      // touch-action/overscroll re-enable touch scrolling, which the homepage blocks
+      // globally for the infinite-canvas drag (same opt-in the card overlay uses).
+      '.nav-menu{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;}',
+      // Natural height (do NOT grow to fill) so the footer just follows as the last
+      // item on the page rather than being pushed to the bottom of the screen.
+      '.nav-menu-inner{flex-direction:column;flex:none;min-height:0;}',
       // 160px gap beneath the menu links, before the story box.
       '.nav-menu-left{padding:96px 24px 160px;}',
       // Menu links centered on mobile (story body below stays left-aligned).
