@@ -114,6 +114,10 @@
       'display:flex;flex-direction:column;align-items:flex-start;justify-content:center;',
       'gap:20px;padding:56px;text-align:left;}',
       '.nav-menu-story p{margin:0;max-width:560px;font-size:24px;line-height:1.5;color:var(--text,#f0ece4);}',
+      // ── Glass top-bar header: the same blurred strip the card overlay uses.
+      //    The menu content scrolls underneath it; the existing circular close X
+      //    (kept as-is) sits on top of it. ──
+      '.nav-menu::before{content:"";position:fixed;top:0;left:0;right:0;height:74px;background:rgba(20,20,24,0.2);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:2;pointer-events:none;}',
       // ── Footer ──
       // Footer is a normal flex item (the last one), not position-pinned.
       '.nav-menu-footer{position:relative;flex:0 0 auto;display:flex;align-items:center;',
@@ -154,7 +158,7 @@
       // Links left-aligned to each other; the block stays centered in the left half.
       '.nav-menu-links{position:relative;z-index:1;align-items:flex-start;text-align:left;}',
       '.nav-menu-arf{align-items:flex-start;}',
-      '.nav-menu-close{z-index:2;}',
+      '.nav-menu-close{z-index:3;}',
       '.nav-menu .kc-blob{position:absolute;top:0;left:0;width:98vmax;height:40vmax;border-radius:50%;filter:blur(70px);opacity:0.5;mix-blend-mode:screen;will-change:transform;}',
       '.nav-menu .kc-blob.b1{background:radial-gradient(ellipse at center,#ff2d78 0%,rgba(255,45,120,0) 60%);animation:kcDrift1 20s ease-in-out infinite;}',
       '.nav-menu .kc-blob.b2{background:radial-gradient(ellipse at center,#1e8fff 0%,rgba(30,143,255,0) 60%);animation:kcDrift2 25s ease-in-out infinite;}',
