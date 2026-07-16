@@ -100,18 +100,23 @@
     var style = document.createElement('style');
     style.id = 'nav-menu-footer-style';
     style.textContent = [
-      // ── Two-column layout ──
-      '.nav-menu-inner{position:relative;z-index:1;display:flex;width:100%;height:100%;}',
-      '.nav-menu-left{flex:1 1 50%;display:flex;align-items:center;justify-content:center;padding:24px;}',
-      // Extra bottom padding lifts the box clear of the footer disclaimer.
-      '.nav-menu-right{flex:1 1 50%;display:flex;align-items:center;justify-content:center;padding:80px 80px 240px;}',
-      '.nav-menu-story{width:100%;height:100%;box-sizing:border-box;overflow-y:auto;',
+      // ── Desktop: the overlay itself does not scroll. The links stay put on the
+      //    left; the RIGHT half scrolls so the story box can expand to full height
+      //    without ever scrolling inside the box. Footer is the last item at bottom. ──
+      '.nav-menu{flex-direction:column;align-items:stretch;justify-content:flex-start;overflow:hidden;}',
+      '.nav-menu-inner{position:relative;z-index:1;display:flex;flex-direction:row;align-items:stretch;width:100%;flex:1 1 auto;min-height:0;}',
+      '.nav-menu-left{flex:1 1 50%;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden;}',
+      '.nav-menu-right{flex:1 1 50%;display:flex;flex-direction:column;align-items:stretch;overflow-y:auto;padding:80px;}',
+      // Story box grows to fit its content (margin:auto centers it, and lets it
+      // scroll from the top within the right half when it is taller than the view).
+      '.nav-menu-story{width:100%;margin:auto 0;box-sizing:border-box;',
       'border:2px solid rgba(255,255,255,0.12);border-radius:40px;',
       'display:flex;flex-direction:column;align-items:flex-start;justify-content:center;',
       'gap:20px;padding:56px;text-align:left;}',
       '.nav-menu-story p{margin:0;max-width:560px;font-size:24px;line-height:1.5;color:var(--text,#f0ece4);}',
       // ── Footer ──
-      '.nav-menu-footer{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;',
+      // Footer is a normal flex item (the last one), not position-pinned.
+      '.nav-menu-footer{position:relative;flex:0 0 auto;display:flex;align-items:center;',
       'justify-content:space-between;flex-wrap:wrap;gap:10px 24px;padding:18px 40px;',
       'border-top:1px solid rgba(255,255,255,0.12);font-size:14px;line-height:1.45;',
       'color:var(--text-muted,#9a9a9e);z-index:1;}',
@@ -123,25 +128,23 @@
       '.nav-menu-footer a:hover{color:#f0ece4;}',
       // ── Mobile: stack the two halves, allow the overlay to scroll ──
       '@media (max-width:600px){',
-      // Stack everything in one scrolling column: links, story, then footer.
-      '.nav-menu{flex-direction:column;align-items:stretch;justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;}',
-      '.nav-menu-inner{flex-direction:column;height:auto;min-height:auto;}',
+      // Mobile: the whole overlay scrolls normally; halves stack (links, story, footer).
+      '.nav-menu{overflow-y:auto;-webkit-overflow-scrolling:touch;}',
+      '.nav-menu-inner{flex-direction:column;flex:1 0 auto;min-height:0;}',
       // 160px gap beneath the menu links, before the story box.
       '.nav-menu-left{padding:96px 24px 160px;}',
       // Menu links centered on mobile (story body below stays left-aligned).
       '.nav-menu-links{margin-top:0;align-items:center;text-align:center;}',
       '.nav-menu-arf{align-items:center;}',
-      // Story box full width (24px side gutters); 160px gap below before the footer.
-      '.nav-menu-right{padding:0 24px 160px;}',
-      '.nav-menu-story{height:auto;padding:28px;border-radius:28px;overflow:visible;}',
+      // Story flows in the page (no separate scroll, natural top position); 160px gap below.
+      '.nav-menu-right{flex:none;overflow:visible;padding:0 24px 160px;}',
+      '.nav-menu-story{margin:0;padding:28px;border-radius:28px;}',
       '.nav-menu-story p{font-size:18px;max-width:none;}',
-      '.nav-menu-footer{position:static;padding:24px 18px 32px;font-size:14px;gap:8px;}',
+      '.nav-menu-footer{padding:24px 18px 32px;font-size:14px;gap:8px;}',
       '.nav-menu-footer-left{flex-basis:100%;}',
-      // Keep the prism covering the viewport while the stacked menu scrolls.
-      '.nav-menu-prism{position:fixed;}',
       '}',
       // ── Prism (behind both halves) ──
-      '.nav-menu-prism{position:absolute;inset:0;overflow:hidden;z-index:0;background:#1e2028;pointer-events:none;isolation:isolate;-webkit-clip-path:inset(0);clip-path:inset(0);}',
+      '.nav-menu-prism{position:fixed;inset:0;overflow:hidden;z-index:0;background:#1e2028;pointer-events:none;isolation:isolate;-webkit-clip-path:inset(0);clip-path:inset(0);}',
       // Links left-aligned to each other; the block stays centered in the left half.
       '.nav-menu-links{position:relative;z-index:1;align-items:flex-start;text-align:left;}',
       '.nav-menu-arf{align-items:flex-start;}',
