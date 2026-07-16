@@ -541,7 +541,7 @@
     line-height: 1.45;
     color: var(--text-muted);
     /* Bottom padding keeps the note clear of the mobile browser's bottom bar. */
-    padding: 0 0 calc(48px + env(safe-area-inset-bottom, 0px));
+    padding: 0 0 calc(72px + env(safe-area-inset-bottom, 0px));
   }
   @media (min-width: 601px) {
     .overlay-parody-mobile { display: none; }
@@ -1223,6 +1223,17 @@
     opacity: 1;
     pointer-events: auto;
   }
+  /* Animated prism glow behind the videos (same drifting blobs as the rest of
+     the site). Sits under all overlay content; blobs pause when closed. */
+  .vo-prism {
+    position: absolute; inset: 0; z-index: 0;
+    overflow: hidden; background: var(--bg, #1e2028);
+    pointer-events: none; isolation: isolate;
+    -webkit-clip-path: inset(0);
+    clip-path: inset(0);
+  }
+  .video-overlay:not(.active) .vo-prism .kc-blob { animation-play-state: paused; }
+  .vo-topbar, .vo-carousel-stage, .vo-arrow, .vo-bottom, .vo-close { z-index: 1; }
   .vo-topbar {
     position: absolute;
     top: 0; left: 0; right: 0;
@@ -1860,6 +1871,14 @@
 
 <!-- Video Overlay (Full-Screen Carousel) -->
 <div class="video-overlay" id="videoOverlay">
+  <div class="vo-prism" aria-hidden="true">
+    <span class="kc-blob b1"></span>
+    <span class="kc-blob b2"></span>
+    <span class="kc-blob b3"></span>
+    <span class="kc-blob b4"></span>
+    <span class="kc-blob b5"></span>
+    <span class="kc-blob b6"></span>
+  </div>
   <button class="vo-close" id="voClose" aria-label="Close"></button>
   <div class="vo-topbar">
     <a class="vo-pill" href="https://shop.playpupcup.com/" rel="noopener">Buy Now →</a>
