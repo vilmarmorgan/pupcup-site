@@ -5,9 +5,14 @@
  * overlay updates automatically (homepage, Kickstarter Backers, etc).
  *
  * Each page has an empty <nav class="nav-menu-links"></nav> followed by
- * <script src="/nav.js"></script>. This script runs during parse (before the
+ * <script src="nav.js"></script>. This script runs during parse (before the
  * page's own menu wiring) and fills in the links, so the existing open/close
  * and click-to-close handlers find them normally.
+ *
+ * Desktop layout: the overlay splits into two equal halves. Left half holds
+ * the menu links (centered); right half holds the parody-universe story in a
+ * rounded, outlined box. The animated prism sits behind BOTH halves and shows
+ * through the transparent story box. On mobile the halves stack.
  *
  * URLs are root-relative ("/", "/howtoplay/") so they work from any page depth.
  */
@@ -19,6 +24,15 @@
     { label: 'Kickstarter Backers', href: '/kickstarter/' },
     { label: 'Rated Arf', href: 'https://ratedarf.com/', external: true, newTab: true, sub: 'Adult-Only NSFW Game' }
   ];
+
+  // Parody-universe story shown in the right half of the menu.
+  var STORY_HTML =
+    '<p>In a parallel universe, dogs rule the world&hellip;</p>' +
+    '<p>They run the cities, host the talk shows, win the medals, and yes, they still knock things off the counter.</p>' +
+    '<p>And just like our world, this one has its icons: the celebrity pups.</p>' +
+    '<p>From a flower-crowned artist in Mexico City to a wild-haired genius in Berlin, every card in Pupcup is one of these famous faces, reimagined with four paws and a wagging tail.</p>' +
+    '<p>They&rsquo;re all originals, born in our little dog-run universe. Any likeness to real people is affectionate parody, nothing more.</p>' +
+    '<p>We hope you enjoy playing Pupcup!</p>';
 
   var html = LINKS.map(function (l) {
     var attrs = l.external ? ' rel="noopener"' : '';
@@ -33,6 +47,27 @@
   var nav = document.querySelector('.nav-menu-links');
   if (nav) nav.innerHTML = html;
 
+  var menu = document.querySelector('.nav-menu');
+
+  // ── Two-column layout: move the links into a left half, add the story on the
+  //    right half. Both sit above the prism (transparent, so it shows through). ──
+  if (nav && menu && !menu.querySelector('.nav-menu-inner')) {
+    var inner = document.createElement('div');
+    inner.className = 'nav-menu-inner';
+
+    var left = document.createElement('div');
+    left.className = 'nav-menu-left';
+
+    var right = document.createElement('div');
+    right.className = 'nav-menu-right';
+    right.innerHTML = '<div class="nav-menu-story">' + STORY_HTML + '</div>';
+
+    nav.parentNode.insertBefore(inner, nav);
+    left.appendChild(nav);       // relocate the links into the left half
+    inner.appendChild(left);
+    inner.appendChild(right);
+  }
+
   // ── Footer: divider + disclaimer pinned to the bottom of the menu overlay ──
   var FOOTER_HTML =
     '<div class="nav-menu-footer-left">' +
@@ -43,7 +78,6 @@
       '<svg class="nmf-heart" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>' +
       ' by Vilmar Morgan</div>';
 
-  var menu = document.querySelector('.nav-menu');
   if (menu && !menu.querySelector('.nav-menu-footer')) {
     var footer = document.createElement('div');
     footer.className = 'nav-menu-footer';
@@ -66,6 +100,17 @@
     var style = document.createElement('style');
     style.id = 'nav-menu-footer-style';
     style.textContent = [
+      // ── Two-column layout ──
+      '.nav-menu-inner{position:relative;z-index:1;display:flex;width:100%;height:100%;}',
+      '.nav-menu-left{flex:1 1 50%;display:flex;align-items:center;justify-content:center;padding:24px;}',
+      // Extra bottom padding lifts the box clear of the footer disclaimer.
+      '.nav-menu-right{flex:1 1 50%;display:flex;align-items:center;justify-content:center;padding:80px 80px 240px;}',
+      '.nav-menu-story{width:100%;height:100%;box-sizing:border-box;overflow-y:auto;',
+      'border:2px solid rgba(255,255,255,0.12);border-radius:40px;',
+      'display:flex;flex-direction:column;align-items:flex-start;justify-content:center;',
+      'gap:20px;padding:56px;text-align:left;}',
+      '.nav-menu-story p{margin:0;max-width:560px;font-size:24px;line-height:1.5;color:var(--text,#f0ece4);}',
+      // ── Footer ──
       '.nav-menu-footer{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;',
       'justify-content:space-between;flex-wrap:wrap;gap:10px 24px;padding:18px 40px;',
       'border-top:1px solid rgba(255,255,255,0.12);font-size:14px;line-height:1.45;',
@@ -76,12 +121,30 @@
       '.nav-menu-footer .nmf-heart{display:inline-block;vertical-align:middle;}',
       '.nav-menu-footer a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;}',
       '.nav-menu-footer a:hover{color:#f0ece4;}',
-      '@media (max-width:600px){.nav-menu-footer{padding:14px 18px;font-size:14px;gap:8px;}',
+      // ── Mobile: stack the two halves, allow the overlay to scroll ──
+      '@media (max-width:600px){',
+      // Stack everything in one scrolling column: links, story, then footer.
+      '.nav-menu{flex-direction:column;align-items:stretch;justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;}',
+      '.nav-menu-inner{flex-direction:column;height:auto;min-height:auto;}',
+      // 160px gap beneath the menu links, before the story box.
+      '.nav-menu-left{padding:96px 24px 160px;}',
+      // Menu links centered on mobile (story body below stays left-aligned).
+      '.nav-menu-links{margin-top:0;align-items:center;text-align:center;}',
+      '.nav-menu-arf{align-items:center;}',
+      // Story box full width (24px side gutters); 160px gap below before the footer.
+      '.nav-menu-right{padding:0 24px 160px;}',
+      '.nav-menu-story{height:auto;padding:28px;border-radius:28px;overflow:visible;}',
+      '.nav-menu-story p{font-size:18px;max-width:none;}',
+      '.nav-menu-footer{position:static;padding:24px 18px 32px;font-size:14px;gap:8px;}',
       '.nav-menu-footer-left{flex-basis:100%;}',
-      '.nav-menu{align-items:flex-start;}',
-      '.nav-menu-links{margin-top:80px;}}',
-      '.nav-menu-prism{position:absolute;inset:0;overflow:hidden;z-index:0;background:#1e2028;pointer-events:none;isolation:isolate;}',
-      '.nav-menu-links{position:relative;z-index:1;}',
+      // Keep the prism covering the viewport while the stacked menu scrolls.
+      '.nav-menu-prism{position:fixed;}',
+      '}',
+      // ── Prism (behind both halves) ──
+      '.nav-menu-prism{position:absolute;inset:0;overflow:hidden;z-index:0;background:#1e2028;pointer-events:none;isolation:isolate;-webkit-clip-path:inset(0);clip-path:inset(0);}',
+      // Links left-aligned to each other; the block stays centered in the left half.
+      '.nav-menu-links{position:relative;z-index:1;align-items:flex-start;text-align:left;}',
+      '.nav-menu-arf{align-items:flex-start;}',
       '.nav-menu-close{z-index:2;}',
       '.nav-menu .kc-blob{position:absolute;top:0;left:0;width:98vmax;height:40vmax;border-radius:50%;filter:blur(70px);opacity:0.5;mix-blend-mode:screen;will-change:transform;}',
       '.nav-menu .kc-blob.b1{background:radial-gradient(ellipse at center,#ff2d78 0%,rgba(255,45,120,0) 60%);animation:kcDrift1 20s ease-in-out infinite;}',
