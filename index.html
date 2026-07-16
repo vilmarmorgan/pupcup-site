@@ -429,6 +429,10 @@
     position: absolute; inset: 0; z-index: 0;
     overflow: hidden; border-radius: inherit;
     background: #1a1a1e; pointer-events: none; isolation: isolate;
+    /* The blobs are GPU-composited (will-change: transform), which defeats
+       overflow:hidden + border-radius clipping. clip-path crops them reliably. */
+    -webkit-clip-path: inset(0);
+    clip-path: inset(0);
   }
 
   /* Card + info frame, vertically centered */
@@ -514,6 +518,47 @@
   .overlay-owner span {
     color: var(--text-muted);
     font-weight: 400;
+  }
+  /* Parody / no-affiliation disclaimer, styled like the main menu footer.
+     Desktop: pinned to the bottom of the left frame (rule cards only, via .show).
+     Mobile: at the bottom of the page beneath the ad (.overlay-parody-mobile). */
+  .overlay-parody {
+    display: none;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 1;
+    padding: 16px 24px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .overlay-parody.show { display: block; }
+  /* Mobile copy lives in the right panel, which already pads 24px on the sides,
+     so the note itself adds no horizontal padding (nets 24px from the edge). */
+  .overlay-parody-mobile {
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-muted);
+    padding: 0;
+  }
+  @media (min-width: 601px) {
+    .overlay-parody-mobile { display: none; }
+  }
+  @media (max-width: 600px) {
+    .overlay-parody { display: none !important; }
+    /* When the parody note follows the ad, drop the ad's large bottom gap so the
+       note sits at the bottom of the page. (Non-rule cards keep the ad's spacing.) */
+    .rp-banner-link:not(:last-child) { margin-bottom: 0; }
+    /* Clip the prism (and its GPU-composited blobs) to the panel's rounded
+       bottom corners. clip-path does the actual cropping; border-radius is kept
+       so the panel background matches. */
+    .overlay-left-prism {
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      -webkit-clip-path: inset(0 round 0 0 40px 40px);
+      clip-path: inset(0 round 0 0 40px 40px);
+    }
   }
 
   /* ── Right Panel: 50% width, 100% height ── */
@@ -1799,6 +1844,7 @@
           </button>
         </div>
       </div>
+      <div class="overlay-parody" id="overlayParody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</div>
     </div>
 
     <!-- RIGHT PANEL: Rule media scroll OR marketing wireframe -->
@@ -2745,6 +2791,10 @@ function setLeftPanel(item) {
   const boopKey = getBoopKey(item);
   document.getElementById('boopCount').textContent = boopCounts[boopKey] || 0;
   document.getElementById('boopFx').innerHTML = '';
+
+  // Parody disclaimer shows on character cards (the Rule cards) only.
+  const parodyEl = document.getElementById('overlayParody');
+  if (parodyEl) parodyEl.classList.toggle('show', item.type === 'card' && item.cardType === 'rule');
 }
 
 // ── Rule card → video folder slug (for auto-read video galleries) ──
@@ -3029,6 +3079,15 @@ function buildMarketingPanel(rightEl, item) {
   bannerImg.alt = '';
   bannerLink.appendChild(bannerImg);
   wrap.appendChild(bannerLink);
+
+  // Mobile-only parody disclaimer beneath the ad (character/Rule cards only).
+  // On desktop this copy is hidden and the left-panel version shows instead.
+  if (isRule) {
+    const parodyM = document.createElement('div');
+    parodyM.className = 'overlay-parody-mobile';
+    parodyM.textContent = 'Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.';
+    wrap.appendChild(parodyM);
+  }
 
   rightEl.appendChild(wrap);
 }
