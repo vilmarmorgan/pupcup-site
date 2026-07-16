@@ -137,8 +137,8 @@
       '.nav-menu-inner{flex-direction:column;flex:none;min-height:0;}',
       // Both halves become simple full-width, content-height blocks when stacked.
       // (Leaving the left at its desktop flex:1 1 50% collapsed the story box.)
-      // 24px above the links; 80px gap beneath, before the story box.
-      '.nav-menu-left{flex:none;width:100%;padding:24px 24px 80px;}',
+      // 120px above the links (clears the close button); 80px gap beneath.
+      '.nav-menu-left{flex:none;width:100%;padding:120px 24px 80px;}',
       // Menu links centered on mobile (story body below stays left-aligned).
       '.nav-menu-links{margin-top:0;align-items:center;text-align:center;}',
       '.nav-menu-arf{align-items:center;}',
