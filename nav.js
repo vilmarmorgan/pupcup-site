@@ -109,7 +109,7 @@
       '.nav-menu-right{flex:1 1 50%;display:flex;flex-direction:column;align-items:stretch;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding:80px;}',
       // Story box grows to fit its content (margin:auto centers it, and lets it
       // scroll from the top within the right half when it is taller than the view).
-      '.nav-menu-story{width:100%;max-width:800px;margin:auto;box-sizing:border-box;',
+      '.nav-menu-story{width:100%;max-width:700px;margin:auto;box-sizing:border-box;',
       'border:2px solid rgba(255,255,255,0.12);border-radius:40px;',
       'display:flex;flex-direction:column;align-items:flex-start;justify-content:center;',
       'gap:20px;padding:56px;text-align:left;}',
