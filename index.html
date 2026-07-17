@@ -244,6 +244,9 @@
     line-height: 1.35;
   }
 
+  /* Bone toss + tongue lick styles + logic now live in the shared bone-lick.js
+     (loaded near the end of <body>), so all header pages share one source. */
+
   /* ───── Animated prism glow behind the card grid ───── */
   .kc-bg-prism {
     position: fixed; inset: 0; z-index: 0; overflow: hidden;
@@ -4384,5 +4387,6 @@ function init() {
 
 init();
 </script>
+<script src="bone-lick.js"></script>
 </body>
 </html>
