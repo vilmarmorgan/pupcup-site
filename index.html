@@ -4209,10 +4209,20 @@ function spawnSuperBoop() {
   flash.classList.add('active');
   setTimeout(() => flash.classList.remove('active'), 600);
 
-  // Fire all three at super scale
-  spawnPawBurst(true);
-  setTimeout(() => spawnBoneRain(true), 100);
-  setTimeout(() => spawnTailWagRipple(true), 200);
+  // Center the effects on the card's real center whenever the card overlay is
+  // open (desktop left panel or mobile top). Fall back to screen center only for
+  // the video/photo overlays, where the media is already centered.
+  let cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  const card = document.getElementById('overlayCard');
+  if (overlay && overlay.classList.contains('active') && card) {
+    const r = card.getBoundingClientRect();
+    if (r.width && r.height) { cx = r.left + r.width / 2; cy = r.top + r.height / 2; }
+  }
+
+  // Fire all three at super scale, centered on the card
+  spawnPawBurst(true, cx, cy);
+  setTimeout(() => spawnBoneRain(true, cx), 100);
+  setTimeout(() => spawnTailWagRipple(true, cx, cy), 200);
 }
 
 // ── Animation: Paw Burst ──
@@ -4239,13 +4249,8 @@ function spawnPawBurst(isSuper, originX, originY) {
     el.style.setProperty('--rot', rot + 'deg');
     el.style.setProperty('--dur', dur + 's');
     el.style.fontSize = (22 * sizeMult) + 'px';
-    if (isSuper) {
-      el.style.left = '50%';
-      el.style.top = '50%';
-    } else {
-      el.style.left = originX + 'px';
-      el.style.top = originY + 'px';
-    }
+    el.style.left = originX + 'px';
+    el.style.top = originY + 'px';
     el.style.animationDelay = (Math.random() * (isSuper ? 0.3 : 0.15)) + 's';
     container.appendChild(el);
     setTimeout(() => el.remove(), (dur + 0.3) * 1000);
@@ -4297,16 +4302,10 @@ function spawnTailWagRipple(isSuper, originX, originY) {
     ring.style.setProperty('--scale', scale);
     ring.style.setProperty('--dur', dur + 's');
     ring.style.animationDelay = (i * 0.12) + 's';
-    if (isSuper) {
-      ring.style.left = '50%';
-      ring.style.top = '50%';
-      ring.style.bottom = 'auto';
-      ring.style.borderWidth = '4px';
-    } else {
-      ring.style.left = originX + 'px';
-      ring.style.top = originY + 'px';
-      ring.style.bottom = 'auto';
-    }
+    ring.style.left = originX + 'px';
+    ring.style.top = originY + 'px';
+    ring.style.bottom = 'auto';
+    if (isSuper) ring.style.borderWidth = '4px';
     container.appendChild(ring);
     setTimeout(() => ring.remove(), (dur + 0.2) * 1000);
   }
@@ -4326,14 +4325,9 @@ function spawnTailWagRipple(isSuper, originX, originY) {
     el.style.setProperty('--ty', ty + 'px');
     el.style.setProperty('--dur', dur + 's');
     el.style.fontSize = (16 * sizeMult) + 'px';
-    if (isSuper) {
-      el.style.left = '50%';
-      el.style.top = '50%';
-      el.style.bottom = 'auto';
-    } else {
-      el.style.left = originX + 'px';
-      el.style.top = originY + 'px';
-    }
+    el.style.left = originX + 'px';
+    el.style.top = originY + 'px';
+    el.style.bottom = 'auto';
     el.style.animationDelay = (0.1 + Math.random() * (isSuper ? 0.5 : 0.2)) + 's';
     container.appendChild(el);
     setTimeout(() => el.remove(), (dur + 0.5) * 1000);
