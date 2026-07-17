@@ -2579,17 +2579,29 @@ function initTapHint() {
   const hint = document.getElementById('tapHint');
   if (!hint) return;
   let dismissed = false;
-  const dismiss = () => {
+  const dismiss = (auto) => {
     if (dismissed) return; dismissed = true;
     hint.classList.remove('show');
     hint.classList.add('hide');
     setTimeout(() => { if (hint.parentNode) hint.remove(); }, 500);
-    window.removeEventListener('pointerdown', dismiss, true);
-    startHintPulse();
+    window.removeEventListener('pointerdown', dismissByUser, true);
+    // Only when the user watched passively (auto-dismiss) on a desktop/mouse device,
+    // spotlight a card and glide it to center once the overlay has faded. Otherwise
+    // just glow the centered card. The focus animation self-cancels on a real pan.
+    let willFocus = false;
+    if (auto === true) {
+      try {
+        willFocus = window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+                    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (e) {}
+    }
+    if (willFocus) setTimeout(introFocusCard, 500);
+    else startHintPulse();
   };
+  const dismissByUser = () => dismiss(false);
   setTimeout(() => { hint.classList.add('show'); }, 650);   // let the grid paint first
-  setTimeout(dismiss, 650 + 3200);                          // auto-hide ~3s after showing
-  window.addEventListener('pointerdown', dismiss, true);    // or on first tap/scroll
+  setTimeout(() => dismiss(true), 650 + 3200);              // auto-hide ~3s after showing
+  window.addEventListener('pointerdown', dismissByUser, true);  // or on first tap/scroll
 }
 
 /* ───── Drag / Touch Panning ───── */
@@ -2625,7 +2637,9 @@ function moveDrag(px, py) {
   if (!isDragging) return;
   const dx = px - dragStartX;
   const dy = py - dragStartY;
-  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) hasMoved = true;
+  // A real pan (actual movement) cancels the onboarding focus animation; a plain
+  // tap/click on a card does not, since it never crosses this movement threshold.
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) { hasMoved = true; introNudgeCancelled = true; }
 
   camX = camStartX - dx;
   camY = camStartY - dy;
@@ -2657,6 +2671,60 @@ function applyMomentum() {
   } else {
     momentumActive = false;
   }
+}
+
+// One-time onboarding nudge: gently pan the canvas so the world drifts up and a
+// touch to the left, which reads as scrolling DOWN and slightly to the RIGHT,
+// revealing there's more to explore. Eases out and settles back. Desktop only.
+// Set true by a real pan (see moveDrag) so a self-initiated exploration is never
+// interrupted by the onboarding focus animation.
+let introNudgeCancelled = false;
+
+// Onboarding step 2 (desktop, first visit): spotlight a visible card that's off
+// to the side and smoothly glide it to the exact center of the screen, then leave
+// it there, glowing. This reveals the canvas pans AND lands on a clear, tappable
+// card. Cancelled only by an actual pan; a plain card tap does not cancel it.
+function introFocusCard() {
+  if (introNudgeCancelled) { startHintPulse(); return; }
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  const cands = [];
+  for (const el of cells.values()) {
+    const r = el.getBoundingClientRect();
+    // fully on-screen only, so the featured card is never clipped
+    if (r.left < 0 || r.top < 0 || r.right > window.innerWidth || r.bottom > window.innerHeight) continue;
+    const d = Math.hypot((r.left + r.width / 2) - cx, (r.top + r.height / 2) - cy);
+    cands.push({ el, d });
+  }
+  if (!cands.length) { startHintPulse(); return; }
+  // Prefer a card a moderate distance from center: visible motion, not a huge jump.
+  let pool = cands.filter(c => c.d > 180 && c.d < 680);
+  if (!pool.length) { cands.sort((a, b) => a.d - b.d); pool = cands.slice(0, 3); }
+  const target = pool[Math.floor(Math.random() * pool.length)].el;
+
+  // Lock the glow to the target and suppress center-tracking during the glide.
+  stopHintPulse();
+  target.classList.add('hint-pulse');
+  hintPulseEl = target;
+
+  const r0 = target.getBoundingClientRect();
+  const startX = camX, startY = camY;
+  const endX = camX + (r0.left + r0.width / 2 - cx);   // pan so the card's center
+  const endY = camY + (r0.top + r0.height / 2 - cy);   // lands on the screen center
+  const dur = 3000;
+  const t0 = performance.now();
+  // easeInOutQuart: very gradual slow-start and slow-stop with a smooth glide between.
+  const ease = (p) => (p < 0.5 ? 8 * p * p * p * p : 1 - Math.pow(-2 * p + 2, 4) / 2);
+  function frame(now) {
+    if (introNudgeCancelled) return;   // user panned — stop and leave the canvas where it is
+    const p = Math.min((now - t0) / dur, 1);
+    const e = ease(p);
+    camX = startX + (endX - startX) * e;
+    camY = startY + (endY - startY) * e;
+    render();
+    if (p < 1) requestAnimationFrame(frame);
+    else startHintPulse();   // resume center-tracking; the target is now centered and stays glowing
+  }
+  requestAnimationFrame(frame);
 }
 
 viewport.addEventListener('mousedown', (e) => { lastInputWasTouch = false; startDrag(e.clientX, e.clientY); });
