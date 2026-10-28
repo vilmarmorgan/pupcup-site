@@ -1,7 +1,11 @@
-# Brief — the /about/ page ("What is Pupcup?")
+# The /about/ page — "What is Pupcup?"
 
-For Joel. Written 28 Oct 2026. If you are using Claude to build this, point
-it at this file first; it is the whole context in one place.
+For Joel, and for Claude. Written 28 Oct 2026.
+
+This file is named `CLAUDE.md` on purpose. Claude Code loads a subdirectory's
+`CLAUDE.md` by itself the moment it reads, writes or edits any file in that
+subdirectory, so working in `about/` pulls this in with nothing to paste and
+nothing to remember. Read it yourself too - it is written for a person.
 
 ---
 
@@ -37,9 +41,10 @@ explaining a turn, you have drifted.
 
 ## Getting set up
 
-    git clone git@github.com:vilmarmorgan/pupcup-site.git
-    cd pupcup-site
-    git checkout about-page
+    git clone https://github.com/vilmarmorgan/pupcup-site.git && cd pupcup-site && git checkout about-page
+
+HTTPS rather than SSH, so it works whether or not you have keys set up on
+this machine.
 
 `about/index.html` is already there: the head block, the design-system
 variables, the shared menu wired up, three empty sections and the two links.
@@ -113,24 +118,15 @@ this page is real.
 
 ---
 
-## If you are starting a Claude session, paste this
+## Using Claude for this
 
-> I am building a new page for playpupcup.com, a static site with no build
-> step. I am working in the `about/` folder of the pupcup-site repo on the
-> `about-page` branch, and I must not change any file outside that folder.
->
-> Read `about/BRIEF.md` first, then `.claude/rules/tech-defaults.md`,
-> `.claude/rules/design-system.md` and `.claude/rules/workflow.md`. Read
-> `howtoplay/index.html` to see how a page on this site is put together.
->
-> The page is "What is Pupcup?" - the box, what is inside, and the concept,
-> linking out to `/` for the cards and `/howtoplay/` for the mechanics. The
-> shell is already in `about/index.html`; fill it in, keep its structure, and
-> keep everything inline in that one file.
->
-> Before telling me something works, serve the site root with
-> `python3 -m http.server 8000` and check `http://localhost:8000/about/` -
-> opening the file directly breaks every root-relative path and hides it.
->
-> Run `git status --short` before any commit and tell me if anything outside
-> `about/` is listed.
+**Claude Code, in the repo:** nothing to do. This file loads on its own as
+soon as it touches a file in `about/`, and the site-wide rules in
+`.claude/rules/` load at launch. Just tell it what you want built.
+
+**Claude in a browser, without the repo on the machine:** none of that
+loading happens - it cannot see these files. Paste this file into the
+conversation first, then ask for what you want.
+
+Either way the constraint that matters is the one at the top: nothing
+outside `about/` changes.
