@@ -13,8 +13,14 @@
 - `--text-muted: #9a9a9e` — secondary text
 
 ## Typography
-- Primary font: `Space Grotesk` (weights: 400, 500, 600, 700)
+- Primary font: `Jost` (weights: 400, 500, 600, 700), loaded from Google Fonts
 - Fallback: `system-ui, sans-serif`
+
+  Corrected 28 Oct 2026. This said `Space Grotesk`, which no page on the site
+  uses: `index.html`, `howtoplay/index.html` and `kickstarter/index.html` all
+  load `family=Jost` and set `font-family: 'Jost'`. The line came over from
+  Pupcup-home with the rest of these files and was never rechecked. Anyone
+  following it would have built a page in the wrong typeface.
 
 ## Key Sizes
 - Card border-radius: 12px (grid), 14px (overlay)

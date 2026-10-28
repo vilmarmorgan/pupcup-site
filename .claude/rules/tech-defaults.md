@@ -4,7 +4,8 @@
 - Single self-contained HTML file (`index.html`) with all CSS and JS inline
 - No build step, no bundler, no package manager
 - Vanilla JS, no frameworks or libraries
-- Font: Space Grotesk (loaded via Google Fonts `<link>`)
+- Font: Jost (loaded via Google Fonts `<link>`) — corrected 28 Oct 2026; this
+  said Space Grotesk, which no page on the site uses
 
 ## Architecture
 
@@ -61,6 +62,10 @@ Numbering is independent per class. Classes grow by adding images to the subfold
 - Each card item: `type, dogName, ownerName, cardType (rule/steal/block), image, imageHD`
 
 ## Protected Files — NEVER modify without explicit permission
+- `nav.js` — the site menu, loaded by every page. Adding a link here is how a
+  new page joins the navigation, and it is a separate reviewed change, never
+  part of the commit that builds the page.
+- `CNAME` — binds playpupcup.com. Removing it takes the site off the domain.
 - `index.html`
 - `TGC-API-REFERENCE.md`
 - Everything in `notion-docs/`
