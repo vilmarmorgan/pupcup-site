@@ -44,9 +44,19 @@ explaining a turn, you have drifted.
 You are working in **GitHub Desktop** for the git side and the **Claude
 desktop app** for the building. No terminal needed.
 
-1. GitHub Desktop: **File > Clone Repository**, the **GitHub.com** tab, pick
-   `vilmarmorgan/pupcup-site`. Note the **Local Path** it shows you - that is
-   the folder you will connect to Claude. Click **Clone**.
+1. GitHub Desktop, and it does not matter whether you already have this repo:
+   - **Already have it:** select `pupcup-site` in your repository list and
+     click **Fetch origin**.
+   - **Do not have it:** **File > Clone Repository**, the **GitHub.com** tab,
+     pick `vilmarmorgan/pupcup-site`, click **Clone**.
+
+   Fetching is not optional if you cloned this before 28 Oct 2026. The
+   `about-page` branch was made that day, and a clone taken earlier has no
+   idea it exists - it will simply be missing from the branch list in the
+   next step, with nothing to tell you why.
+
+   Either way, note the **Local Path**: that is the folder you connect to
+   Claude in step 3.
 2. GitHub Desktop: click **Current Branch** in the repository bar and choose
    **about-page**. Everything you do happens on that branch.
 3. Claude desktop app: connect the folder from step 1 ("Add folder").
