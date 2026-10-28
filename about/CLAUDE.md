@@ -41,10 +41,17 @@ explaining a turn, you have drifted.
 
 ## Getting set up
 
-    git clone https://github.com/vilmarmorgan/pupcup-site.git && cd pupcup-site && git checkout about-page
+You are working in **GitHub Desktop** for the git side and the **Claude
+desktop app** for the building. No terminal needed.
 
-HTTPS rather than SSH, so it works whether or not you have keys set up on
-this machine.
+1. GitHub Desktop: **File > Clone Repository**, the **GitHub.com** tab, pick
+   `vilmarmorgan/pupcup-site`. Note the **Local Path** it shows you - that is
+   the folder you will connect to Claude. Click **Clone**.
+2. GitHub Desktop: click **Current Branch** in the repository bar and choose
+   **about-page**. Everything you do happens on that branch.
+3. Claude desktop app: connect the folder from step 1 ("Add folder").
+4. Tell Claude to read this file. It does not load on its own in the desktop
+   app the way it does in Claude Code, so say so explicitly the first time.
 
 `about/index.html` is already there: the head block, the design-system
 variables, the shared menu wired up, three empty sections and the two links.
@@ -102,11 +109,16 @@ Anything listed that is not under `about/` should not be in the commit.
 
 ## Handing it back
 
-Commit on `about-page`, push, and open a pull request against `main`.
+All in GitHub Desktop:
 
-    git add about/
-    git commit -m "Build the What is Pupcup page"
-    git push
+1. The **Changes** tab lists what you touched. **Everything listed should be
+   under `about/`.** If anything else is there, stop and tell Vilmar rather
+   than committing it.
+2. Write a summary in the box at the bottom left, click **Commit to
+   about-page**.
+3. Click **Push origin** at the top.
+4. GitHub Desktop then offers to open a pull request - take it, or go to the
+   repo on github.com and open one from `about-page` into `main`.
 
 `main` requires a pull request and one approval, so you cannot publish by
 accident even if you try. Vilmar reviews and merges; the page goes live at
@@ -120,13 +132,17 @@ this page is real.
 
 ## Using Claude for this
 
-**Claude Code, in the repo:** nothing to do. This file loads on its own as
-soon as it touches a file in `about/`, and the site-wide rules in
-`.claude/rules/` load at launch. Just tell it what you want built.
+**In the Claude desktop app with this folder connected** - your setup - this
+file does NOT load by itself. Start the first session by telling Claude:
 
-**Claude in a browser, without the repo on the machine:** none of that
-loading happens - it cannot see these files. Paste this file into the
-conversation first, then ask for what you want.
+> Read `about/CLAUDE.md` in this folder and follow it. Then build the page it
+> describes, in `about/index.html`. Do not change any file outside `about/`.
+
+After that it has the context for the rest of the session.
+
+**In Claude Code, in a terminal** this file loads on its own as soon as
+Claude touches anything in `about/`, and the rules in `.claude/rules/` load
+at launch. Nothing to say.
 
 Either way the constraint that matters is the one at the top: nothing
 outside `about/` changes.
