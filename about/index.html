@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What is Pupcup?</title>
+<meta name="description" content="What Pupcup is: the box, what comes in it, and the idea behind the phone-free dog-themed card game.">
+<meta property="og:title" content="What is Pupcup?">
+<meta property="og:description" content="The box, what comes in it, and the idea behind Pupcup.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/og-image.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+<style>
+  /* ───── Reset & Base ─────
+     The variables below are the site's design system - see
+     .claude/rules/design-system.md. Do not redefine them here with new
+     values; if this page needs a colour the system does not have, add it to
+     the system rather than forking it on one page. */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1e2028;
+    --surface: #1a1a1e;
+    --accent: #f5c542;
+    --text: #f0ece4;
+    --text-muted: #9a9a9e;
+    --buy-bg: #ff8d1e;
+    --buy-text: #231f20;
+  }
+
+  /* NOTE: howtoplay/index.html sets `overflow: hidden` because it is a
+     fixed, full-screen layout. This page scrolls, so it must not. */
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    font-family: 'Jost', system-ui, sans-serif;
+    color: var(--text);
+    min-height: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+
+  /* ───── Header ─────
+     Burger + logo + Buy Now, the same furniture every page carries. The
+     burger opens the shared menu defined in /nav.js. */
+  .hdr {
+    position: sticky; top: 0; z-index: 400;
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px; background: var(--bg);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .burger {
+    display: flex; flex-direction: column; justify-content: center; gap: 5px;
+    width: 42px; height: 42px; padding: 0 9px; border: 0; border-radius: 10px;
+    background: rgba(255,255,255,.08); cursor: pointer;
+  }
+  .burger span { display: block; height: 2px; background: var(--text); border-radius: 2px; }
+  .hdr-logo { height: 26px; }
+  .hdr-right { margin-left: auto; }
+  .btn-buy {
+    display: inline-flex; align-items: center; height: 40px; padding: 0 22px;
+    border-radius: 100px; font-size: 16px; font-weight: 700;
+    background: var(--buy-bg); color: var(--buy-text);
+    box-shadow: 0 2px 10px rgba(255,141,30,.3);
+  }
+
+  /* ───── Page ───── */
+  .wrap { max-width: 980px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: clamp(32px, 6vw, 56px); font-weight: 700; line-height: 1.05; }
+  .lede { color: var(--text-muted); font-size: clamp(17px, 2.2vw, 21px); margin-top: 14px; max-width: 46ch; }
+  section { margin-top: 56px; }
+  h2 { font-size: clamp(22px, 3.4vw, 30px); font-weight: 600; }
+  p { margin-top: 12px; line-height: 1.6; max-width: 62ch; }
+
+  /* Placeholder frames. Replace these with the real thing - they exist so the
+     layout has honest shapes to lay out, not as a style to keep. */
+  .slot {
+    margin-top: 20px; border: 1px dashed rgba(255,255,255,.22);
+    border-radius: 14px; min-height: 220px;
+    display: grid; place-items: center; text-align: center; padding: 24px;
+    color: var(--text-muted); font-size: 14px;
+  }
+
+  /* ───── Where next ───── */
+  .next { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
+  .next a {
+    flex: 1 1 260px; border: 1px solid rgba(255,255,255,.14); border-radius: 14px;
+    padding: 20px 22px; transition: border-color .15s ease, transform .15s ease;
+  }
+  .next a:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .next b { display: block; font-size: 18px; font-weight: 600; }
+  .next span { display: block; color: var(--text-muted); font-size: 14.5px; margin-top: 6px; }
+
+  /* ───── Shared full-screen menu ─────
+     Markup and class names must match what /nav.js expects: it fills
+     nav.nav-menu-links. */
+  .nav-menu {
+    position: fixed; inset: 0; z-index: 500; background: #1e2028;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .nav-menu.active { opacity: 1; pointer-events: auto; }
+  .nav-menu-links { display: flex; flex-direction: column; align-items: center; gap: 40px; text-align: center; }
+  .nav-menu-links a { font-size: 34px; font-weight: 600; }
+  .nav-menu-links a:hover { color: var(--accent); }
+  .nav-menu-arf { display: flex; flex-direction: column; align-items: center; }
+  .nav-menu-arf-sub { font-size: 16px; font-weight: 500; color: var(--text-muted); margin-top: 8px; }
+  .nav-menu-close {
+    position: absolute; top: 20px; left: 20px; width: 54px; height: 54px;
+    border: 0; border-radius: 50%; background: rgba(255,255,255,.12);
+    color: var(--text); font-size: 30px; line-height: 1; cursor: pointer;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <button class="burger" id="heroBurger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <a href="/" aria-label="Pupcup home">
+    <img class="hdr-logo" src="/images/Pupcup-logo-horizontal.svg" alt="Pupcup">
+  </a>
+  <div class="hdr-right">
+    <a class="btn-buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
+  </div>
+</header>
+
+<!-- Full-screen navigation menu. /nav.js fills the empty <nav> below; the
+     root-relative src works from any folder depth. -->
+<div class="nav-menu" id="navMenu">
+  <button class="nav-menu-close" id="navMenuClose" aria-label="Close menu">&times;</button>
+  <nav class="nav-menu-links"></nav>
+  <script src="/nav.js"></script>
+</div>
+
+<main class="wrap">
+
+  <h1>What is Pupcup?</h1>
+  <p class="lede">
+    <!-- JOEL: one or two sentences. What it is, who it is for, why it exists.
+         Everything below should feel like it is answering this. -->
+    A phone-free card game about dogs.
+  </p>
+
+  <section>
+    <h2>The box</h2>
+    <p><!-- What it looks like, what it feels like to be handed one. --></p>
+    <div class="slot">Box shot goes here</div>
+  </section>
+
+  <section>
+    <h2>What&rsquo;s inside</h2>
+    <p><!-- The contents: how many cards, the classes, anything else in the box. --></p>
+    <div class="slot">Contents shot goes here</div>
+  </section>
+
+  <section>
+    <h2>The idea</h2>
+    <p><!-- The concept. Not the rules - those live on How to Play. --></p>
+  </section>
+
+  <section>
+    <h2>Where to next</h2>
+    <div class="next">
+      <a href="/">
+        <b>See the cards</b>
+        <span>Every card in the deck, on the homepage.</span>
+      </a>
+      <a href="/howtoplay/">
+        <b>How to play</b>
+        <span>The video, the rules and the FAQ.</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Open/close the full-screen nav menu from the burger. Same wiring as
+  // howtoplay/index.html, kept per-page because there is no bundler here.
+  (function () {
+    var menu = document.getElementById('navMenu');
+    var burger = document.getElementById('heroBurger');
+    var closeBtn = document.getElementById('navMenuClose');
+    if (!menu || !burger) return;
+    var open = function () { menu.classList.add('active'); };
+    var close = function () { menu.classList.remove('active'); };
+    burger.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    menu.addEventListener('click', function (e) {
+      if (e.target.closest('.nav-menu-links a')) close();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  })();
+</script>
+</body>
+</html>
