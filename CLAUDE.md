@@ -16,6 +16,18 @@ http://playpupcup.com/" for this repo, and every asset the live page loads
 (`bone-lick.js`, `nav.js`, `og-image`, `apple-touch-icon`, `favicon.svg`,
 `kickstarter/`) exists here and in neither case in Pupcup-home.
 
+## Work in progress: the /about/ page
+
+Joel is building `about/` ("What is Pupcup?") on the `about-page` branch.
+
+- **Nothing outside `about/` changes in that work.** The site is live and
+  Pages serves `main` from the repo root, so a merge is a publish.
+- `about/CLAUDE.md` is the brief. It loads by itself once anything in that
+  folder is touched; read it before building there.
+- `main` requires a pull request and one approval. Branch, push, open a PR.
+- The menu link for a new page is a one-line change to `nav.js` and is
+  Vilmar's, separately, after the page is real.
+
 ## Where the records live
 
 Code here; everything else in the vault at `~/vilmartian/vault`:
