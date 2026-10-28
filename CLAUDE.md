@@ -54,3 +54,16 @@ Pupcup-home's `notion-docs/`, and a second copy is how the two drift.
 Those rules were written when the file was called `pupcup-home.html`. The
 filename references have been repointed at `index.html`; nothing else in them
 was changed.
+
+## When you ask Vilmar to check this live
+
+**Name the version to expect, and where it shows on screen.** Every push,
+every "reload and look at it". Without it there is no way to tell a stale
+browser from a real bug, and that has cost a whole round trip more than once.
+The rule is in `~/vilmartian/AGENTS.md` and applies to every app, not only
+the ones that happen to have a build number already.
+
+**This site has no version on screen.** There is no build number anywhere
+in `index.html`, so after a deploy there is nothing to name and nothing for
+him to check against. Worth adding before the next change anybody has to
+verify by looking.
