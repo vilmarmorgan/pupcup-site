@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pupcup Box Reveal (Draft)</title>
+<meta name="description" content="Draft landing page: the Pupcup box opens as you scroll.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="Pupcup">
+<meta property="og:description" content="Open the box and meet the dogs.">
+<meta property="og:type" content="website">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+<style>
+  /* ───── DRAFT: scroll-driven box reveal. Self-contained; touches nothing else on the site. ───── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1e2028;
+    --surface: #1a1a1e;
+    --accent: #f5c542;
+    --text: #f0ece4;
+    --text-muted: #9a9a9e;
+    --buy-bg: #ff8d1e;
+    --buy-text: #231f20;
+    /* box placeholder colours, taken from the logo */
+    --box-red: #ed1c24;
+    --box-red-side: #c8151c;
+    --box-red-in: #8e1015;
+    --lid: #f0ece4;
+    --lid-side: #ddd6c9;
+    --ink: #231f20;
+  }
+
+  html { background: var(--bg); }
+  body {
+    background: var(--bg);
+    font-family: 'Jost', system-ui, sans-serif;
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* Header */
+  .top {
+    position: fixed; inset: 0 0 auto; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 18px 24px;
+  }
+  .top img { height: 34px; width: auto; display: block; filter: brightness(0) invert(0.94); }
+  .buy {
+    background: var(--buy-bg); color: var(--buy-text); font-weight: 700;
+    padding: 10px 20px; border-radius: 999px; font-size: 15px;
+    box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
+  }
+  .draft-tag {
+    position: fixed; left: 24px; bottom: 18px; z-index: 50;
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted);
+  }
+
+  /* Pinned reveal */
+  #reveal { position: relative; height: 520vh; }
+  .stage {
+    position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
+    background: radial-gradient(55% 50% at 50% 60%, #2c3040 0%, var(--bg) 70%);
+  }
+  .viewport {
+    position: absolute; inset: 0;
+    perspective: 1800px; perspective-origin: 50% 35%;
+  }
+  .fit, .box, .lid, .card, .deck { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+  .f {
+    position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .shadow {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0));
+  }
+
+  /* Placeholder box art */
+  .lid-top { background: var(--lid); flex-direction: column; gap: 18px; border-radius: 6px; }
+  .lid-top img { width: 78%; }
+  .lid-top span { font-weight: 600; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
+  .lid-under { background: var(--lid-side); border-radius: 6px; }
+  .lid-skirt { background: var(--lid-side); }
+  .wall-front { background: var(--box-red); color: var(--text); font-weight: 700; font-size: 34px; letter-spacing: .2em; }
+  .wall-side { background: var(--box-red-side); }
+  .wall-in { background: var(--box-red-in); }
+  .floor { background: #6e0c10; }
+  .card-front { border-radius: 14px; overflow: hidden; background: var(--surface); }
+  .card-front img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-back {
+    border-radius: 14px; background: var(--ink);
+    box-shadow: inset 0 0 0 8px var(--ink), inset 0 0 0 11px var(--accent);
+  }
+  .card-back img { width: 46%; }
+  .deck-edge { border-radius: 14px; background: #e9e2d4; }
+
+  /* Copy layered over the stage */
+  .hero-copy {
+    position: absolute; left: 0; right: 0; top: 96px; z-index: 5;
+    display: grid; justify-items: center; gap: 10px; text-align: center; padding: 0 20px;
+  }
+  .hero-copy h1 { font-size: clamp(38px, 7vw, 84px); font-weight: 700; line-height: 1; text-wrap: balance; }
+  .hero-copy h1 em { font-style: normal; color: var(--accent); }
+  .hero-copy p { color: var(--text-muted); font-size: 18px; max-width: 34ch; }
+  .hint {
+    position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 5;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted);
+  }
+  .hint i { width: 22px; height: 34px; border: 2px solid var(--text-muted); border-radius: 12px; position: relative; }
+  .hint i::after {
+    content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px;
+    border-radius: 2px; background: var(--accent); animation: nudge 1.6s ease-in-out infinite;
+  }
+  @keyframes nudge { 0%,100% { transform: translateY(0); opacity: 1 } 60% { transform: translateY(9px); opacity: .2 } }
+
+  .labels {
+    position: absolute; top: 50%; right: 6vw; transform: translateY(-50%); z-index: 5;
+    display: grid; gap: 22px; max-width: 280px; opacity: 0;
+  }
+  .label { display: grid; grid-template-columns: 28px 1fr; gap: 12px; }
+  .label::before { content: ""; width: 28px; height: 2px; margin-top: 13px; background: var(--accent); }
+  .label b { display: block; font-size: 22px; font-weight: 700; line-height: 1.15; }
+  .label small { color: var(--text-muted); font-size: 15px; }
+
+  @media (max-width: 600px) {
+    .top { padding: 14px 16px; }
+    .top img { height: 26px; }
+    .buy { padding: 8px 16px; font-size: 14px; }
+    .hero-copy { top: 80px; }
+    .labels {
+      top: auto; bottom: 0; right: 0; left: 0; transform: none; max-width: none;
+      grid-template-columns: 1fr 1fr; gap: 14px;
+      padding: 56px 16px 28px;
+      background: linear-gradient(to top, var(--bg) 62%, rgba(30, 32, 40, 0));
+    }
+    .label { grid-template-columns: 1fr; gap: 6px; }
+    .label::before { margin-top: 0; }
+    .label b { font-size: 17px; }
+    .label small { font-size: 13px; }
+    .draft-tag { display: none; }
+  }
+
+  /* After the reveal */
+  .after { padding: 96px 24px 120px; }
+  .after-inner { max-width: 960px; margin: 0 auto; display: grid; gap: 28px; justify-items: start; }
+  .after h2 { font-size: clamp(30px, 5vw, 52px); font-weight: 700; line-height: 1.05; }
+  .after p { color: var(--text-muted); font-size: 18px; max-width: 56ch; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
+  <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
+</header>
+
+<main>
+  <section id="reveal" aria-label="Pupcup box reveal">
+    <div class="stage">
+      <div class="viewport"><div class="fit" id="fit"></div></div>
+
+      <div class="hero-copy" id="heroCopy">
+        <h1>Open the box. <em>Meet the dogs.</em></h1>
+        <p>Scroll slowly or fast. The box opens at your pace.</p>
+      </div>
+
+      <div class="labels" id="labels">
+        <div class="label"><div><b>Founding Class</b><small>The original 28 dogs from the first print run</small></div></div>
+        <div class="label"><div><b>Custom VIP</b><small>Your own dog, illustrated on a card</small></div></div>
+      </div>
+
+      <div class="hint" id="hint"><i></i>Scroll to open</div>
+    </div>
+  </section>
+
+  <section class="after">
+    <div class="after-inner">
+      <h2>Ready to play?</h2>
+      <p>Draft page. The box art is a placeholder until the final box design is exported. The card is real Founding Class art.</p>
+      <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
+    </div>
+  </section>
+</main>
+
+<div class="draft-tag">Draft · not linked from the menu</div>
+
+<script>
+(function () {
+  // Swap these when the real art is ready.
+  var CARD_FRONT = '../cards-hd/founding/card-01.jpg';
+  var CARD_BACK_ICON = '../images/icon.svg';
+  var LOGO = '../images/Pupcup-logo-horizontal.svg';
+
+  // Sizes in px. The card matches the site's --card-w / --card-h.
+  var CW = 280, CH = 381;          // card
+  var W = 320, D = 420, H = 110;   // box base (width, depth, height)
+  var LW = 334, LD = 434, LH = 44; // lid
+  var TILT = 58;                   // degrees the box leans back toward the viewer
+
+  var fit = document.getElementById('fit');
+  var heroCopy = document.getElementById('heroCopy');
+  var labels = document.getElementById('labels');
+  var hint = document.getElementById('hint');
+  var section = document.getElementById('reveal');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function el(parent, cls) {
+    var d = document.createElement('div'); d.className = cls; parent.appendChild(d); return d;
+  }
+  function face(parent, w, h, transform, cls, inner) {
+    var f = el(parent, 'f ' + cls);
+    f.style.width = w + 'px'; f.style.height = h + 'px';
+    f.style.left = (-w / 2) + 'px'; f.style.top = (-h / 2) + 'px';
+    f.style.transform = transform;
+    if (inner) f.innerHTML = inner;
+    return f;
+  }
+
+  // Ground shadow (sits outside the box so it doesn't spin with it)
+  var box = el(fit, 'box');
+  var shadow = face(box, W * 1.9, D * 1.5, 'translateZ(-1px)', 'shadow');
+  shadow.className = 'shadow';
+
+  // Box base: floor + four walls, each with an outer and inner face
+  var half = 'translateZ(' + (H / 2) + 'px) ';
+  face(box, W, D, 'translateZ(0)', 'floor');
+  var front = 'translateY(' + (D / 2) + 'px) ' + half + 'rotateX(-90deg)';
+  var back = 'translateY(' + (-D / 2) + 'px) ' + half + 'rotateX(-90deg) rotateY(180deg)';
+  var left = 'translateX(' + (-W / 2) + 'px) ' + half + 'rotateY(-90deg) rotateZ(90deg)';
+  var right = 'translateX(' + (W / 2) + 'px) ' + half + 'rotateY(90deg) rotateZ(-90deg)';
+  face(box, W, H, front, 'wall-front', 'PUPCUP');
+  face(box, W, H, front + ' rotateY(180deg)', 'wall-in');
+  face(box, W, H, back, 'wall-side');
+  face(box, W, H, back + ' rotateY(180deg)', 'wall-in');
+  face(box, D, H, left, 'wall-side');
+  face(box, D, H, left + ' rotateY(180deg)', 'wall-in');
+  face(box, D, H, right, 'wall-side');
+  face(box, D, H, right + ' rotateY(180deg)', 'wall-in');
+
+  // Deck of cards resting inside
+  var backHTML = '<img src="' + CARD_BACK_ICON + '" alt="">';
+  face(box, CW, CH, 'translateZ(8px)', 'deck-edge');
+  face(box, CW, CH, 'translateZ(14px)', 'deck-edge');
+  face(box, CW, CH, 'translateZ(20px)', 'card-back', backHTML);
+
+  // The hero card
+  var card = el(box, 'card');
+  face(card, CW, CH, 'translateZ(1px)', 'card-front', '<img src="' + CARD_FRONT + '" alt="Pupcup Founding Class card">');
+  face(card, CW, CH, 'rotateY(180deg)', 'card-back', backHTML);
+
+  // Lid, hinged along its back edge
+  var lid = el(box, 'lid');
+  var sk = 'translateZ(' + (-LH / 2 + 2) + 'px) ';
+  face(lid, LW, LD, 'translateZ(2px)', 'lid-top', '<img src="' + LOGO + '" alt=""><span>Placeholder box art</span>');
+  face(lid, LW, LD, 'translateZ(1px) rotateY(180deg)', 'lid-under');
+  face(lid, LW, LH, 'translateY(' + (LD / 2) + 'px) ' + sk + 'rotateX(-90deg)', 'lid-skirt');
+  face(lid, LW, LH, 'translateY(' + (-LD / 2) + 'px) ' + sk + 'rotateX(-90deg) rotateY(180deg)', 'lid-skirt');
+  face(lid, LD, LH, 'translateX(' + (-LW / 2) + 'px) ' + sk + 'rotateY(-90deg) rotateZ(90deg)', 'lid-skirt');
+  face(lid, LD, LH, 'translateX(' + (LW / 2) + 'px) ' + sk + 'rotateY(90deg) rotateZ(-90deg)', 'lid-skirt');
+
+  // Helpers
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  function seg(p, a, b) { return clamp((p - a) / (b - a), 0, 1); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function easeInOut(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+  function easeOutBack(t) { var c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+
+  var scale = 1;
+  function resize() {
+    scale = Math.min(window.innerWidth / 560, window.innerHeight / 900, 1.15);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  var target = 0, current = 0;
+  function readScroll() {
+    var r = section.getBoundingClientRect();
+    var total = section.offsetHeight - window.innerHeight;
+    target = clamp(-r.top / total, 0, 1);
+  }
+  window.addEventListener('scroll', readScroll, { passive: true });
+
+  function apply(p, t) {
+    var intro = easeOut(seg(p, 0, 0.3));
+    var open = easeInOut(seg(p, 0.08, 0.38));
+    var rise = easeInOut(seg(p, 0.34, 0.7));
+    var turn = easeInOut(seg(p, 0.55, 0.82));
+    var pop = seg(p, 0.78, 0.9);
+    var focus = easeInOut(seg(p, 0.32, 0.85));
+    var narrow = window.innerWidth < 760;
+
+    var spin = lerp(-24, 0, intro) + Math.sin(t * 0.6) * 1.5 * (1 - focus);
+    var bob = Math.sin(t * 1.4) * 6 * (1 - intro);
+    var shiftX = narrow ? 0 : lerp(0, -90, seg(p, 0.8, 1));
+    var shiftY = lerp(110, 250, focus) + bob;
+
+    fit.style.transform = 'translate(' + shiftX + 'px,' + shiftY + 'px) scale(' + scale + ')';
+    box.style.transform = 'rotateX(' + TILT + 'deg) rotateZ(' + spin + 'deg)';
+
+    lid.style.transform = 'translateZ(' + (H + open * 6) + 'px) translateY(' + (-LD / 2) + 'px) rotateX(' + (open * 112) + 'deg) translateY(' + (LD / 2) + 'px)';
+
+    var s = 1 + 0.18 * easeOutBack(pop);
+    card.style.transform =
+      'translateZ(' + (24 + rise * 330) + 'px) translateY(' + (-turn * 60) + 'px) ' +
+      'rotateX(' + (-turn * TILT) + 'deg) rotateZ(' + (Math.sin(rise * Math.PI) * 6) + 'deg) scale(' + s + ')';
+
+    heroCopy.style.opacity = 1 - seg(p, 0.02, 0.12);
+    heroCopy.style.transform = 'translateY(' + (-seg(p, 0, 0.12) * 30) + 'px)';
+    hint.style.opacity = 1 - seg(p, 0.01, 0.06);
+    labels.style.opacity = seg(p, 0.86, 0.95);
+  }
+
+  function loop(ms) {
+    current = reduce ? target : current + (target - current) * 0.1;
+    if (Math.abs(target - current) < 0.0005) current = target;
+    apply(current, reduce ? 0 : ms / 1000);
+    requestAnimationFrame(loop);
+  }
+  readScroll(); current = target;
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
