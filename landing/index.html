@@ -16,7 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
 <style>
-  /* ───── DRAFT: scroll-driven box reveal. Self-contained; touches nothing else on the site. ───── */
+  /* ───── DRAFT: scroll-driven box reveal. Self-contained; touches nothing else on the site.
+     Box art in box-art/ is cut from the print PDFs (5.75 x 3.75 x 1 in box, full-depth lift-off lid). ───── */
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
@@ -27,13 +28,12 @@
     --text-muted: #9a9a9e;
     --buy-bg: #ff8d1e;
     --buy-text: #231f20;
-    /* box placeholder colours, taken from the logo */
-    --box-red: #ed1c24;
-    --box-red-side: #c8151c;
-    --box-red-in: #8e1015;
-    --lid: #f0ece4;
-    --lid-side: #ddd6c9;
-    --ink: #231f20;
+    --lid-inside: #d9115b;   /* magenta turn-in from the lid print file */
+    --base-inside: #141210;  /* base print is black */
+    --base-outside: #2e2c2a; /* outside of the base, a touch lighter so it reads against the backdrop */
+    --card-edge: #ece6da;
+    --studio: #050608;       /* backdrop behind the box */
+    --studio-2: #12141b;
   }
 
   html { background: var(--bg); }
@@ -57,49 +57,53 @@
     padding: 10px 20px; border-radius: 999px; font-size: 15px;
     box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
   }
+  .buy:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
   .draft-tag {
     position: fixed; left: 24px; bottom: 18px; z-index: 50;
     font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted);
   }
 
   /* Pinned reveal */
-  #reveal { position: relative; height: 520vh; }
+  #reveal { position: relative; height: 760vh; }
   .stage {
     position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
-    background: radial-gradient(55% 50% at 50% 60%, #2c3040 0%, var(--bg) 70%);
+    /* Studio look: black backdrop with soft coloured light leaks, like a product photo */
+    background:
+      radial-gradient(24% 30% at 4% 56%, rgba(38, 108, 255, .55), rgba(38, 108, 255, 0) 70%),
+      radial-gradient(20% 24% at 9% 34%, rgba(255, 64, 48, .38), rgba(255, 64, 48, 0) 70%),
+      radial-gradient(22% 30% at 97% 54%, rgba(44, 200, 86, .42), rgba(44, 200, 86, 0) 70%),
+      radial-gradient(26% 28% at 86% 84%, rgba(255, 128, 24, .38), rgba(255, 128, 24, 0) 70%),
+      radial-gradient(60% 55% at 50% 52%, var(--studio-2) 0%, var(--studio) 72%);
   }
-  .viewport {
-    position: absolute; inset: 0;
-    perspective: 1800px; perspective-origin: 50% 35%;
-  }
-  .fit, .box, .lid, .card, .deck { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+  .viewport { position: absolute; inset: 0; perspective: 1900px; perspective-origin: 50% 30%; }
+  /* Each flying card gets its own wrapper with its own perspective, so cards stack in order
+     and can never slice through each other or the box. */
+  .cards-layer { position: absolute; inset: 0; pointer-events: none; }
+  .card-wrap { position: absolute; inset: 0; perspective: 1900px; perspective-origin: 50% 30%; }
+  .card-flat { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  .card-flat .card-face { position: absolute; }
+  .fit, .box, .lid, .mirror, .card, .deck { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
   .f {
     position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    display: flex; align-items: center; justify-content: center;
+    background-size: 100% 100%; background-repeat: no-repeat;
+    outline: 1px solid transparent; /* smoother edges on 3D panels in Chrome */
   }
   .shadow {
     position: absolute; border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0));
+    background: radial-gradient(closest-side, rgba(0,0,0,.6), rgba(0,0,0,0));
   }
-
-  /* Placeholder box art */
-  .lid-top { background: var(--lid); flex-direction: column; gap: 18px; border-radius: 6px; }
-  .lid-top img { width: 78%; }
-  .lid-top span { font-weight: 600; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
-  .lid-under { background: var(--lid-side); border-radius: 6px; }
-  .lid-skirt { background: var(--lid-side); }
-  .wall-front { background: var(--box-red); color: var(--text); font-weight: 700; font-size: 34px; letter-spacing: .2em; }
-  .wall-side { background: var(--box-red-side); }
-  .wall-in { background: var(--box-red-in); }
-  .floor { background: #6e0c10; }
-  .card-front { border-radius: 14px; overflow: hidden; background: var(--surface); }
-  .card-front img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .card-back {
-    border-radius: 14px; background: var(--ink);
-    box-shadow: inset 0 0 0 8px var(--ink), inset 0 0 0 11px var(--accent);
+  .lid-in { background: var(--lid-inside); }
+  .base-out { background-color: var(--base-outside); }
+  .mirror-in { background: #2a0a17; } /* lid inside, seen dimly in the reflection */
+  /* Glossy floor: sits over the mirrored box so the reflection reads dim and fades out */
+  .floor {
+    background:
+      radial-gradient(closest-side, rgba(96, 104, 134, .55) 0%, rgba(44, 48, 66, .45) 34%, rgba(5, 6, 8, .3) 64%, rgba(5, 6, 8, 0) 100%);
   }
-  .card-back img { width: 46%; }
-  .deck-edge { border-radius: 14px; background: #e9e2d4; }
+  .base-in { background: var(--base-inside); }
+  .card-face img { width: 100%; height: 100%; display: block; }
+  .card-edge { border-radius: 11px; background: var(--card-edge); }
+  .divider { background: #0d0c0b; }
 
   /* Copy layered over the stage */
   .hero-copy {
@@ -122,31 +126,27 @@
   @keyframes nudge { 0%,100% { transform: translateY(0); opacity: 1 } 60% { transform: translateY(9px); opacity: .2 } }
 
   .labels {
-    position: absolute; top: 50%; right: 6vw; transform: translateY(-50%); z-index: 5;
-    display: grid; gap: 22px; max-width: 280px; opacity: 0;
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px; opacity: 0;
+    padding: 56px 24px 30px; text-align: center;
+    background: linear-gradient(to top, var(--studio) 55%, rgba(5, 6, 8, 0));
   }
-  .label { display: grid; grid-template-columns: 28px 1fr; gap: 12px; }
-  .label::before { content: ""; width: 28px; height: 2px; margin-top: 13px; background: var(--accent); }
-  .label b { display: block; font-size: 22px; font-weight: 700; line-height: 1.15; }
+  .label { display: grid; gap: 2px; justify-self: center; max-width: 280px; }
+  .label b { font-size: 22px; font-weight: 700; line-height: 1.15; }
   .label small { color: var(--text-muted); font-size: 15px; }
+  .label b::before { content: ""; display: block; width: 28px; height: 2px; margin: 0 auto 10px; background: var(--accent); }
 
   @media (max-width: 600px) {
     .top { padding: 14px 16px; }
     .top img { height: 26px; }
     .buy { padding: 8px 16px; font-size: 14px; }
     .hero-copy { top: 80px; }
-    .labels {
-      top: auto; bottom: 0; right: 0; left: 0; transform: none; max-width: none;
-      grid-template-columns: 1fr 1fr; gap: 14px;
-      padding: 56px 16px 28px;
-      background: linear-gradient(to top, var(--bg) 62%, rgba(30, 32, 40, 0));
-    }
-    .label { grid-template-columns: 1fr; gap: 6px; }
-    .label::before { margin-top: 0; }
+    .labels { gap: 16px; padding: 48px 16px 24px; }
     .label b { font-size: 17px; }
     .label small { font-size: 13px; }
     .draft-tag { display: none; }
   }
+  @media (prefers-reduced-motion: reduce) { .hint i::after { animation: none; } }
 
   /* After the reveal */
   .after { padding: 96px 24px 120px; }
@@ -166,6 +166,7 @@
   <section id="reveal" aria-label="Pupcup box reveal">
     <div class="stage">
       <div class="viewport"><div class="fit" id="fit"></div></div>
+      <div class="cards-layer" id="cardLayer"></div>
 
       <div class="hero-copy" id="heroCopy">
         <h1>Open the box. <em>Meet the dogs.</em></h1>
@@ -173,8 +174,8 @@
       </div>
 
       <div class="labels" id="labels">
-        <div class="label"><div><b>Founding Class</b><small>The original 28 dogs from the first print run</small></div></div>
-        <div class="label"><div><b>Custom VIP</b><small>Your own dog, illustrated on a card</small></div></div>
+        <div class="label"><b>Penalties &amp; Points</b><small>Break a rule, pay in bones</small></div>
+        <div class="label"><b>Rules, Steals &amp; Blocks</b><small>Every card stars a dog</small></div>
       </div>
 
       <div class="hint" id="hint"><i></i>Scroll to open</div>
@@ -184,7 +185,7 @@
   <section class="after">
     <div class="after-inner">
       <h2>Ready to play?</h2>
-      <p>Draft page. The box art is a placeholder until the final box design is exported. The card is real Founding Class art.</p>
+      <p>Draft page. The box art comes from the print files and the cards are the new card designs.</p>
       <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
     </div>
   </section>
@@ -194,89 +195,183 @@
 
 <script>
 (function () {
-  // Swap these when the real art is ready.
-  var CARD_FRONT = '../cards-hd/founding/card-01.jpg';
-  var CARD_BACK_ICON = '../images/icon.svg';
-  var LOGO = '../images/Pupcup-logo-horizontal.svg';
+  // ── Art ────────────────────────────────────────────────────────────────
+  var ART = 'box-art/';
+  var C = 'cards/';
+  // Left compartment: penalty + point cards. The PENALTY face pops first and lands in front.
+  var LEFT = { hero: 2, cards: [C + 'point-10.webp', C + 'penalty-5.webp', C + 'penalty.webp', C + 'penalty-20.webp', C + 'point-30.webp'],
+               alt: 'Pupcup penalty card' };
+  // Right compartment: the dog cards. Frida rises last and pops forward.
+  var RIGHT = { hero: 3, cards: [C + 'steal-popcorn.webp', C + 'block-lucky.webp', C + 'rule-kpup.webp', C + 'rule-frida.webp',
+                                 C + 'rule-pupstein.webp', C + 'steal-coco.webp', C + 'block-maximus.webp'],
+               alt: "Frida Puplo's Rule card" };
+  var LEFT_STACK_TOP = C + 'penalty.webp';
+  var RIGHT_STACK_TOP = C + 'dog-cards-face.webp'; // face of the Rule/Steal/Block deck, left showing once the fan is out
 
-  // Sizes in px. The card matches the site's --card-w / --card-h.
-  var CW = 280, CH = 381;          // card
-  var W = 320, D = 420, H = 110;   // box base (width, depth, height)
-  var LW = 334, LD = 434, LH = 44; // lid
-  var TILT = 58;                   // degrees the box leans back toward the viewer
+  // ── Real proportions: 1 inch = 72px ───────────────────────────────────
+  var W = 414, D = 270, H = 72;      // base 5.75 x 3.75 x 1 in
+  var LW = 420, LD = 276, LH = 74;   // full-depth lid, a hair bigger than the base
+  var CW = 186, CH = 264;            // card, same ratio as the card files
+  var STACK_X = 103;                 // centre of each compartment
+  var TILT = 58;                     // how far the box leans back toward the viewer
 
   var fit = document.getElementById('fit');
+  var cardLayer = document.getElementById('cardLayer');
   var heroCopy = document.getElementById('heroCopy');
   var labels = document.getElementById('labels');
   var hint = document.getElementById('hint');
   var section = document.getElementById('reveal');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function el(parent, cls) {
-    var d = document.createElement('div'); d.className = cls; parent.appendChild(d); return d;
-  }
-  function face(parent, w, h, transform, cls, inner) {
-    var f = el(parent, 'f ' + cls);
+  function el(parent, cls) { var d = document.createElement('div'); d.className = cls; parent.appendChild(d); return d; }
+  function face(parent, w, h, transform, cls, img, light) {
+    var f = el(parent, 'f ' + (cls || ''));
     f.style.width = w + 'px'; f.style.height = h + 'px';
     f.style.left = (-w / 2) + 'px'; f.style.top = (-h / 2) + 'px';
     f.style.transform = transform;
-    if (inner) f.innerHTML = inner;
+    var layers = [];
+    if (light) layers.push(light);
+    if (img) layers.push('url("' + img + '")');
+    if (layers.length) f.style.backgroundImage = layers.join(', ');
     return f;
   }
+  // Studio lighting: key light from above and slightly left, so the top is brightest,
+  // the front a little darker and the sides darkest.
+  var LIGHT = {
+    top: 'radial-gradient(60% 70% at 46% 34%, rgba(255,255,255,.22), rgba(255,255,255,0) 70%), ' +
+         'radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.22) 100%)',
+    front: 'linear-gradient(to bottom, rgba(0,0,0,.12), rgba(0,0,0,.34))',
+    back: 'linear-gradient(to bottom, rgba(0,0,0,.25), rgba(0,0,0,.45))',
+    left: 'linear-gradient(to bottom, rgba(0,0,0,.30), rgba(0,0,0,.52))',
+    right: 'linear-gradient(to bottom, rgba(0,0,0,.38), rgba(0,0,0,.58))',
+    plain: 'linear-gradient(to bottom, rgba(255,255,255,.34) 0, rgba(255,255,255,.12) 5%, rgba(255,255,255,.04) 45%, rgba(0,0,0,.15) 100%)',
+    // Reflections are dim, and fade further from the floor (the image top is the far edge in the mirror)
+    mirror: 'linear-gradient(to bottom, rgba(5,6,8,.92), rgba(5,6,8,.5))',
+    mirrorTop: 'linear-gradient(rgba(5,6,8,.72), rgba(5,6,8,.72))',
+    mirrorBase: 'linear-gradient(to bottom, rgba(5,6,8,.85), rgba(5,6,8,.25))'
+  };
+  function cardFace(parent, transform, src, alt) {
+    var f = face(parent, CW, CH, transform, 'card-face');
+    var i = document.createElement('img'); i.src = src; i.alt = alt || ''; i.decoding = 'async'; f.appendChild(i);
+    return f;
+  }
+  // Four walls around the origin. Each wall's image has its top edge at the top of the wall.
+  function walls(parent, w, d, h, zMid, img, insideCls, outCls, lightAll) {
+    var keys = ['front', 'back', 'left', 'right'];
+    var hz = 'translateZ(' + zMid + 'px) ';
+    var specs = [
+      [w, 'translateY(' + (d / 2) + 'px) ' + hz + 'rotateX(-90deg)', img.front],
+      [w, 'translateY(' + (-d / 2) + 'px) ' + hz + 'rotateX(-90deg) rotateY(180deg)', img.back],
+      [d, 'translateX(' + (-w / 2) + 'px) ' + hz + 'rotateY(-90deg) rotateZ(90deg)', img.left],
+      [d, 'translateX(' + (w / 2) + 'px) ' + hz + 'rotateY(90deg) rotateZ(-90deg)', img.right]
+    ];
+    // Outer panels are a touch wider and taller than the box so the corners and top edge overlap
+    // instead of leaving hairline gaps that let the inside show through.
+    var outer = [];
+    specs.forEach(function (s, k) {
+      // no art = plain colour with an edge highlight
+      outer.push(face(parent, s[0] + 3, h + 3, s[1], s[2] ? '' : (outCls || insideCls), s[2], lightAll || (s[2] ? LIGHT[keys[k]] : LIGHT.plain)));
+      face(parent, s[0] - 1, h, s[1] + ' rotateY(180deg)', insideCls);
+    });
+    return outer;
+  }
 
-  // Ground shadow (sits outside the box so it doesn't spin with it)
+  // ── Build ──────────────────────────────────────────────────────────────
   var box = el(fit, 'box');
-  var shadow = face(box, W * 1.9, D * 1.5, 'translateZ(-1px)', 'shadow');
-  shadow.className = 'shadow';
+  // Reflection: a copy of the box flipped under the floor. Turning it over swaps front and back,
+  // so the art is swapped too and the reflected front shows the front's own art.
+  var mirror = el(box, 'mirror');
+  mirror.style.transform = 'rotateX(180deg)';
+  walls(mirror, W, D, H, H / 2, {
+    // flipped over, so 'back' here is what shows under the real (blank) front
+    front: ART + 'base-back.jpg', back: null, left: ART + 'base-left.jpg', right: ART + 'base-right.jpg'
+  }, 'base-in', 'base-out', LIGHT.mirrorBase);
+  var mirrorLid = el(mirror, 'lid');
+  face(mirrorLid, LW + 3, LD + 3, 'translateZ(1.5px)', '', ART + 'lid-top.jpg', LIGHT.mirrorTop);
+  walls(mirrorLid, LW, LD, LH, -LH / 2, {
+    front: ART + 'lid-back.jpg', back: ART + 'lid-front.jpg', left: ART + 'lid-left.jpg', right: ART + 'lid-right.jpg'
+  }, 'mirror-in', null, LIGHT.mirror);
+  face(box, W * 3.2, D * 3.6, 'translateZ(0.2px)', 'floor');
 
-  // Box base: floor + four walls, each with an outer and inner face
-  var half = 'translateZ(' + (H / 2) + 'px) ';
-  face(box, W, D, 'translateZ(0)', 'floor');
-  var front = 'translateY(' + (D / 2) + 'px) ' + half + 'rotateX(-90deg)';
-  var back = 'translateY(' + (-D / 2) + 'px) ' + half + 'rotateX(-90deg) rotateY(180deg)';
-  var left = 'translateX(' + (-W / 2) + 'px) ' + half + 'rotateY(-90deg) rotateZ(90deg)';
-  var right = 'translateX(' + (W / 2) + 'px) ' + half + 'rotateY(90deg) rotateZ(-90deg)';
-  face(box, W, H, front, 'wall-front', 'PUPCUP');
-  face(box, W, H, front + ' rotateY(180deg)', 'wall-in');
-  face(box, W, H, back, 'wall-side');
-  face(box, W, H, back + ' rotateY(180deg)', 'wall-in');
-  face(box, D, H, left, 'wall-side');
-  face(box, D, H, left + ' rotateY(180deg)', 'wall-in');
-  face(box, D, H, right, 'wall-side');
-  face(box, D, H, right + ' rotateY(180deg)', 'wall-in');
+  var shadow = el(box, 'shadow');
+  shadow.style.width = (W * 1.25) + 'px'; shadow.style.height = (D * 1.35) + 'px';
+  shadow.style.left = (-W * 0.625) + 'px'; shadow.style.top = (-D * 0.675) + 'px';
+  shadow.style.transform = 'translateZ(0.5px)';
 
-  // Deck of cards resting inside
-  var backHTML = '<img src="' + CARD_BACK_ICON + '" alt="">';
-  face(box, CW, CH, 'translateZ(8px)', 'deck-edge');
-  face(box, CW, CH, 'translateZ(14px)', 'deck-edge');
-  face(box, CW, CH, 'translateZ(20px)', 'card-back', backHTML);
+  // Base: black print, open top, divider down the middle
+  face(box, W, D, 'translateZ(1px)', 'base-in');
+  var baseFront = walls(box, W, D, H, H / 2, {
+    front: null, /* left blank for now (was the dedication) */ back: ART + 'base-back.jpg',
+    left: ART + 'base-left.jpg', right: ART + 'base-right.jpg'
+  }, 'base-in', 'base-out')[0];
+  var DH = H - 8;
+  [-1.5, 1.5].forEach(function (x) {
+    face(box, D, DH, 'translateX(' + x + 'px) translateZ(' + (DH / 2) + 'px) rotateY(90deg) rotateZ(-90deg)', 'divider');
+    face(box, D, DH, 'translateX(' + x + 'px) translateZ(' + (DH / 2) + 'px) rotateY(-90deg) rotateZ(90deg)', 'divider');
+  });
 
-  // The hero card
-  var card = el(box, 'card');
-  face(card, CW, CH, 'translateZ(1px)', 'card-front', '<img src="' + CARD_FRONT + '" alt="Pupcup Founding Class card">');
-  face(card, CW, CH, 'rotateY(180deg)', 'card-back', backHTML);
+  function stack(x, topSrc, layers) {
+    for (var k = 0; k < layers; k++) face(box, CW, CH, 'translateX(' + x + 'px) translateZ(' + (4 + k * 6) + 'px)', 'card-edge');
+    var top = cardFace(box, 'translateX(' + x + 'px) translateZ(' + (4 + layers * 6) + 'px)', topSrc);
+    return { z: 4 + layers * 6, img: top.querySelector('img') };
+  }
+  var leftStack = stack(-STACK_X, LEFT_STACK_TOP, 6);
+  var rightStack = stack(STACK_X, RIGHT_STACK_TOP, 6);
+  var leftTop = leftStack.z, rightTop = rightStack.z;
 
-  // Lid, hinged along its back edge
+  // Each fan: which compartment, when it starts, and who leaves first
+  function makeGroup(g, fromX, pileTop, start, step, heroFirst, front) {
+    var n = g.cards.length;
+    var rank = g.cards.map(function (_, i) { return i; }).sort(function (a, b) {
+      var da = Math.abs(a - g.hero), db = Math.abs(b - g.hero);
+      return heroFirst ? da - db : db - da;
+    });
+    g.fromX = fromX; g.start = start; g.step = step; g.front = front;
+    g.list = g.cards.map(function (src, i) {
+      var wrap = el(cardLayer, 'card-wrap');
+      wrap.style.visibility = 'hidden';
+      var c = el(wrap, 'card-flat');
+      cardFace(c, 'none', src, i === g.hero ? g.alt : '');
+      var r = rank.indexOf(i);
+      return { el: c, wrap: wrap, i: i, r: r, pileZ: pileTop + 1 + (n - 1 - r) * 0.6 };
+    });
+    return g;
+  }
+  var groups = [
+    makeGroup(LEFT, -STACK_X, leftTop, 0.34, 0.05, true, 0),   // both compartments start together
+    makeGroup(RIGHT, STACK_X, rightTop, 0.34, 0.04, false, 40)
+  ];
+  // The top of each deck always shows the next card to leave, like a real deck.
+  // Once every card is out, it shows the deck's face card.
+  LEFT.stackImg = leftStack.img; LEFT.finalSrc = LEFT_STACK_TOP;
+  RIGHT.stackImg = rightStack.img; RIGHT.finalSrc = RIGHT_STACK_TOP;
+  groups.forEach(function (g) {
+    g.byRank = g.list.slice().sort(function (a, b) { return a.r - b.r; });
+    g.shown = '';
+  });
+
+  // Lid: origin at the centre of its top panel; walls hang down from there
   var lid = el(box, 'lid');
-  var sk = 'translateZ(' + (-LH / 2 + 2) + 'px) ';
-  face(lid, LW, LD, 'translateZ(2px)', 'lid-top', '<img src="' + LOGO + '" alt=""><span>Placeholder box art</span>');
-  face(lid, LW, LD, 'translateZ(1px) rotateY(180deg)', 'lid-under');
-  face(lid, LW, LH, 'translateY(' + (LD / 2) + 'px) ' + sk + 'rotateX(-90deg)', 'lid-skirt');
-  face(lid, LW, LH, 'translateY(' + (-LD / 2) + 'px) ' + sk + 'rotateX(-90deg) rotateY(180deg)', 'lid-skirt');
-  face(lid, LD, LH, 'translateX(' + (-LW / 2) + 'px) ' + sk + 'rotateY(-90deg) rotateZ(90deg)', 'lid-skirt');
-  face(lid, LD, LH, 'translateX(' + (LW / 2) + 'px) ' + sk + 'rotateY(90deg) rotateZ(-90deg)', 'lid-skirt');
+  face(lid, LW + 3, LD + 3, 'translateZ(1.5px)', '', ART + 'lid-top.jpg', LIGHT.top);
+  face(lid, LW - 2, LD - 2, 'translateZ(-1px) rotateY(180deg)', 'lid-in');
+  walls(lid, LW, LD, LH, -LH / 2, {
+    front: ART + 'lid-front.jpg', back: ART + 'lid-back.jpg',
+    left: ART + 'lid-left.jpg', right: ART + 'lid-right.jpg'
+  }, 'lid-in');
 
-  // Helpers
+  // ── Motion helpers ─────────────────────────────────────────────────────
   function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
   function seg(p, a, b) { return clamp((p - a) / (b - a), 0, 1); }
   function lerp(a, b, t) { return a + (b - a) * t; }
   function easeInOut(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
-  function easeOutBack(t) { var c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+  function easeOutBack(t) { var c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
 
-  var scale = 1;
+  var scale = 1, narrow = false;
   function resize() {
-    scale = Math.min(window.innerWidth / 560, window.innerHeight / 900, 1.15);
+    narrow = window.innerWidth < 760;
+    scale = narrow ? Math.min(window.innerWidth / 640, window.innerHeight / 900)
+                   : Math.min(window.innerWidth / 1420, window.innerHeight / 820, 1.15);
   }
   window.addEventListener('resize', resize);
   resize();
@@ -289,38 +384,119 @@
   }
   window.addEventListener('scroll', readScroll, { passive: true });
 
+  // ── Timeline (p = 0..1 through the pinned section) ─────────────────────
+  //  0.00–0.30  box turns to face you
+  //  0.08–0.22  lid lifts straight up
+  //  0.18–0.36  lid tips toward you and floats out of frame
+  //  0.34–0.82  left compartment: PENALTY card first, then penalties & points fan out
+  //  0.34–0.86  right compartment, at the same time: dog cards fan out, Frida last
+  //  0.86–0.94  Frida pops forward
+  //  0.92–0.98  labels fade in
   function apply(p, t) {
     var intro = easeOut(seg(p, 0, 0.3));
-    var open = easeInOut(seg(p, 0.08, 0.38));
-    var rise = easeInOut(seg(p, 0.34, 0.7));
-    var turn = easeInOut(seg(p, 0.55, 0.82));
-    var pop = seg(p, 0.78, 0.9);
-    var focus = easeInOut(seg(p, 0.32, 0.85));
-    var narrow = window.innerWidth < 760;
+    var lift = easeInOut(seg(p, 0.08, 0.22));
+    var away = easeInOut(seg(p, 0.18, 0.36));
+    var focus = easeInOut(seg(p, 0.3, 0.85));
+    var pop = seg(p, 0.86, 0.94);
 
-    var spin = lerp(-24, 0, intro) + Math.sin(t * 0.6) * 1.5 * (1 - focus);
+    var spin = lerp(-22, 0, intro) + Math.sin(t * 0.6) * 1.2 * (1 - focus);
     var bob = Math.sin(t * 1.4) * 6 * (1 - intro);
-    var shiftX = narrow ? 0 : lerp(0, -90, seg(p, 0.8, 1));
-    var shiftY = lerp(110, 250, focus) + bob;
+    var shiftY = lerp(narrow ? 110 : 90, narrow ? 250 : 210, focus) + bob;
 
-    fit.style.transform = 'translate(' + shiftX + 'px,' + shiftY + 'px) scale(' + scale + ')';
-    box.style.transform = 'rotateX(' + TILT + 'deg) rotateZ(' + spin + 'deg)';
+    var fitT = 'translate(0px,' + shiftY + 'px) scale(' + scale + ')';
+    var boxT = 'rotateX(' + TILT + 'deg) rotateZ(' + spin + 'deg)';
+    fit.style.transform = fitT;
+    box.style.transform = boxT;
+    var base = fitT + ' ' + boxT + ' ';
 
-    lid.style.transform = 'translateZ(' + (H + open * 6) + 'px) translateY(' + (-LD / 2) + 'px) rotateX(' + (open * 112) + 'deg) translateY(' + (LD / 2) + 'px)';
+    // Lid: straight up, then tips its art toward you and floats up out of frame
+    var lz = LH + 1 + lift * 150 + away * (narrow ? 1500 : 760);
+    var ly = -away * 260;
+    var la = -away * 40;
+    lid.style.transform =
+      'translateY(' + ly + 'px) translateZ(' + lz + 'px) rotateX(' + la + 'deg) rotateZ(' + (away * -8) + 'deg)';
+    lid.style.visibility = away >= 1 ? 'hidden' : 'visible';
+    // Reflection of the lid follows it straight up (down, in the floor), then disappears
+    // Reflection of the lid: the same move, mirrored in the floor
+    mirrorLid.style.transform =
+      'translateY(' + (-ly) + 'px) translateZ(' + lz + 'px) rotateX(' + (-la) + 'deg) rotateZ(' + (away * 8) + 'deg)';
+    mirrorLid.style.visibility = away >= 1 ? 'hidden' : 'visible';
 
-    var s = 1 + 0.18 * easeOutBack(pop);
-    card.style.transform =
-      'translateZ(' + (24 + rise * 330) + 'px) translateY(' + (-turn * 60) + 'px) ' +
-      'rotateX(' + (-turn * TILT) + 'deg) rotateZ(' + (Math.sin(rise * Math.PI) * 6) + 'deg) scale(' + s + ')';
+    // Cards are drawn on their own layer above the box, so while a card is still down in the box
+    // we cut away the part that the front wall would hide. That way cards slide in and out
+    // behind the rim instead of floating in front of it.
+    var stageR = cardLayer.getBoundingClientRect();
+    var fr = baseFront.getBoundingClientRect();
+    var hole = 'M0 0 H' + stageR.width + ' V' + stageR.height + ' H0 Z ' +
+      'M' + (fr.left - stageR.left - 4) + ' ' + (fr.top - stageR.top + 1) +
+      ' H' + (fr.right - stageR.left + 4) + ' V' + (stageR.height) + ' H' + (fr.left - stageR.left - 4) + ' Z';
+    var clipBehindWall = 'path(evenodd, "' + hole + '")';
+
+    var R = 440; // fan pivot sits this far below the cards
+    groups.forEach(function (g, gi) {
+      var isLeft = gi === 0;
+      // where the middle of this fan ends up (box units)
+      var fx = narrow ? 0 : (isLeft ? -285 : 255);
+      var fy = narrow ? (isLeft ? -150 : 0) : -30;
+      var fz = narrow ? (isLeft ? 470 : 280) : (isLeft ? 250 : 270);
+      var fs = narrow && isLeft ? 0.82 : 1;
+      var spread = narrow ? (isLeft ? 9 : 6.5) : 8.5;
+
+      g.list.forEach(function (c) {
+        var d = c.i - g.hero;
+        var st = g.start + c.r * g.step;
+        var rise = easeInOut(seg(p, st, st + 0.2));
+        var lift = easeOutBack(seg(p, st, st + 0.2));       // slight overshoot so each card pops up
+
+        var turn = easeInOut(seg(p, st + 0.04, st + 0.24));
+        var fan = easeInOut(seg(p, st + 0.08, st + 0.28));
+        var isHero = c.i === g.hero;
+        var s = lerp(1, fs, rise);
+        if (isHero && !isLeft) s *= 1 + 0.22 * easeOutBack(pop);
+        if (isHero && isLeft) s *= 1 + 0.06 * easeOutBack(fan);
+
+        var x = lerp(g.fromX, fx, rise);
+        var y = lerp(0, fy, turn);
+        var z = lerp(c.pileZ, fz, lift);
+        var depth = (g.front + (g.list.length - Math.abs(d)) * 2) * turn + (isHero && !isLeft ? 30 * easeOut(pop) : 0);
+        c.wrap.style.visibility = p > st ? 'visible' : 'hidden';
+        c.wrap.style.clipPath = z < H + 70 ? clipBehindWall : 'none';
+        c.wrap.style.zIndex = gi * 100 + (g.list.length - Math.abs(d)) * 2 + (isHero ? 1 : 0);
+        c.el.style.transform = base +
+          'translate3d(' + x + 'px,' + y + 'px,' + z + 'px) rotateX(' + (-TILT * turn) + 'deg) ' +
+          'translateZ(' + depth + 'px) translateY(' + R + 'px) rotateZ(' + (d * spread * fan) + 'deg) translateY(' + (-R) + 'px) ' +
+          'rotateZ(' + (Math.sin(rise * Math.PI) * 5 * (d >= 0 ? 1 : -1)) + 'deg) scale(' + s + ')';
+      });
+    });
+
+    groups.forEach(function (g) {
+      var next = null;
+      for (var k = 0; k < g.byRank.length; k++) {
+        if (p <= g.start + g.byRank[k].r * g.step) { next = g.byRank[k]; break; }
+      }
+      var src = next ? g.cards[next.i] : g.finalSrc;
+      if (src !== g.shown) { g.stackImg.src = src; g.shown = src; }
+    });
 
     heroCopy.style.opacity = 1 - seg(p, 0.02, 0.12);
     heroCopy.style.transform = 'translateY(' + (-seg(p, 0, 0.12) * 30) + 'px)';
     hint.style.opacity = 1 - seg(p, 0.01, 0.06);
-    labels.style.opacity = seg(p, 0.86, 0.95);
+    labels.style.opacity = seg(p, 0.92, 0.98);
   }
 
+  // The animation follows the scroll position smoothly, with a speed limit: even a fast flick
+  // of the scroll wheel plays the cards going out or back in one after another, never a jump cut.
+  var MAX_SPEED = 0.42; // timeline per second (the whole reveal takes at least ~2.4s)
+  var last = 0;
   function loop(ms) {
-    current = reduce ? target : current + (target - current) * 0.1;
+    var dt = last ? Math.min((ms - last) / 1000, 0.05) : 0.016;
+    last = ms;
+    if (reduce) current = target;
+    else {
+      var step = (target - current) * (1 - Math.exp(-dt * 5));
+      var cap = MAX_SPEED * dt;
+      current += Math.max(-cap, Math.min(cap, step));
+    }
     if (Math.abs(target - current) < 0.0005) current = target;
     apply(current, reduce ? 0 : ms / 1000);
     requestAnimationFrame(loop);
