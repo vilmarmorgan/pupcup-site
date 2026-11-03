@@ -36,7 +36,8 @@
     --studio-2: #12141b;
   }
 
-  html { background: var(--bg); }
+  html { background: var(--bg); scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   body {
     background: var(--bg);
     font-family: 'Jost', system-ui, sans-serif;
@@ -64,7 +65,7 @@
   }
 
   /* Pinned reveal */
-  #reveal { position: relative; height: 760vh; }
+  #reveal { position: relative; height: 1120vh; }
   .stage {
     position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
     /* Studio look: black backdrop with soft coloured light leaks, like a product photo */
@@ -94,7 +95,7 @@
   }
   .lid-in { background: var(--lid-inside); }
   .base-out { background-color: var(--base-outside); }
-  .mirror-in { background: #2a0a17; } /* lid inside, seen dimly in the reflection */
+  .mirror-in, .mirror-solid { background: #0c0c0e; } /* the lid's reflection reads as a solid black block */
   /* Glossy floor: sits over the mirrored box so the reflection reads dim and fades out */
   .floor {
     background:
@@ -125,28 +126,191 @@
   }
   @keyframes nudge { 0%,100% { transform: translateY(0); opacity: 1 } 60% { transform: translateY(9px); opacity: .2 } }
 
-  .labels {
-    position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 24px; opacity: 0;
-    padding: 56px 24px 30px; text-align: center;
-    background: linear-gradient(to top, var(--studio) 55%, rgba(5, 6, 8, 0));
-  }
-  .label { display: grid; gap: 2px; justify-self: center; max-width: 280px; }
-  .label b { font-size: 22px; font-weight: 700; line-height: 1.15; }
-  .label small { color: var(--text-muted); font-size: 15px; }
-  .label b::before { content: ""; display: block; width: 28px; height: 2px; margin: 0 auto 10px; background: var(--accent); }
 
   @media (max-width: 600px) {
     .top { padding: 14px 16px; }
     .top img { height: 26px; }
     .buy { padding: 8px 16px; font-size: 14px; }
     .hero-copy { top: 80px; }
-    .labels { gap: 16px; padding: 48px 16px 24px; }
-    .label b { font-size: 17px; }
-    .label small { font-size: 13px; }
     .draft-tag { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { .hint i::after { animation: none; } }
+
+  /* ───── Card-type tabs: the scattered cards shrink up into this row ───── */
+  .tabs {
+    position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 45;
+    display: flex; gap: 14px; padding: 8px 14px 6px; border-radius: 18px;
+    background: rgba(14, 15, 20, .86); box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    visibility: hidden;
+  }
+  .tabs.on, .tabs.flying { visibility: visible; }
+  .tabs.flying .tab-card { visibility: hidden; } /* the flying cards stand in for these */
+  .tab { position: relative; display: grid; justify-items: center; gap: 4px; outline: none;
+    appearance: none; border: 0; background: none; padding: 0; font: inherit; cursor: pointer; }
+  .tab-card {
+    width: 54px; height: 76px; border-radius: 6px; overflow: hidden; display: block;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .45);
+    transition: transform .25s cubic-bezier(.2, .8, .2, 1);
+  }
+  .tab-card img { width: 100%; height: 100%; display: block; }
+  .tab-name {
+    font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted);
+    transition: color .2s;
+  }
+  .tab:hover .tab-card, .tab:focus-visible .tab-card { transform: translateY(6px) scale(1.18); }
+  .tab:hover .tab-name, .tab:focus-visible .tab-name, .tab[aria-expanded="true"] .tab-name { color: var(--accent); }
+  .tab:focus-visible .tab-card { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .fly-layer { position: fixed; inset: 0; z-index: 44; pointer-events: none; visibility: hidden; }
+  .fly-layer img { position: absolute; left: 0; top: 0; transform-origin: 50% 50%; will-change: transform; }
+
+  .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+
+  /* ───── How-to overlay: opens from a tab ───── */
+  .ov {
+    position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px;
+    background: rgba(5, 6, 8, .72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity .25s;
+  }
+  .ov[hidden] { display: none; }
+  .ov.show { opacity: 1; }
+  .ov-panel {
+    position: relative; width: min(880px, 100%); max-height: calc(100vh - 48px); overflow: auto;
+    display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px; align-items: center;
+    padding: 40px 44px; border-radius: 24px; background: #15161c;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .06);
+    transform: translateY(16px) scale(.97); transition: transform .3s cubic-bezier(.2, .8, .2, 1);
+  }
+  .ov.show .ov-panel { transform: none; }
+  .ov-cards { position: relative; height: 330px; }
+  .ov-cards img {
+    position: absolute; top: 50%; left: 50%; width: 176px; margin: -124px 0 0 -88px;
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .5));
+    transform: translate(0, 30px) rotate(0) scale(.85); opacity: 0;
+    transition: transform .45s cubic-bezier(.2, .9, .3, 1.2), opacity .3s;
+  }
+  .ov.show .ov-cards img:nth-child(1) { transform: translateX(-108px) rotate(-12deg); opacity: 1; transition-delay: .08s; }
+  .ov.show .ov-cards img:nth-child(2) { transform: translateY(-14px); opacity: 1; z-index: 1; transition-delay: .14s; }
+  .ov.show .ov-cards img:nth-child(3) { transform: translateX(108px) rotate(12deg); opacity: 1; transition-delay: .2s; }
+  .ov-copy { display: grid; gap: 12px; justify-items: start; }
+  .ov-copy h2 { font-size: clamp(34px, 4.6vw, 52px); font-weight: 700; line-height: 1; }
+  .ov-copy p { font-size: 21px; line-height: 1.45; max-width: 28ch; }
+  .ov-copy small { color: var(--text-muted); font-size: 15px; }
+  .ov-close {
+    position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%;
+    appearance: none; border: 0; cursor: pointer; background: rgba(255, 255, 255, .1); color: var(--text);
+    font-size: 24px; line-height: 1;
+  }
+  .ov-close:hover { background: rgba(255, 255, 255, .2); }
+  .ov-close:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  @media (max-width: 760px) {
+    .ov { padding: 14px; align-items: end; }
+    .ov-panel { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 28px 20px 22px; text-align: center; max-height: calc(100vh - 28px); }
+    .ov-copy { justify-items: center; }
+    .ov-copy p { font-size: 18px; }
+    .ov-cards { height: 220px; }
+    .ov-cards img { width: 118px; margin: -84px 0 0 -59px; }
+    .ov.show .ov-cards img:nth-child(1) { transform: translateX(-72px) rotate(-12deg); }
+    .ov.show .ov-cards img:nth-child(3) { transform: translateX(72px) rotate(12deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { .ov, .ov-panel, .ov-cards img { transition: none; } }
+
+  /* ───── Try a turn ───── */
+  .play { padding: 90px 24px 60px; scroll-margin-top: 150px; }
+  .play-inner { max-width: 1060px; margin: 0 auto; display: grid; gap: 20px; }
+  .play-head { display: grid; gap: 10px; justify-items: center; text-align: center; }
+  .play-head h2 { font-size: clamp(32px, 4.4vw, 48px); font-weight: 700; line-height: 1; }
+  .play-head p { color: var(--text-muted); font-size: 18px; }
+  .table {
+    position: relative; display: grid; gap: 14px 18px; padding: 22px 24px 18px; border-radius: 28px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-areas: "opp mid me" "hand hand hand" "act act act"; align-items: center;
+    background: radial-gradient(70% 60% at 50% 40%, #1f5a3a 0%, #154029 60%, #0f2e1e 100%);
+    box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .06), 0 30px 60px rgba(0, 0, 0, .4);
+  }
+  .seat { display: grid; gap: 8px; justify-items: center; }
+  .seat-opp { grid-area: opp; } .seat-me { grid-area: me; }
+  .seat-me .pile { order: 2; }
+  .seat-head { display: flex; align-items: baseline; gap: 10px; font-size: 16px; }
+  .seat-head b { font-weight: 600; }
+  .score {
+    font-variant-numeric: tabular-nums; font-weight: 700; font-size: 22px; color: var(--accent);
+    background: rgba(0, 0, 0, .3); padding: 2px 12px; border-radius: 999px;
+  }
+  .score small { color: var(--text-muted); font-weight: 500; font-size: 15px; }
+  .pile { display: flex; justify-content: center; min-height: 92px; padding-left: 36px; }
+  .middle {
+    grid-area: mid; display: grid; gap: 10px 14px; align-items: center; justify-items: center;
+    grid-template-areas: "msg msg" "decks slots";
+  }
+  .decks { grid-area: decks; display: flex; gap: 10px; justify-self: end; }
+  .deck-pile { position: relative; display: grid; justify-items: center; gap: 4px; }
+  .deck-pile img { width: 64px; border-radius: 6px; box-shadow: 3px 3px 0 #d9d2c4, 6px 6px 0 #c9c1b2, 0 10px 18px rgba(0, 0, 0, .4); }
+  .deck-pile small { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgba(240, 236, 228, .7); }
+  .msg {
+    grid-area: msg; text-align: center; font-size: 19px; font-weight: 500; line-height: 1.35; text-wrap: balance;
+    min-height: 2.7em; max-width: 30ch; justify-self: center;
+  }
+  .msg b { color: var(--accent); }
+  .slots { grid-area: slots; display: flex; gap: 10px; justify-self: start; }
+  .rule-slot, .action-slot { width: 64px; min-height: 90px; position: relative; }
+  .rule-slot:empty::after {
+    content: "Rule"; position: absolute; inset: 0; border: 2px dashed rgba(255, 255, 255, .18); border-radius: 8px;
+    display: grid; place-items: center; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .35);
+  }
+  .hand { grid-area: hand; display: flex; justify-content: center; align-items: flex-end; min-height: 170px; padding-top: 22px; }
+  .pc {
+    appearance: none; border: 0; padding: 0; background: none; cursor: default; display: block;
+    width: 64px; flex: none; border-radius: 6px; position: relative;
+  }
+  .pc img { width: 100%; display: block; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .35)); }
+  .pile .pc + .pc { margin-left: -36px; }
+  .pile .pc { transition: transform .2s; }
+  .hand .pc {
+    width: 108px; margin: 0 -8px; cursor: pointer;
+    transform: translateY(var(--dy, 0)) rotate(var(--r, 0deg)); transform-origin: 50% 110%;
+    transition: transform .25s cubic-bezier(.2, .8, .2, 1);
+  }
+  .hand .pc:hover, .hand .pc:focus-visible { transform: translateY(-22px) rotate(0deg) scale(1.06); z-index: 5; }
+  .hand .pc:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  .table.busy .hand .pc { cursor: default; }
+  .pc.pickable { cursor: pointer; z-index: 2; }
+  /* while you choose what to steal, Biscuit's pile spreads out so every card is easy to click */
+  .table.picking #oppPile .pc + .pc { margin-left: 8px; }
+  .table.picking #oppPile .pc:not(.pickable) { opacity: .45; }
+  .pc.pickable img { filter: drop-shadow(0 0 0 var(--accent)) drop-shadow(0 0 10px rgba(245, 197, 66, .9)); }
+  .pc.pickable:hover { transform: translateY(-10px); z-index: 3; }
+  .pc.targeted img { filter: drop-shadow(0 0 12px rgba(255, 70, 70, .95)); }
+  .hand .pc.glow { animation: glow 1s ease-in-out infinite; }
+  @keyframes glow { 0%, 100% { transform: translateY(-14px) rotate(0) scale(1.04) } 50% { transform: translateY(-26px) rotate(0) scale(1.08) } }
+  .shake { animation: shake .4s; }
+  @keyframes shake { 0%, 100% { translate: 0 } 25% { translate: -8px } 75% { translate: 8px } }
+  .play-actions { grid-area: act; display: flex; justify-content: center; gap: 12px; }
+  .btn {
+    appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 700; font-size: 15px;
+    padding: 10px 20px; border-radius: 999px; background: var(--accent); color: var(--buy-text);
+  }
+  .btn.ghost { background: rgba(255, 255, 255, .12); color: var(--text); }
+  .btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .win .pile#myPile .pc { animation: twerk .5s ease-in-out 3; }
+  @keyframes twerk { 0%, 100% { transform: rotate(0) } 25% { transform: rotate(-8deg) } 75% { transform: rotate(8deg) } }
+
+  @media (max-width: 760px) {
+    .tabs { top: 58px; gap: 8px; padding: 6px 10px 5px; }
+    .tab-card { width: 42px; height: 59px; }
+    .tab-name { font-size: 9px; letter-spacing: .06em; }
+    .play { padding: 70px 12px 40px; }
+    .table { padding: 18px 10px 16px; border-radius: 20px; gap: 12px;
+      grid-template-columns: minmax(0, 1fr); grid-template-areas: "opp" "mid" "me" "hand" "act"; }
+    .seat-me .pile { order: 0; }
+    .deck-pile img { width: 44px; }
+    .rule-slot, .action-slot { width: 46px; min-height: 64px; }
+    .pc { width: 46px; }
+    .pile { min-height: 66px; padding-left: 26px; }
+    .pile .pc + .pc { margin-left: -26px; }
+    .msg { font-size: 17px; }
+    .hand { min-height: 140px; }
+    .hand .pc { width: 82px; margin: 0 -6px; }
+  }
 
   /* After the reveal */
   .after { padding: 96px 24px 120px; }
@@ -161,6 +325,26 @@
   <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
   <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
 </header>
+<nav class="tabs" id="tabs" aria-label="Card types">
+  <button class="tab" type="button" data-id="points" data-type="point" aria-haspopup="dialog"><span class="tab-card"><img src="cards/point-30.webp" alt=""></span><span class="tab-name">Points</span></button>
+  <button class="tab" type="button" data-id="penalty" data-type="penalty" aria-haspopup="dialog"><span class="tab-card"><img src="cards/penalty-5.webp" alt=""></span><span class="tab-name">Penalty</span></button>
+  <button class="tab" type="button" data-id="rule" data-type="rule" aria-haspopup="dialog"><span class="tab-card"><img src="cards/rule-frida.webp" alt=""></span><span class="tab-name">Rule</span></button>
+  <button class="tab" type="button" data-id="steal" data-type="steal" aria-haspopup="dialog"><span class="tab-card"><img src="cards/steal-coco.webp" alt=""></span><span class="tab-name">Steal</span></button>
+  <button class="tab" type="button" data-id="block" data-type="block" aria-haspopup="dialog"><span class="tab-card"><img src="cards/block-lucky.webp" alt=""></span><span class="tab-name">Block</span></button>
+</nav>
+<div class="fly-layer" id="flyLayer" aria-hidden="true"></div>
+<div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="ovTitle" hidden>
+  <div class="ov-panel">
+    <button class="ov-close" id="ovClose" type="button" aria-label="Close">&times;</button>
+    <div class="ov-cards" id="ovCards" aria-hidden="true"></div>
+    <div class="ov-copy">
+      <span class="eyebrow">How it works</span>
+      <h2 id="ovTitle"></h2>
+      <p id="ovDesc"></p>
+      <small id="ovMeta"></small>
+    </div>
+  </div>
+</div>
 
 <main>
   <section id="reveal" aria-label="Pupcup box reveal">
@@ -173,19 +357,48 @@
         <p>Scroll slowly or fast. The box opens at your pace.</p>
       </div>
 
-      <div class="labels" id="labels">
-        <div class="label"><b>Penalties &amp; Points</b><small>Break a rule, pay in bones</small></div>
-        <div class="label"><b>Rules, Steals &amp; Blocks</b><small>Every card stars a dog</small></div>
-      </div>
-
       <div class="hint" id="hint"><i></i>Scroll to open</div>
+    </div>
+  </section>
+
+
+  <section class="play" id="try" aria-labelledby="tryTitle">
+    <div class="play-inner">
+      <div class="play-head">
+        <span class="eyebrow">Try a turn</span>
+        <h2 id="tryTitle">Your move</h2>
+        <p>You hold four cards. Click one to play it.</p>
+      </div>
+      <div class="table" id="table">
+        <div class="seat seat-opp">
+          <div class="seat-head"><b>Biscuit</b><span class="score" id="oppScore">0</span></div>
+          <div class="pile" id="oppPile"></div>
+        </div>
+        <div class="middle">
+          <div class="decks">
+            <div class="deck-pile" id="mainDeck"><img src="cards/dog-cards-face.webp" alt=""><small>Deck</small></div>
+            <div class="deck-pile" id="penDeck"><img src="cards/penalty.webp" alt=""><small>Penalties</small></div>
+          </div>
+          <div class="msg" id="msg" aria-live="polite"></div>
+          <div class="slots"><div class="action-slot" id="actionSlot"></div><div class="rule-slot" id="ruleSlot"></div></div>
+        </div>
+        <div class="seat seat-me">
+          <div class="pile" id="myPile"></div>
+          <div class="seat-head"><b>You</b><span class="score"><span id="myScore">0</span><small> / 100</small></span></div>
+        </div>
+        <div class="hand" id="hand" aria-label="Your hand"></div>
+        <div class="play-actions">
+          <button class="btn ghost" id="letGo" type="button" hidden>Let it go</button>
+          <button class="btn ghost" id="again" type="button">Start over</button>
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="after">
     <div class="after-inner">
       <h2>Ready to play?</h2>
-      <p>Draft page. The box art comes from the print files and the cards are the new card designs.</p>
+      <p>Best with 4 to 6 players. A game takes 10 to 30 minutes.</p>
       <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
     </div>
   </section>
@@ -199,8 +412,11 @@
   var ART = 'box-art/';
   var C = 'cards/';
   // Left compartment: penalty + point cards. The PENALTY face pops first and lands in front.
-  var LEFT = { hero: 2, cards: [C + 'point-10.webp', C + 'penalty-5.webp', C + 'penalty.webp', C + 'penalty-20.webp', C + 'point-30.webp'],
-               alt: 'Pupcup penalty card' };
+  // Listed in the order they leave the deck (hero 0 = first out, stays in front).
+  // The PENALTY face isn't in the scatter; it stays on the deck as the last card in the box.
+  var LEFT = { hero: 0, cards: [C + 'point-30.webp', C + 'penalty-20.webp', C + 'point-10.webp', C + 'penalty-5.webp',
+                                C + 'point-20.webp', C + 'penalty-10.webp'],
+               alt: 'Pupcup 30 point card' };
   // Right compartment: the dog cards. Frida rises last and pops forward.
   var RIGHT = { hero: 3, cards: [C + 'steal-popcorn.webp', C + 'block-lucky.webp', C + 'rule-kpup.webp', C + 'rule-frida.webp',
                                  C + 'rule-pupstein.webp', C + 'steal-coco.webp', C + 'block-maximus.webp'],
@@ -218,7 +434,6 @@
   var fit = document.getElementById('fit');
   var cardLayer = document.getElementById('cardLayer');
   var heroCopy = document.getElementById('heroCopy');
-  var labels = document.getElementById('labels');
   var hint = document.getElementById('hint');
   var section = document.getElementById('reveal');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -287,7 +502,10 @@
     front: ART + 'base-back.jpg', back: null, left: ART + 'base-left.jpg', right: ART + 'base-right.jpg'
   }, 'base-in', 'base-out', LIGHT.mirrorBase);
   var mirrorLid = el(mirror, 'lid');
-  face(mirrorLid, LW + 3, LD + 3, 'translateZ(1.5px)', '', ART + 'lid-top.jpg', LIGHT.mirrorTop);
+  face(mirrorLid, LW + 3, LD + 3, 'translateZ(1.5px)', 'mirror-solid');
+  face(mirrorLid, LW + 3, LD + 3, 'translateZ(1.5px) rotateY(180deg)', 'mirror-solid');
+  face(mirrorLid, LW + 2, LD + 2, 'translateZ(' + (-LH + 1) + 'px)', 'mirror-solid');
+  face(mirrorLid, LW + 2, LD + 2, 'translateZ(' + (-LH + 1) + 'px) rotateY(180deg)', 'mirror-solid');
   walls(mirrorLid, LW, LD, LH, -LH / 2, {
     front: ART + 'lid-back.jpg', back: ART + 'lid-front.jpg', left: ART + 'lid-left.jpg', right: ART + 'lid-right.jpg'
   }, 'mirror-in', null, LIGHT.mirror);
@@ -313,7 +531,7 @@
   function stack(x, topSrc, layers) {
     for (var k = 0; k < layers; k++) face(box, CW, CH, 'translateX(' + x + 'px) translateZ(' + (4 + k * 6) + 'px)', 'card-edge');
     var top = cardFace(box, 'translateX(' + x + 'px) translateZ(' + (4 + layers * 6) + 'px)', topSrc);
-    return { z: 4 + layers * 6, img: top.querySelector('img') };
+    return { z: 4 + layers * 6, face: top };
   }
   var leftStack = stack(-STACK_X, LEFT_STACK_TOP, 6);
   var rightStack = stack(STACK_X, RIGHT_STACK_TOP, 6);
@@ -331,24 +549,50 @@
       var wrap = el(cardLayer, 'card-wrap');
       wrap.style.visibility = 'hidden';
       var c = el(wrap, 'card-flat');
-      cardFace(c, 'none', src, i === g.hero ? g.alt : '');
+      var faceEl = cardFace(c, 'none', src, i === g.hero ? g.alt : '');
       var r = rank.indexOf(i);
-      return { el: c, wrap: wrap, i: i, r: r, pileZ: pileTop + 1 + (n - 1 - r) * 0.6 };
+      return { el: c, wrap: wrap, face: faceEl, src: src, i: i, r: r, pileZ: pileTop + 1 + (n - 1 - r) * 0.6 };
     });
     return g;
   }
+  var PERSP = 1900; // same as .card-wrap's perspective
+  var DOMMatrixRO = window.DOMMatrixReadOnly || window.DOMMatrix || null;
   var groups = [
     makeGroup(LEFT, -STACK_X, leftTop, 0.34, 0.05, true, 0),   // both compartments start together
-    makeGroup(RIGHT, STACK_X, rightTop, 0.34, 0.04, false, 40)
+    makeGroup(RIGHT, STACK_X, rightTop, 0.34, 0.04, true, 40)  // hero first: it stays in front
   ];
   // The top of each deck always shows the next card to leave, like a real deck.
   // Once every card is out, it shows the deck's face card.
-  LEFT.stackImg = leftStack.img; LEFT.finalSrc = LEFT_STACK_TOP;
-  RIGHT.stackImg = rightStack.img; RIGHT.finalSrc = RIGHT_STACK_TOP;
+  LEFT.stackFace = leftStack.face; LEFT.finalSrc = LEFT_STACK_TOP;
+  RIGHT.stackFace = rightStack.face; RIGHT.finalSrc = RIGHT_STACK_TOP;
   groups.forEach(function (g) {
+    g.topImgs = {};
+    g.stackFace.textContent = '';
+    g.cards.concat([g.finalSrc]).forEach(function (src) {
+      var im = document.createElement('img');
+      im.src = src; im.alt = ''; im.decoding = 'sync';
+      im.style.position = 'absolute'; im.style.inset = '0'; im.style.visibility = 'hidden';
+      g.stackFace.appendChild(im);
+      g.topImgs[src] = im;
+    });
     g.byRank = g.list.slice().sort(function (a, b) { return a.r - b.r; });
     g.shown = '';
   });
+
+  // Where each card lands, scattered like cards tossed on a table: [x, height above the box, tilt°].
+  // Listed in the order the cards leave the deck; the first one lands in front, and every later
+  // card goes behind the ones already out, so cards never pass over each other.
+  // Nothing lands on the box itself, so you can always see where they came from.
+  var SLOTS = {
+    wide: [
+      [[-175, 275, -6], [-385, 335, 9], [-540, 190, -12], [-345, 115, 15], [-215, 465, -10], [-470, 500, 7]],
+      [[175, 275, 6], [385, 345, -9], [545, 190, 12], [345, 115, -15], [15, 470, 4], [250, 505, 11], [490, 470, -7]]
+    ],
+    narrow: [
+      [[-72, 320, -7], [-180, 440, 10], [-190, 245, -13], [-80, 560, 8], [-185, 650, -9], [-60, 690, 5]],
+      [[72, 320, 7], [180, 440, -10], [190, 245, 13], [80, 560, -8], [185, 650, 9], [-5, 745, -4], [-130, 770, 6]]
+    ]
+  };
 
   // Lid: origin at the centre of its top panel; walls hang down from there
   var lid = el(box, 'lid');
@@ -388,10 +632,18 @@
   //  0.00–0.30  box turns to face you
   //  0.08–0.22  lid lifts straight up
   //  0.18–0.36  lid tips toward you and floats out of frame
-  //  0.34–0.82  left compartment: PENALTY card first, then penalties & points fan out
-  //  0.34–0.86  right compartment, at the same time: dog cards fan out, Frida last
+  //  0.34–0.82  left compartment: PENALTY card first, then penalties & points scatter left
+  //  0.34–0.86  right compartment, at the same time: Frida first, then dog cards scatter right
   //  0.86–0.94  Frida pops forward
-  //  0.92–0.98  labels fade in
+  // The whole reveal above plays over the first 70% of the section; then, over 74–98%,
+  // the scattered cards shrink up into the card-type tabs (see shrink()).
+  // Writes a style only when its value changes; unchanged writes still cost the browser work.
+  function css(el, prop, val) {
+    var key = '_' + prop;
+    val = String(val);
+    if (el[key] !== val) { el.style[prop] = val; el[key] = val; }
+  }
+
   function apply(p, t) {
     var intro = easeOut(seg(p, 0, 0.3));
     var lift = easeInOut(seg(p, 0.08, 0.22));
@@ -399,73 +651,82 @@
     var focus = easeInOut(seg(p, 0.3, 0.85));
     var pop = seg(p, 0.86, 0.94);
 
-    var spin = lerp(-22, 0, intro) + Math.sin(t * 0.6) * 1.2 * (1 - focus);
+    var spin = lerp(-22, 0, intro) + Math.sin(t * 0.6) * 1.2 * (1 - intro);
     var bob = Math.sin(t * 1.4) * 6 * (1 - intro);
     var shiftY = lerp(narrow ? 110 : 90, narrow ? 250 : 210, focus) + bob;
 
     var fitT = 'translate(0px,' + shiftY + 'px) scale(' + scale + ')';
     var boxT = 'rotateX(' + TILT + 'deg) rotateZ(' + spin + 'deg)';
-    fit.style.transform = fitT;
-    box.style.transform = boxT;
+    css(fit, 'transform', fitT);
+    css(box, 'transform', boxT);
     var base = fitT + ' ' + boxT + ' ';
 
     // Lid: straight up, then tips its art toward you and floats up out of frame
     var lz = LH + 1 + lift * 150 + away * (narrow ? 1500 : 760);
     var ly = -away * 260;
     var la = -away * 40;
-    lid.style.transform =
-      'translateY(' + ly + 'px) translateZ(' + lz + 'px) rotateX(' + la + 'deg) rotateZ(' + (away * -8) + 'deg)';
-    lid.style.visibility = away >= 1 ? 'hidden' : 'visible';
+    css(lid, 'transform', 'translateY(' + ly + 'px) translateZ(' + lz + 'px) rotateX(' + la + 'deg) rotateZ(' + (away * -8) + 'deg)');
+    css(lid, 'visibility', away >= 1 ? 'hidden' : 'visible');
     // Reflection of the lid follows it straight up (down, in the floor), then disappears
     // Reflection of the lid: the same move, mirrored in the floor
-    mirrorLid.style.transform =
-      'translateY(' + (-ly) + 'px) translateZ(' + lz + 'px) rotateX(' + (-la) + 'deg) rotateZ(' + (away * 8) + 'deg)';
-    mirrorLid.style.visibility = away >= 1 ? 'hidden' : 'visible';
+    css(mirrorLid, 'transform', 'translateY(' + (-ly) + 'px) translateZ(' + lz + 'px) rotateX(' + (-la) + 'deg) rotateZ(' + (away * 8) + 'deg)');
+    // the reflection only makes sense while the lid is near the floor: fade it out as the lid leaves
+    var mirrorFade = 1 - seg(away, 0, 0.22);
+    css(mirrorLid, 'visibility', mirrorFade <= 0 ? 'hidden' : 'visible');
+    css(mirrorLid, 'opacity', mirrorFade.toFixed(3));
 
     // Cards are drawn on their own layer above the box, so while a card is still down in the box
     // we cut away the part that the front wall would hide. That way cards slide in and out
     // behind the rim instead of floating in front of it.
-    var stageR = cardLayer.getBoundingClientRect();
-    var fr = baseFront.getBoundingClientRect();
-    var hole = 'M0 0 H' + stageR.width + ' V' + stageR.height + ' H0 Z ' +
-      'M' + (fr.left - stageR.left - 4) + ' ' + (fr.top - stageR.top + 1) +
-      ' H' + (fr.right - stageR.left + 4) + ' V' + (stageR.height) + ' H' + (fr.left - stageR.left - 4) + ' Z';
-    var clipBehindWall = 'path(evenodd, "' + hole + '")';
+    var clipBehindWall = null;
+    function wallClip() {
+      if (clipBehindWall) return clipBehindWall;
+      var stageR = cardLayer.getBoundingClientRect();
+      var fr = baseFront.getBoundingClientRect();
+      var hole = 'M0 0 H' + stageR.width + ' V' + stageR.height + ' H0 Z ' +
+        'M' + Math.round(fr.left - stageR.left - 4) + ' ' + Math.round(fr.top - stageR.top + 1) +
+        ' H' + Math.round(fr.right - stageR.left + 4) + ' V' + Math.round(stageR.height) + ' H' + Math.round(fr.left - stageR.left - 4) + ' Z';
+      return (clipBehindWall = 'path(evenodd, "' + hole + '")');
+    }
 
-    var R = 440; // fan pivot sits this far below the cards
     groups.forEach(function (g, gi) {
-      var isLeft = gi === 0;
-      // where the middle of this fan ends up (box units)
-      var fx = narrow ? 0 : (isLeft ? -285 : 255);
-      var fy = narrow ? (isLeft ? -150 : 0) : -30;
-      var fz = narrow ? (isLeft ? 470 : 280) : (isLeft ? 250 : 270);
-      var fs = narrow && isLeft ? 0.82 : 1;
-      var spread = narrow ? (isLeft ? 9 : 6.5) : 8.5;
+      var slots = SLOTS[narrow ? 'narrow' : 'wide'][gi];
+      var fs = narrow ? 0.52 : 0.74; // cards land a bit smaller so the whole scatter fits on screen
 
       g.list.forEach(function (c) {
-        var d = c.i - g.hero;
+        var slot = slots[c.r];
         var st = g.start + c.r * g.step;
         var rise = easeInOut(seg(p, st, st + 0.2));
         var lift = easeOutBack(seg(p, st, st + 0.2));       // slight overshoot so each card pops up
-
         var turn = easeInOut(seg(p, st + 0.04, st + 0.24));
-        var fan = easeInOut(seg(p, st + 0.08, st + 0.28));
-        var isHero = c.i === g.hero;
-        var s = lerp(1, fs, rise);
-        if (isHero && !isLeft) s *= 1 + 0.22 * easeOutBack(pop);
-        if (isHero && isLeft) s *= 1 + 0.06 * easeOutBack(fan);
+        var spin = easeInOut(seg(p, st + 0.08, st + 0.28));
+        var isHero = c.r === 0;
 
-        var x = lerp(g.fromX, fx, rise);
-        var y = lerp(0, fy, turn);
-        var z = lerp(c.pileZ, fz, lift);
-        var depth = (g.front + (g.list.length - Math.abs(d)) * 2) * turn + (isHero && !isLeft ? 30 * easeOut(pop) : 0);
-        c.wrap.style.visibility = p > st ? 'visible' : 'hidden';
-        c.wrap.style.clipPath = z < H + 70 ? clipBehindWall : 'none';
-        c.wrap.style.zIndex = gi * 100 + (g.list.length - Math.abs(d)) * 2 + (isHero ? 1 : 0);
-        c.el.style.transform = base +
+        var s = lerp(1, fs, rise);
+        var x = lerp(g.fromX, slot[0], rise);
+        var y = lerp(0, -30, turn);
+        var z = lerp(c.pileZ, slot[1], lift);
+        var wobble = Math.sin(rise * Math.PI) * 6 * (slot[2] >= 0 ? 1 : -1);
+
+        var shown = p > st;
+        css(c.wrap, 'visibility', shown ? 'visible' : 'hidden');
+        if (!shown) return; // nothing else to update for a card still in its deck
+        // Hide the part of the card behind the box's front wall, but only while the card is
+        // really inside the box: its bottom edge is below the rim and it's over the box.
+        var halfH = CH * s / 2, halfW = CW * s / 2;
+        var bottom = z - halfH * Math.sin(TILT * turn * Math.PI / 180);
+        var inside = bottom < H && Math.abs(x) - halfW < W / 2;
+        css(c.wrap, 'clipPath', inside ? wallClip() : 'none');
+        // earlier out = in front; the two first cards tie, Frida wins
+        css(c.wrap, 'zIndex', 2000 - Math.round(st * 1000) * 2 + (gi === 1 ? 1 : 0));
+        var place = base +
           'translate3d(' + x + 'px,' + y + 'px,' + z + 'px) rotateX(' + (-TILT * turn) + 'deg) ' +
-          'translateZ(' + depth + 'px) translateY(' + R + 'px) rotateZ(' + (d * spread * fan) + 'deg) translateY(' + (-R) + 'px) ' +
-          'rotateZ(' + (Math.sin(rise * Math.PI) * 5 * (d >= 0 ? 1 : -1)) + 'deg) scale(' + s + ')';
+          'rotateZ(' + (slot[2] * spin + wobble) + 'deg)';
+        // Perspective makes cards that sit closer to the camera look bigger. Undo that as each
+        // card lands, so every card on the table shows at exactly the same size.
+        var depth = DOMMatrixRO ? new DOMMatrixRO(place).m43 : 0;
+        var even = (PERSP - depth) / PERSP;
+        css(c.el, 'transform', place + ' scale(' + (s * lerp(1, even, rise)).toFixed(4) + ')');
       });
     });
 
@@ -475,34 +736,419 @@
         if (p <= g.start + g.byRank[k].r * g.step) { next = g.byRank[k]; break; }
       }
       var src = next ? g.cards[next.i] : g.finalSrc;
-      if (src !== g.shown) { g.stackImg.src = src; g.shown = src; }
+      if (src !== g.shown) {
+        if (g.shown) g.topImgs[g.shown].style.visibility = 'hidden';
+        g.topImgs[src].style.visibility = 'visible';
+        g.shown = src;
+      }
     });
 
-    heroCopy.style.opacity = 1 - seg(p, 0.02, 0.12);
-    heroCopy.style.transform = 'translateY(' + (-seg(p, 0, 0.12) * 30) + 'px)';
-    hint.style.opacity = 1 - seg(p, 0.01, 0.06);
-    labels.style.opacity = seg(p, 0.92, 0.98);
+    css(heroCopy, 'opacity', 1 - seg(p, 0.02, 0.12));
+    css(heroCopy, 'transform', 'translateY(' + (-seg(p, 0, 0.12) * 30) + 'px)');
+    css(hint, 'opacity', 1 - seg(p, 0.01, 0.06));
   }
 
   // The animation follows the scroll position smoothly, with a speed limit: even a fast flick
   // of the scroll wheel plays the cards going out or back in one after another, never a jump cut.
   var MAX_SPEED = 0.42; // timeline per second (the whole reveal takes at least ~2.4s)
-  var last = 0;
+  var REVEAL_END = 0.7;
+  var SHRINK_FROM = 0.74, SHRINK_TO = 0.98;
+
+  // ── Shrink into tabs ───────────────────────────────────────────────────
+  // At the end of the reveal the scattered cards fly up and shrink into the tab row at the top.
+  // Each card flies to its own type's tab; the card shown on the tab lands exactly on it,
+  // the others shrink behind it and fade. Once they land, the real tab row takes over.
+  var tabsEl = document.getElementById('tabs');
+  var flyLayer = document.getElementById('flyLayer');
+  var tabByType = {};
+  [].forEach.call(tabsEl.querySelectorAll('.tab'), function (t) { tabByType[t.dataset.type] = t; });
+  function typeOf(src) { return src.split('/').pop().split('-')[0]; }
+  var allCards = [];
+  groups.forEach(function (g, gi) { g.list.forEach(function (c) { c.gi = gi; allCards.push(c); }); });
+  allCards.sort(function (a, b) { return (a.gi === b.gi ? a.r - b.r : a.r - b.r || a.gi - b.gi); });
+  var flyers = allCards.map(function (c, k) {
+    var im = document.createElement('img');
+    im.src = c.src; im.alt = '';
+    flyLayer.appendChild(im);
+    var tab = tabByType[typeOf(c.src)];
+    var isRep = tab && tab.querySelector('img').getAttribute('src') === c.src;
+    im.style.zIndex = isRep ? 100 : 50 - k;
+    return { c: c, el: im, tab: tab, rep: isRep, k: k };
+  });
+  var captured = null;
+  var stageEl = cardLayer.parentNode;
+  window.addEventListener('resize', function () { captured = null; });
+  function capture() {
+    // Where every card sits at the end of the scatter, measured relative to the box scene
+    // (so it stays right even when the scene is partly scrolled off screen), and where its tab is.
+    var aspect = CW / CH;
+    var st = stageEl.getBoundingClientRect();
+    flyers.forEach(function (f) {
+      var r = f.c.face.getBoundingClientRect();
+      var slot = SLOTS[narrow ? 'narrow' : 'wide'][f.c.gi][f.c.r];
+      var th = Math.abs(slot[2]) * Math.PI / 180;
+      var h = r.height / (aspect * Math.sin(th) + Math.cos(th));
+      var t = f.tab.querySelector('.tab-card').getBoundingClientRect();
+      f.from = { x: r.left - st.left + r.width / 2, y: r.top - st.top + r.height / 2, w: h * aspect, h: h, rot: slot[2] };
+      f.to = { x: t.left + t.width / 2, y: t.top + t.height / 2, w: t.width, h: t.height };
+      f.el.style.width = f.from.w + 'px'; f.el.style.height = f.from.h + 'px';
+    });
+    captured = true;
+  }
+  var tabsOn = false, tabsFlying = false;
+  function shrink(q) {
+    var flying = q > 0 && q < 1;
+    css(cardLayer, 'opacity', q > 0 ? 0 : 1);
+    css(flyLayer, 'visibility', flying ? 'visible' : 'hidden');
+    var on = q >= 1;
+    if (on !== tabsOn) { tabsEl.classList.toggle('on', on); tabsOn = on; }
+    if (flying !== tabsFlying) { tabsEl.classList.toggle('flying', flying); tabsFlying = flying; }
+    // the tab bar fades in as the cards arrive and fades out as they leave
+    css(tabsEl, 'opacity', on ? 1 : seg(q, 0.6, 0.95).toFixed(3));
+    if (!flying) return;
+    if (!captured) capture();
+    var st = stageEl.getBoundingClientRect(); // where the box scene is right now
+    flyers.forEach(function (f) {
+      var e = easeInOut(seg(q, f.k * 0.02, 0.76 + f.k * 0.02));
+      var a = f.from, b = f.to;
+      var ax = st.left + a.x, ay = st.top + a.y;
+      var x = lerp(ax, b.x, e) - a.w / 2, y = lerp(ay, b.y, e) - a.h / 2;
+      var sc = lerp(1, b.w / a.w, e);
+      css(f.el, 'transform', 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + (a.rot * (1 - e)).toFixed(2) + 'deg) scale(' + sc.toFixed(4) + ')');
+      css(f.el, 'opacity', f.rep ? 1 : (1 - seg(e, 0.55, 0.95)).toFixed(3));
+    });
+  }
+
+  var last = 0, lastP = -1, needsDraw = true;
+  window.addEventListener('resize', function () { needsDraw = true; });
   function loop(ms) {
-    var dt = last ? Math.min((ms - last) / 1000, 0.05) : 0.016;
+    var dt = last ? Math.min((ms - last) / 1000, 0.1) : 0.016;
     last = ms;
     if (reduce) current = target;
     else {
       var step = (target - current) * (1 - Math.exp(-dt * 5));
-      var cap = MAX_SPEED * dt;
+      // slower through the card ↔ tab zoom so you can watch the cards travel (about 1 second)
+      var cap = (current > SHRINK_FROM - 0.02 && current < SHRINK_TO + 0.02 ? 0.24 : MAX_SPEED) * dt;
       current += Math.max(-cap, Math.min(cap, step));
     }
     if (Math.abs(target - current) < 0.0005) current = target;
-    apply(current, reduce ? 0 : ms / 1000);
+    // Before the box opens it sways gently, so keep drawing; after that, only redraw when the scroll moved.
+    if (current !== lastP || current < 0.3 * REVEAL_END || needsDraw) {
+      apply(Math.min(1, current / REVEAL_END), reduce ? 0 : ms / 1000);
+      shrink(seg(current, SHRINK_FROM, SHRINK_TO));
+      lastP = current; needsDraw = false;
+    }
     requestAnimationFrame(loop);
   }
   readScroll(); current = target;
   requestAnimationFrame(loop);
+})();
+</script>
+
+<script>
+/* ───── Try a turn: a tiny playable round against Biscuit ─────
+   Rules from the Pupcup instructions: play one card a turn (Point, Rule or Steal), always keep
+   4 cards, first to 100 points wins. Blocks are only played when someone steals from you, and
+   breaking a rule means drawing a penalty card. */
+(function () {
+  var C = 'cards/';
+  var POOL = {
+    point: [{ v: 30 }, { v: 10 }, { v: 20 }],
+    rule: [
+      { src: 'rule-rupup', text: 'Don’t say “I”.' },
+      { src: 'rule-lady-puppa', text: 'Growl when playing a card.' },
+      { src: 'rule-pupstein', text: 'Bark before answering any questions.' },
+      { src: 'rule-kpup', text: 'Don’t show your teeth.' },
+      { src: 'rule-pupquiao', text: 'Use only your snout (lips) to point.' }
+    ],
+    steal: [{ src: 'steal-coco' }, { src: 'steal-popcorn' }, { src: 'steal-charlie' }, { src: 'steal-shadow' }, { src: 'steal-vuitton' }, { src: 'steal-butchoi' }],
+    block: [{ src: 'block-lucky' }, { src: 'block-maximus' }, { src: 'block-lola' }, { src: 'block-marley' }, { src: 'block-lola-nope' }]
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  var table = $('table'), hand = $('hand'), myPile = $('myPile'), oppPile = $('oppPile');
+  var msgEl = $('msg'), myScoreEl = $('myScore'), oppScoreEl = $('oppScore');
+  var ruleSlot = $('ruleSlot'), actionSlot = $('actionSlot'), mainDeck = $('mainDeck'), penDeck = $('penDeck');
+  var letGoBtn = $('letGo'), againBtn = $('again');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var state, draws, oppTurns, pendingBreak, stealer, target, oppSteal, shown = { me: 0, opp: 0 };
+
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, reduce ? 0 : ms); }); }
+  function say(html) { msgEl.innerHTML = html; }
+
+  function makeCard(type, data) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'pc'; b.dataset.type = type;
+    b.tabIndex = -1; // only cards you can play right now take keyboard focus
+    var src, label;
+    if (type === 'point') { src = 'point-' + data.v; b.dataset.v = data.v; label = data.v + ' point card'; }
+    else if (type === 'penalty') { src = 'penalty-' + data.v; b.dataset.v = -data.v; label = 'Penalty, minus ' + data.v; }
+    else { src = data.src; label = type === 'rule' ? 'Rule: ' + data.text : type[0].toUpperCase() + type.slice(1) + ' card'; }
+    if (data.text) b.dataset.text = data.text;
+    b.setAttribute('aria-label', label);
+    var im = document.createElement('img'); im.src = C + src + '.webp'; im.alt = '';
+    b.appendChild(im);
+    return b;
+  }
+  function draw(type) {
+    var list = POOL[type]; var d = list[draws[type] % list.length]; draws[type]++;
+    return makeCard(type, d);
+  }
+  function fanHand() {
+    var cards = [].slice.call(hand.children), n = cards.length;
+    cards.forEach(function (c, i) {
+      var k = i - (n - 1) / 2;
+      c.style.setProperty('--r', (k * 7) + 'deg');
+      c.style.setProperty('--dy', (Math.abs(k) * Math.abs(k) * 6) + 'px');
+      c.tabIndex = 0;
+    });
+  }
+  // Move a card to a new place and animate it there from where it was
+  function moveTo(el, parent, before) {
+    var a = el.getBoundingClientRect();
+    if (before) parent.insertBefore(el, before); else parent.appendChild(el);
+    if (parent === hand) fanHand();
+    return fly(el, a);
+  }
+  function fly(el, a) {
+    var b = el.getBoundingClientRect();
+    if (reduce || !b.width) return Promise.resolve();
+    var end = getComputedStyle(el).transform; if (end === 'none') end = '';
+    var anim = el.animate([
+      { transform: 'translate(' + (a.left - b.left) + 'px,' + (a.top - b.top) + 'px) scale(' + (a.width / b.width) + ') ' + end, transformOrigin: '0 0' },
+      { transform: end || 'none', transformOrigin: '0 0' }
+    ], { duration: 560, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    return anim.finished.catch(function () {});
+  }
+  // A new card comes from a deck
+  function dealFrom(deck, el, parent, before) {
+    var a = deck.querySelector('img').getBoundingClientRect();
+    if (before) parent.insertBefore(el, before); else parent.appendChild(el);
+    if (parent === hand) fanHand();
+    return fly(el, a);
+  }
+  function discard(el) {
+    if (!el || !el.parentNode) return;
+    if (reduce) { el.remove(); return; }
+    el.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.8)' }], { duration: 300 }).finished.then(function () { el.remove(); });
+  }
+  function total(pile) {
+    return [].reduce.call(pile.children, function (s, c) { return s + (+c.dataset.v || 0); }, 0);
+  }
+  function countTo(el, key, to) {
+    var from = shown[key]; shown[key] = to;
+    if (reduce || from === to) { el.textContent = to; return; }
+    var t0 = performance.now();
+    (function step(now) {
+      var k = Math.min(1, (now - t0) / 600);
+      el.textContent = Math.round(from + (to - from) * k);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  function scores() { countTo(myScoreEl, 'me', total(myPile)); countTo(oppScoreEl, 'opp', total(oppPile)); }
+  function busy(on) { table.classList.toggle('busy', on); }
+  function shake(el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+  function points(pile) { return [].filter.call(pile.children, function (c) { return c.dataset.type === 'point'; }); }
+
+  function myTurn() {
+    state = 'mine'; busy(false);
+    say('Your turn. You’re on <b>' + total(myPile) + '</b>. Pick a card to play.');
+  }
+
+  async function play(el) {
+    var type = el.dataset.type;
+    if (state === 'blockPrompt') {
+      if (type === 'block') return doBlock(el);
+      shake(el); say('Biscuit is stealing your <b>' + target.dataset.v + '</b>! Play your Block, or let it go.');
+      return;
+    }
+    if (state !== 'mine') return;
+    var next = el.nextSibling;
+    if (type === 'block') {
+      shake(el);
+      say('Keep that one. You play a <b>Block</b> when someone steals from you.');
+      return;
+    }
+    if (type === 'steal') {
+      var picks = points(oppPile);
+      if (!picks.length) { shake(el); say('Biscuit has no point cards to steal yet.'); return; }
+      state = 'stealPick'; stealer = el; stealer.classList.add('glow'); table.classList.add('picking');
+      picks.forEach(function (c) { c.classList.add('pickable'); c.tabIndex = 0; });
+      say('<b>Steal!</b> Pick one of Biscuit’s cards to take.');
+      return;
+    }
+    state = 'busy'; busy(true);
+    if (type === 'point') {
+      await moveTo(el, myPile);
+      scores();
+      say('<b>+' + el.dataset.v + '</b>. You’re on ' + total(myPile) + '.');
+    } else if (type === 'rule') {
+      [].slice.call(ruleSlot.children).forEach(discard);
+      await moveTo(el, ruleSlot);
+      pendingBreak = true;
+      say('<b>New rule:</b> ' + el.dataset.text + ' Everyone follows it, except you.');
+    }
+    await wait(350);
+    await dealFrom(mainDeck, draw(type), hand, next);
+    if (total(myPile) >= 100) return win();
+    await wait(900);
+    oppTurn();
+  }
+
+  async function takeFromOpp(card) {
+    if (state !== 'stealPick') return;
+    state = 'busy'; busy(true);
+    points(oppPile).forEach(function (c) { c.classList.remove('pickable'); c.tabIndex = -1; });
+    table.classList.remove('picking');
+    var next = stealer.nextSibling;
+    stealer.classList.remove('glow');
+    await moveTo(stealer, actionSlot);
+    await moveTo(card, myPile);
+    scores();
+    say('You stole Biscuit’s <b>' + card.dataset.v + '</b>!');
+    discard(stealer);
+    await wait(300);
+    await dealFrom(mainDeck, draw('steal'), hand, next);
+    if (total(myPile) >= 100) return win();
+    await wait(900);
+    oppTurn();
+  }
+
+  async function oppTurn() {
+    state = 'opp'; busy(true);
+    if (pendingBreak) {
+      pendingBreak = false;
+      say('Biscuit broke the rule! Biscuit draws a <b>penalty</b>.');
+      await wait(700);
+      await dealFrom(penDeck, makeCard('penalty', { v: 5 }), oppPile);
+      scores();
+      await wait(1100);
+      return myTurn();
+    }
+    var mine = points(myPile).sort(function (a, b) { return b.dataset.v - a.dataset.v; });
+    if (oppTurns++ % 2 === 0 && mine.length) {
+      target = mine[0];
+      oppSteal = draw('steal');
+      await dealFrom(mainDeck, oppSteal, actionSlot);
+      target.classList.add('targeted');
+      var block = hand.querySelector('[data-type="block"]');
+      if (block) block.classList.add('glow');
+      letGoBtn.hidden = false;
+      state = 'blockPrompt'; busy(false);
+      say('Biscuit plays a <b>Steal</b> on your ' + target.dataset.v + '! Play your Block?');
+      return;
+    }
+    say('Biscuit plays a 10.');
+    await wait(500);
+    await dealFrom(mainDeck, makeCard('point', { v: 10 }), oppPile);
+    scores();
+    await wait(1000);
+    myTurn();
+  }
+
+  async function doBlock(el) {
+    state = 'busy'; busy(true);
+    letGoBtn.hidden = true;
+    var next = el.nextSibling;
+    el.classList.remove('glow');
+    target.classList.remove('targeted');
+    await moveTo(el, actionSlot);
+    say('<b>Blocked!</b> Biscuit’s steal bounces off.');
+    if (!reduce) oppSteal.animate([{ transform: 'none' }, { transform: 'translateY(-30px) rotate(-20deg)', opacity: 0 }], { duration: 500, easing: 'ease-in' });
+    await wait(500);
+    discard(oppSteal); discard(el);
+    await wait(300);
+    await dealFrom(mainDeck, draw('block'), hand, next);
+    await wait(900);
+    myTurn();
+  }
+
+  async function letGo() {
+    if (state !== 'blockPrompt') return;
+    state = 'busy'; busy(true);
+    letGoBtn.hidden = true;
+    var block = hand.querySelector('.glow'); if (block) block.classList.remove('glow');
+    target.classList.remove('targeted');
+    await moveTo(target, oppPile);
+    scores();
+    say('Biscuit took your <b>' + target.dataset.v + '</b>.');
+    discard(oppSteal);
+    await wait(1100);
+    myTurn();
+  }
+
+  function win() {
+    state = 'won'; busy(true);
+    table.classList.add('win');
+    say('<b>' + total(myPile) + ' points. You win!</b> Now twerk your tail off.');
+    againBtn.textContent = 'Play again';
+  }
+
+  function start() {
+    [hand, myPile, oppPile, ruleSlot, actionSlot].forEach(function (el) { el.textContent = ''; });
+    table.classList.remove('win');
+    draws = { point: 0, rule: 0, steal: 0, block: 0 };
+    oppTurns = 0; pendingBreak = false; letGoBtn.hidden = true;
+    againBtn.textContent = 'Start over';
+    [30, 20, 20].forEach(function (v) { myPile.appendChild(makeCard('point', { v: v })); });
+    [20, 10].forEach(function (v) { oppPile.appendChild(makeCard('point', { v: v })); });
+    ['point', 'rule', 'steal', 'block'].forEach(function (t) { hand.appendChild(draw(t)); });
+    fanHand();
+    shown = { me: 0, opp: 0 }; myScoreEl.textContent = total(myPile); oppScoreEl.textContent = total(oppPile);
+    shown = { me: total(myPile), opp: total(oppPile) };
+    myTurn();
+  }
+
+  hand.addEventListener('click', function (e) { var c = e.target.closest('.pc'); if (c) play(c); });
+  oppPile.addEventListener('click', function (e) { var c = e.target.closest('.pc.pickable'); if (c) takeFromOpp(c); });
+  letGoBtn.addEventListener('click', letGo);
+  againBtn.addEventListener('click', start);
+  start();
+})();
+</script>
+
+<script>
+/* ───── How-to overlay: each tab opens its card type's cards and description ───── */
+(function () {
+  var TYPES = [{"id": "points", "imgs": ["cards/point-10.webp", "cards/point-20.webp", "cards/point-30.webp"], "name": "Points", "desc": "Play a 10, 20 or 30 face up in front of you. First to 100 points wins.", "meta": "10, 20 and 30 point cards"}, {"id": "penalty", "imgs": ["cards/penalty-10.webp", "cards/penalty-5.webp", "cards/penalty-20.webp"], "name": "Penalty", "desc": "Break a rule and get caught? Draw a penalty card: −5, −10 or −20 off your score.", "meta": "22 cards: mostly −5, some −10, one −20"}, {"id": "rule", "imgs": ["cards/rule-kpup.webp", "cards/rule-frida.webp", "cards/rule-rupup.webp"], "name": "Rule", "desc": "Read it out loud and everyone has to follow it, except you. Bark before answering, don’t say “I”, and more.", "meta": "7 Rule cards"}, {"id": "steal", "imgs": ["cards/steal-popcorn.webp", "cards/steal-coco.webp", "cards/steal-butchoi.webp"], "name": "Steal", "desc": "Take any face-up card from another player, or a random card from their hand.", "meta": "14 Steal cards"}, {"id": "block", "imgs": ["cards/block-maximus.webp", "cards/block-lucky.webp", "cards/block-lola.webp"], "name": "Block", "desc": "Someone stealing from you? Play this out of turn to stop it. Blocks can even block blocks.", "meta": "7 Block cards"}];
+  var ov = document.getElementById('ov'), cards = document.getElementById('ovCards');
+  var title = document.getElementById('ovTitle'), desc = document.getElementById('ovDesc'), meta = document.getElementById('ovMeta');
+  var tabs = [].slice.call(document.querySelectorAll('#tabs .tab'));
+  var idx = 0, opener = null;
+  function fill(i) {
+    idx = (i + TYPES.length) % TYPES.length;
+    var t = TYPES[idx];
+    title.textContent = t.name; desc.textContent = t.desc; meta.textContent = t.meta;
+    cards.innerHTML = t.imgs.map(function (src) { return '<img src="' + src + '" alt="">'; }).join('');
+    tabs.forEach(function (b, k) { b.setAttribute('aria-expanded', k === idx ? 'true' : 'false'); });
+  }
+  function replay() { ov.classList.remove('show'); void ov.offsetWidth; ov.classList.add('show'); }
+  function open(i, from) {
+    opener = from || opener;
+    fill(i);
+    ov.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    requestAnimationFrame(function () { ov.classList.add('show'); });
+    document.getElementById('ovClose').focus({ preventScroll: true });
+  }
+  function close() {
+    ov.classList.remove('show');
+    tabs.forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+    document.documentElement.style.overflow = '';
+    setTimeout(function () { ov.hidden = true; }, 250);
+    if (opener) opener.focus({ preventScroll: true });
+  }
+  tabs.forEach(function (b, k) { b.addEventListener('click', function () { open(k, b); }); });
+  document.getElementById('ovClose').addEventListener('click', close);
+  ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (ov.hidden) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'Tab') {
+      var f = [].slice.call(ov.querySelectorAll('button')), a = document.activeElement;
+      if (e.shiftKey && a === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && a === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    }
+  });
 })();
 </script>
 </body>
