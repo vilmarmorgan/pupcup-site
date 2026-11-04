@@ -96,7 +96,7 @@
   }
   .lid-in { background: var(--lid-inside); }
   .base-out { background-color: var(--base-outside); }
-  .mirror-in, .mirror-solid { background: #0c0c0e; } /* the lid's reflection reads as a solid black block */
+  .mirror-in, .mirror-solid { background: #3a1427; } /* reflection of the lid's magenta inside, darkened */
   /* Glossy floor: sits over the mirrored box so the reflection reads dim and fades out */
   .floor {
     background:
@@ -506,7 +506,7 @@
     right: 'linear-gradient(to bottom, rgba(0,0,0,.38), rgba(0,0,0,.58))',
     plain: 'linear-gradient(to bottom, rgba(255,255,255,.34) 0, rgba(255,255,255,.12) 5%, rgba(255,255,255,.04) 45%, rgba(0,0,0,.15) 100%)',
     // Reflections are dim, and fade further from the floor (the image top is the far edge in the mirror)
-    mirror: 'linear-gradient(to bottom, rgba(30,32,40,.92), rgba(30,32,40,.5))',
+    mirror: 'linear-gradient(to bottom, rgba(30,32,40,.72), rgba(30,32,40,.32))',
     mirrorTop: 'linear-gradient(rgba(30,32,40,.72), rgba(30,32,40,.72))',
     mirrorBase: 'linear-gradient(to bottom, rgba(30,32,40,.85), rgba(30,32,40,.25))'
   };
@@ -530,12 +530,23 @@
     var outer = [];
     specs.forEach(function (s, k) {
       // no art = plain colour with an edge highlight
-      outer.push(face(parent, s[0] + 3, h + 3, s[1], s[2] ? '' : (outCls || insideCls), s[2], lightAll || (s[2] ? LIGHT[keys[k]] : LIGHT.plain)));
+      // front and back overhang the corners slightly; the sides end exactly behind them,
+      // so corners are closed without any edge poking out
+      outer.push(face(parent, k < 2 ? s[0] + 3 : s[0] - 2, h + 3, s[1], s[2] ? '' : (outCls || insideCls), s[2], lightAll || (s[2] ? LIGHT[keys[k]] : LIGHT.plain)));
       // On the open box, the inside panels overlap at the corners so no background shows through.
       // Elsewhere (lid, reflection) they stay just inside the outer panels, so no dark edge peeks out.
-      if (overlapInside) face(parent, s[0] + 3, h + 2, s[1] + ' rotateY(180deg)', insideCls);
-      else face(parent, s[0] - 1, h, s[1] + ' rotateY(180deg)', insideCls);
+      // inside panels stop 2px short of each corner so they never flicker against the walls they meet
+      face(parent, s[0] - 4, h, s[1] + ' rotateY(180deg)', insideCls);
     });
+    if (overlapInside) {
+      // close the seams at the four inside corners with small diagonal strips that stay inside the box
+      [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (c) {
+        var a = Math.atan2(-c[1], -c[0]) * 180 / Math.PI + 90; // strip faces the middle of the box
+        var tr = 'translate(' + (c[0] * (w / 2 - 5)) + 'px,' + (c[1] * (d / 2 - 5)) + 'px) translateZ(' + zMid + 'px) rotateZ(' + a + 'deg) rotateX(-90deg)';
+        face(parent, 8, h - 1, tr, insideCls);
+        face(parent, 8, h - 1, tr + ' rotateY(180deg)', insideCls);
+      });
+    }
     return outer;
   }
 
@@ -735,9 +746,8 @@
     // Reflection of the lid: the same move, mirrored in the floor
     css(mirrorLid, 'transform', 'translateY(' + (-ly) + 'px) translateZ(' + lz + 'px) rotateX(' + (-la) + 'deg) rotateZ(' + (away * 8) + 'deg)');
     // the reflection only makes sense while the lid is near the floor: fade it out as the lid leaves
-    var mirrorFade = 1 - seg(away, 0, 0.22);
-    css(mirrorLid, 'visibility', mirrorFade <= 0 ? 'hidden' : 'visible');
-    css(mirrorLid, 'opacity', mirrorFade.toFixed(3));
+    // The lid's reflection makes the mirror-image move: it sinks out of frame as the lid floats out.
+    css(mirrorLid, 'visibility', away >= 1 ? 'hidden' : 'visible');
 
     // Cards are drawn on their own layer above the box, so while a card is still down in the box
     // we cut away the part that the front wall would hide. That way cards slide in and out
