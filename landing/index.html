@@ -32,8 +32,7 @@
     --base-inside: #141210;  /* base print is black */
     --base-outside: #2e2c2a; /* outside of the base, a touch lighter so it reads against the backdrop */
     --card-edge: #ece6da;
-    --studio: #050608;       /* backdrop behind the box */
-    --studio-2: #12141b;
+    --studio: #1e2028;       /* same as the site background */
   }
 
   html { background: var(--bg); scroll-behavior: smooth; }
@@ -68,14 +67,16 @@
   #reveal { position: relative; height: 1120vh; }
   .stage {
     position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
-    /* Studio look: black backdrop with soft coloured light leaks, like a product photo */
-    background:
-      radial-gradient(24% 30% at 4% 56%, rgba(38, 108, 255, .55), rgba(38, 108, 255, 0) 70%),
-      radial-gradient(20% 24% at 9% 34%, rgba(255, 64, 48, .38), rgba(255, 64, 48, 0) 70%),
-      radial-gradient(22% 30% at 97% 54%, rgba(44, 200, 86, .42), rgba(44, 200, 86, 0) 70%),
-      radial-gradient(26% 28% at 86% 84%, rgba(255, 128, 24, .38), rgba(255, 128, 24, 0) 70%),
-      radial-gradient(60% 55% at 50% 52%, var(--studio-2) 0%, var(--studio) 72%);
+    background: transparent; /* the homepage's moving colours play behind it as a video */
   }
+  /* The homepage's drifting colour background, pre-recorded as a looping video.
+     Playing a video is far cheaper than redrawing six huge blurred shapes every frame. */
+  .bg-video {
+    position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%;
+    object-fit: cover; pointer-events: none; opacity: 0; transition: opacity 1.2s ease;
+  }
+  .bg-video.ready { opacity: 1; }
+  main { position: relative; z-index: 1; }
   .viewport { position: absolute; inset: 0; perspective: 1900px; perspective-origin: 50% 30%; }
   /* Each flying card gets its own wrapper with its own perspective, so cards stack in order
      and can never slice through each other or the box. */
@@ -99,7 +100,7 @@
   /* Glossy floor: sits over the mirrored box so the reflection reads dim and fades out */
   .floor {
     background:
-      radial-gradient(closest-side, rgba(96, 104, 134, .55) 0%, rgba(44, 48, 66, .45) 34%, rgba(5, 6, 8, .3) 64%, rgba(5, 6, 8, 0) 100%);
+      radial-gradient(closest-side, rgba(96, 104, 134, .55) 0%, rgba(44, 48, 66, .45) 34%, rgba(30, 32, 40, .3) 64%, rgba(30, 32, 40, 0) 100%);
   }
   .base-in { background: var(--base-inside); }
   .card-face img { width: 100%; height: 100%; display: block; }
@@ -113,7 +114,36 @@
   }
   .hero-copy h1 { font-size: clamp(38px, 7vw, 84px); font-weight: 700; line-height: 1; text-wrap: balance; }
   .hero-copy h1 em { font-style: normal; color: var(--accent); }
-  .hero-copy p { color: var(--text-muted); font-size: 18px; max-width: 34ch; }
+  /* Landed cards are links to the main site */
+  /* Hover: the card comes to the front, straightens up and grows a little (like Cards Against Humanity) */
+  .card-flat .card-face.live {
+    pointer-events: auto; cursor: pointer;
+    /* going back: quick and plain */
+    transition: transform .16s ease-out, box-shadow .16s ease-out;
+  }
+  .card-flat .card-face.live:hover, .card-flat .card-face.live:focus-visible {
+    /* coming forward: straightens fully, grows and lifts, with a small bounce */
+    transform: translateY(-10px) rotate(var(--untilt, 0deg)) scale(1.28);
+    box-shadow: 0 26px 50px rgba(0, 0, 0, .6); outline: none;
+    transition: transform .22s cubic-bezier(.2, .9, .3, 1.25), box-shadow .22s ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) { .card-flat .card-face.live { transition: none; } }
+  .card-flat .card-face { border-radius: 10px; }
+  .cards-layer.off .card-face.live { pointer-events: none; } /* hidden while they fly up into the tabs */
+  /* Big call to action once the cards have landed */
+  .explore {
+    position: absolute; left: 50%; bottom: 28px; z-index: 6; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+    padding: 18px 34px; border-radius: 999px; font-size: 20px; font-weight: 700; letter-spacing: .01em;
+    background: var(--accent); color: var(--buy-text);
+    box-shadow: 0 10px 30px rgba(245, 197, 66, .35), 0 2px 0 rgba(255, 255, 255, .4) inset;
+    opacity: 0; visibility: hidden; transition: background .2s, box-shadow .2s;
+  }
+  .explore:hover { background: #ffd65c; box-shadow: 0 12px 36px rgba(245, 197, 66, .5), 0 2px 0 rgba(255, 255, 255, .4) inset; }
+  .explore:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .explore span { transition: transform .2s; }
+  .explore:hover span { transform: translateX(4px); }
+  @media (max-width: 600px) { .explore { font-size: 17px; padding: 15px 26px; bottom: 22px; } }
   .hint {
     position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 5;
     display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -194,7 +224,6 @@
   .ov-copy { display: grid; gap: 12px; justify-items: start; }
   .ov-copy h2 { font-size: clamp(34px, 4.6vw, 52px); font-weight: 700; line-height: 1; }
   .ov-copy p { font-size: 21px; line-height: 1.45; max-width: 28ch; }
-  .ov-copy small { color: var(--text-muted); font-size: 15px; }
   .ov-close {
     position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%;
     appearance: none; border: 0; cursor: pointer; background: rgba(255, 255, 255, .1); color: var(--text);
@@ -341,10 +370,26 @@
       <span class="eyebrow">How it works</span>
       <h2 id="ovTitle"></h2>
       <p id="ovDesc"></p>
-      <small id="ovMeta"></small>
     </div>
   </div>
 </div>
+
+<video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1">
+  <source src="bg/prism.webm" type="video/webm">
+  <source src="bg/prism.mp4" type="video/mp4">
+</video>
+<script>
+(function () {
+  var v = document.getElementById('bgVideo');
+  function ready() { v.classList.add('ready'); }
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    v.removeAttribute('autoplay'); v.addEventListener('loadeddata', ready); v.pause();
+  } else {
+    v.addEventListener('playing', ready);
+    var p = v.play(); if (p && p.catch) p.catch(function () { v.addEventListener('loadeddata', ready); });
+  }
+})();
+</script>
 
 <main>
   <section id="reveal" aria-label="Pupcup box reveal">
@@ -354,10 +399,10 @@
 
       <div class="hero-copy" id="heroCopy">
         <h1>Open the box. <em>Meet the dogs.</em></h1>
-        <p>Scroll slowly or fast. The box opens at your pace.</p>
       </div>
 
       <div class="hint" id="hint"><i></i>Scroll to open</div>
+      <a class="explore" id="explore" href="../">Explore the Cards <span aria-hidden="true">&rarr;</span></a>
     </div>
   </section>
 
@@ -461,9 +506,9 @@
     right: 'linear-gradient(to bottom, rgba(0,0,0,.38), rgba(0,0,0,.58))',
     plain: 'linear-gradient(to bottom, rgba(255,255,255,.34) 0, rgba(255,255,255,.12) 5%, rgba(255,255,255,.04) 45%, rgba(0,0,0,.15) 100%)',
     // Reflections are dim, and fade further from the floor (the image top is the far edge in the mirror)
-    mirror: 'linear-gradient(to bottom, rgba(5,6,8,.92), rgba(5,6,8,.5))',
-    mirrorTop: 'linear-gradient(rgba(5,6,8,.72), rgba(5,6,8,.72))',
-    mirrorBase: 'linear-gradient(to bottom, rgba(5,6,8,.85), rgba(5,6,8,.25))'
+    mirror: 'linear-gradient(to bottom, rgba(30,32,40,.92), rgba(30,32,40,.5))',
+    mirrorTop: 'linear-gradient(rgba(30,32,40,.72), rgba(30,32,40,.72))',
+    mirrorBase: 'linear-gradient(to bottom, rgba(30,32,40,.85), rgba(30,32,40,.25))'
   };
   function cardFace(parent, transform, src, alt) {
     var f = face(parent, CW, CH, transform, 'card-face');
@@ -471,7 +516,7 @@
     return f;
   }
   // Four walls around the origin. Each wall's image has its top edge at the top of the wall.
-  function walls(parent, w, d, h, zMid, img, insideCls, outCls, lightAll) {
+  function walls(parent, w, d, h, zMid, img, insideCls, outCls, lightAll, overlapInside) {
     var keys = ['front', 'back', 'left', 'right'];
     var hz = 'translateZ(' + zMid + 'px) ';
     var specs = [
@@ -486,7 +531,10 @@
     specs.forEach(function (s, k) {
       // no art = plain colour with an edge highlight
       outer.push(face(parent, s[0] + 3, h + 3, s[1], s[2] ? '' : (outCls || insideCls), s[2], lightAll || (s[2] ? LIGHT[keys[k]] : LIGHT.plain)));
-      face(parent, s[0] - 1, h, s[1] + ' rotateY(180deg)', insideCls);
+      // On the open box, the inside panels overlap at the corners so no background shows through.
+      // Elsewhere (lid, reflection) they stay just inside the outer panels, so no dark edge peeks out.
+      if (overlapInside) face(parent, s[0] + 3, h + 2, s[1] + ' rotateY(180deg)', insideCls);
+      else face(parent, s[0] - 1, h, s[1] + ' rotateY(180deg)', insideCls);
     });
     return outer;
   }
@@ -502,10 +550,10 @@
     front: ART + 'base-back.jpg', back: null, left: ART + 'base-left.jpg', right: ART + 'base-right.jpg'
   }, 'base-in', 'base-out', LIGHT.mirrorBase);
   var mirrorLid = el(mirror, 'lid');
-  face(mirrorLid, LW + 3, LD + 3, 'translateZ(1.5px)', 'mirror-solid');
-  face(mirrorLid, LW + 3, LD + 3, 'translateZ(1.5px) rotateY(180deg)', 'mirror-solid');
-  face(mirrorLid, LW + 2, LD + 2, 'translateZ(' + (-LH + 1) + 'px)', 'mirror-solid');
-  face(mirrorLid, LW + 2, LD + 2, 'translateZ(' + (-LH + 1) + 'px) rotateY(180deg)', 'mirror-solid');
+  face(mirrorLid, LW - 2, LD - 2, 'translateZ(1.5px)', 'mirror-solid');
+  face(mirrorLid, LW - 2, LD - 2, 'translateZ(1.5px) rotateY(180deg)', 'mirror-solid');
+  face(mirrorLid, LW - 2, LD - 2, 'translateZ(' + (-LH + 1) + 'px)', 'mirror-solid');
+  face(mirrorLid, LW - 2, LD - 2, 'translateZ(' + (-LH + 1) + 'px) rotateY(180deg)', 'mirror-solid');
   walls(mirrorLid, LW, LD, LH, -LH / 2, {
     front: ART + 'lid-back.jpg', back: ART + 'lid-front.jpg', left: ART + 'lid-left.jpg', right: ART + 'lid-right.jpg'
   }, 'mirror-in', null, LIGHT.mirror);
@@ -521,7 +569,7 @@
   var baseFront = walls(box, W, D, H, H / 2, {
     front: null, /* left blank for now (was the dedication) */ back: ART + 'base-back.jpg',
     left: ART + 'base-left.jpg', right: ART + 'base-right.jpg'
-  }, 'base-in', 'base-out')[0];
+  }, 'base-in', 'base-out', null, true)[0];
   var DH = H - 8;
   [-1.5, 1.5].forEach(function (x) {
     face(box, D, DH, 'translateX(' + x + 'px) translateZ(' + (DH / 2) + 'px) rotateY(90deg) rotateZ(-90deg)', 'divider');
@@ -538,6 +586,8 @@
   var leftTop = leftStack.z, rightTop = rightStack.z;
 
   // Each fan: which compartment, when it starts, and who leaves first
+  var EXPLORE_URL = '../';
+  function goExplore() { window.location.href = EXPLORE_URL; }
   function makeGroup(g, fromX, pileTop, start, step, heroFirst, front) {
     var n = g.cards.length;
     var rank = g.cards.map(function (_, i) { return i; }).sort(function (a, b) {
@@ -550,6 +600,20 @@
       wrap.style.visibility = 'hidden';
       var c = el(wrap, 'card-flat');
       var faceEl = cardFace(c, 'none', src, i === g.hero ? g.alt : '');
+      faceEl.style.removeProperty('transform'); // let the hover style move the card
+      faceEl.setAttribute('role', 'link');
+      faceEl.setAttribute('aria-label', 'Explore the cards on the main site');
+      faceEl.addEventListener('click', goExplore);
+      // bring the hovered card to the front; it drops back once it has eased into place
+      var rec = null;
+      function lift() { rec = rec || g.list[i]; clearTimeout(rec.dropT); rec.lifted = true; rec.wrap.style.zIndex = 5000; rec.wrap._zIndex = '5000'; }
+      function drop() {
+        rec = rec || g.list[i]; clearTimeout(rec.dropT);
+        rec.dropT = setTimeout(function () { rec.lifted = false; rec.wrap.style.zIndex = rec.baseZ; rec.wrap._zIndex = String(rec.baseZ); }, 170);
+      }
+      faceEl.addEventListener('mouseenter', lift); faceEl.addEventListener('focus', lift);
+      faceEl.addEventListener('mouseleave', drop); faceEl.addEventListener('blur', drop);
+      faceEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goExplore(); } });
       var r = rank.indexOf(i);
       return { el: c, wrap: wrap, face: faceEl, src: src, i: i, r: r, pileZ: pileTop + 1 + (n - 1 - r) * 0.6 };
     });
@@ -585,12 +649,12 @@
   // Nothing lands on the box itself, so you can always see where they came from.
   var SLOTS = {
     wide: [
-      [[-175, 275, -6], [-385, 335, 9], [-540, 190, -12], [-345, 115, 15], [-215, 465, -10], [-470, 500, 7]],
-      [[175, 275, 6], [385, 345, -9], [545, 190, 12], [345, 115, -15], [15, 470, 4], [250, 505, 11], [490, 470, -7]]
+      [[-193, 275, -6], [-424, 335, 9], [-560, 200, -12], [-380, 115, 15], [-237, 465, -10], [-517, 500, 7]],
+      [[193, 275, 6], [424, 345, -9], [562, 200, 12], [380, 115, -15], [16, 470, 4], [275, 505, 11], [539, 470, -7]]
     ],
     narrow: [
-      [[-72, 320, -7], [-180, 440, 10], [-190, 245, -13], [-80, 560, 8], [-185, 650, -9], [-60, 690, 5]],
-      [[72, 320, 7], [180, 440, -10], [190, 245, 13], [80, 560, -8], [185, 650, 9], [-5, 745, -4], [-130, 770, 6]]
+      [[-78, 320, -7], [-194, 440, 10], [-205, 275, -13], [-86, 560, 8], [-200, 650, -9], [-65, 690, 5]],
+      [[78, 320, 7], [194, 440, -10], [205, 275, 13], [86, 560, -8], [200, 650, 9], [-5, 745, -4], [-140, 770, 6]]
     ]
   };
 
@@ -620,7 +684,7 @@
   window.addEventListener('resize', resize);
   resize();
 
-  var target = 0, current = 0;
+  var target = 0, current = 0, revealP = 0;
   function readScroll() {
     var r = section.getBoundingClientRect();
     var total = section.offsetHeight - window.innerHeight;
@@ -691,7 +755,7 @@
 
     groups.forEach(function (g, gi) {
       var slots = SLOTS[narrow ? 'narrow' : 'wide'][gi];
-      var fs = narrow ? 0.52 : 0.74; // cards land a bit smaller so the whole scatter fits on screen
+      var fs = narrow ? 0.6 : 0.86; // landed card size (all cards land the same size)
 
       g.list.forEach(function (c) {
         var slot = slots[c.r];
@@ -710,6 +774,13 @@
 
         var shown = p > st;
         css(c.wrap, 'visibility', shown ? 'visible' : 'hidden');
+        var landed = spin >= 1 && rise >= 1;
+        if (landed) c.face.style.setProperty('--untilt', (-slot[2]) + 'deg');
+        if (landed !== c.live) {
+          c.live = landed;
+          c.face.classList.toggle('live', landed);
+          if (landed) c.face.tabIndex = 0; else c.face.removeAttribute('tabindex');
+        }
         if (!shown) return; // nothing else to update for a card still in its deck
         // Hide the part of the card behind the box's front wall, but only while the card is
         // really inside the box: its bottom edge is below the rim and it's over the box.
@@ -718,7 +789,8 @@
         var inside = bottom < H && Math.abs(x) - halfW < W / 2;
         css(c.wrap, 'clipPath', inside ? wallClip() : 'none');
         // earlier out = in front; the two first cards tie, Frida wins
-        css(c.wrap, 'zIndex', 2000 - Math.round(st * 1000) * 2 + (gi === 1 ? 1 : 0));
+        c.baseZ = 2000 - Math.round(st * 1000) * 2 + (gi === 1 ? 1 : 0);
+        if (!c.lifted) css(c.wrap, 'zIndex', c.baseZ);
         var place = base +
           'translate3d(' + x + 'px,' + y + 'px,' + z + 'px) rotateX(' + (-TILT * turn) + 'deg) ' +
           'rotateZ(' + (slot[2] * spin + wobble) + 'deg)';
@@ -746,6 +818,7 @@
     css(heroCopy, 'opacity', 1 - seg(p, 0.02, 0.12));
     css(heroCopy, 'transform', 'translateY(' + (-seg(p, 0, 0.12) * 30) + 'px)');
     css(hint, 'opacity', 1 - seg(p, 0.01, 0.06));
+    revealP = p;
   }
 
   // The animation follows the scroll position smoothly, with a speed limit: even a fast flick
@@ -796,7 +869,12 @@
     captured = true;
   }
   var tabsOn = false, tabsFlying = false;
+  var exploreEl = document.getElementById('explore'), cardsOff = false;
   function shrink(q) {
+    var eo = q > 0 ? 0 : seg(revealP, 0.9, 0.97);
+    css(exploreEl, 'opacity', eo.toFixed(3));
+    css(exploreEl, 'visibility', eo > 0.02 ? 'visible' : 'hidden');
+    if ((q > 0) !== cardsOff) { cardsOff = q > 0; cardLayer.classList.toggle('off', cardsOff); }
     var flying = q > 0 && q < 1;
     css(cardLayer, 'opacity', q > 0 ? 0 : 1);
     css(flyLayer, 'visibility', flying ? 'visible' : 'hidden');
@@ -1109,15 +1187,15 @@
 <script>
 /* ───── How-to overlay: each tab opens its card type's cards and description ───── */
 (function () {
-  var TYPES = [{"id": "points", "imgs": ["cards/point-10.webp", "cards/point-20.webp", "cards/point-30.webp"], "name": "Points", "desc": "Play a 10, 20 or 30 face up in front of you. First to 100 points wins.", "meta": "10, 20 and 30 point cards"}, {"id": "penalty", "imgs": ["cards/penalty-10.webp", "cards/penalty-5.webp", "cards/penalty-20.webp"], "name": "Penalty", "desc": "Break a rule and get caught? Draw a penalty card: −5, −10 or −20 off your score.", "meta": "22 cards: mostly −5, some −10, one −20"}, {"id": "rule", "imgs": ["cards/rule-kpup.webp", "cards/rule-frida.webp", "cards/rule-rupup.webp"], "name": "Rule", "desc": "Read it out loud and everyone has to follow it, except you. Bark before answering, don’t say “I”, and more.", "meta": "7 Rule cards"}, {"id": "steal", "imgs": ["cards/steal-popcorn.webp", "cards/steal-coco.webp", "cards/steal-butchoi.webp"], "name": "Steal", "desc": "Take any face-up card from another player, or a random card from their hand.", "meta": "14 Steal cards"}, {"id": "block", "imgs": ["cards/block-maximus.webp", "cards/block-lucky.webp", "cards/block-lola.webp"], "name": "Block", "desc": "Someone stealing from you? Play this out of turn to stop it. Blocks can even block blocks.", "meta": "7 Block cards"}];
+  var TYPES = [{"id": "points", "imgs": ["cards/point-10.webp", "cards/point-20.webp", "cards/point-30.webp"], "name": "Points", "desc": "Play a 10, 20 or 30 face up in front of you. First to 100 points wins."}, {"id": "penalty", "imgs": ["cards/penalty-10.webp", "cards/penalty-5.webp", "cards/penalty-20.webp"], "name": "Penalty", "desc": "Break a rule and get caught? Draw a penalty card: −5, −10 or −20 off your score."}, {"id": "rule", "imgs": ["cards/rule-kpup.webp", "cards/rule-frida.webp", "cards/rule-rupup.webp"], "name": "Rule", "desc": "Read it out loud and everyone has to follow it, except you. Bark before answering, don’t say “I”, and more."}, {"id": "steal", "imgs": ["cards/steal-popcorn.webp", "cards/steal-coco.webp", "cards/steal-butchoi.webp"], "name": "Steal", "desc": "Take any face-up card from another player, or a random card from their hand."}, {"id": "block", "imgs": ["cards/block-maximus.webp", "cards/block-lucky.webp", "cards/block-lola.webp"], "name": "Block", "desc": "Someone stealing from you? Play this out of turn to stop it. Blocks can even block blocks."}];
   var ov = document.getElementById('ov'), cards = document.getElementById('ovCards');
-  var title = document.getElementById('ovTitle'), desc = document.getElementById('ovDesc'), meta = document.getElementById('ovMeta');
+  var title = document.getElementById('ovTitle'), desc = document.getElementById('ovDesc');
   var tabs = [].slice.call(document.querySelectorAll('#tabs .tab'));
   var idx = 0, opener = null;
   function fill(i) {
     idx = (i + TYPES.length) % TYPES.length;
     var t = TYPES[idx];
-    title.textContent = t.name; desc.textContent = t.desc; meta.textContent = t.meta;
+    title.textContent = t.name; desc.textContent = t.desc;
     cards.innerHTML = t.imgs.map(function (src) { return '<img src="' + src + '" alt="">'; }).join('');
     tabs.forEach(function (b, k) { b.setAttribute('aria-expanded', k === idx ? 'true' : 'false'); });
   }
