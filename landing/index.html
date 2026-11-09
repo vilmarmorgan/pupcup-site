@@ -280,6 +280,25 @@
     .seat[data-p="2"] { grid-auto-flow: column; align-items: center; gap: 22px; }
     .seat[data-p="2"] .up { min-width: 150px; }
   }
+  /* full screen has room to spare, so the three dogs grow again */
+  @media (min-width: 761px) {
+    .pg-board.fs .seat:not([data-p="0"]) .av { width: clamp(84px, 13vh, 150px); height: clamp(84px, 13vh, 150px); box-shadow: 0 0 0 5px rgba(255, 255, 255, .85), 0 10px 22px rgba(0, 0, 0, .35); }
+    .pg-board.fs .seat.turn:not([data-p="0"]) .av { box-shadow: 0 0 0 5px var(--accent), 0 0 30px rgba(245, 197, 66, .65); }
+    .pg-board.fs .seat:not([data-p="0"]) .who { gap: 20px; }
+    .pg-board.fs .seat:not([data-p="0"]) .who-txt { min-width: 170px; gap: 6px; }
+    .pg-board.fs .seat:not([data-p="0"]) .who-txt b { font-size: clamp(20px, 2.4vh, 28px); }
+    .pg-board.fs .seat:not([data-p="0"]) .score { font-size: clamp(30px, 3.8vh, 44px); }
+    .pg-board.fs .seat:not([data-p="0"]) .score small { font-size: clamp(16px, 1.9vh, 22px); }
+    .pg-board.fs .seat:not([data-p="0"]) .meter { height: 8px; }
+    .pg-board.fs .seat:not([data-p="0"]) .backs span { width: 28px; height: 40px; }
+    .pg-board.fs .seat:not([data-p="0"]) .backs span + span { margin-left: -14px; }
+    .pg-board.fs .seat:not([data-p="0"]) .pc { width: clamp(78px, 11.5vh, 128px); }
+    .pg-board.fs .seat:not([data-p="0"]) .up { min-height: clamp(110px, 16vh, 180px); padding-left: 60px; }
+    .pg-board.fs .seat:not([data-p="0"]) .up .pc { margin-left: -60px; }
+    .pg-board.fs .seat:not([data-p="0"]) { min-width: 320px; padding: 16px 24px; }
+    .pg-board.fs .seat[data-p="2"] { gap: 30px; }
+    .pg-board.fs .seat[data-p="2"] .up { min-width: 220px; }
+  }
   /* middle */
   .pg-mid { grid-area: mid; display: grid; gap: 10px; justify-items: center; align-content: safe center; position: relative; z-index: 3; }
   .pg-msg:empty { visibility: hidden; }
@@ -356,6 +375,33 @@
   .intro-dogs img + img { margin-left: -14px; }
   .pg-btn.big { font-size: 18px; padding: 14px 28px; margin-top: 6px; }
   .deal-fly { position: absolute; z-index: 20; border-radius: 6px; pointer-events: none; box-shadow: 0 6px 14px rgba(0, 0, 0, .4); }
+
+  /* tour and first-time tips: a spotlight on one part of the table with a bubble beside it */
+  .coach { position: absolute; inset: 0; z-index: 37; }
+  .coach[hidden] { display: none; }
+  .coach-ring {
+    position: absolute; border-radius: 18px; pointer-events: none;
+    box-shadow: 0 0 0 3px var(--accent), 0 0 0 9999px rgba(0, 0, 0, .55);
+    transition: left .3s, top .3s, width .3s, height .3s;
+  }
+  .coach-bubble {
+    position: absolute; width: 310px; padding: 16px 18px 14px; border-radius: 16px; background: #15161c;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, .6); display: grid; gap: 8px; transition: left .3s, top .3s;
+  }
+  .coach-bubble .k { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .coach-bubble h3 { font-size: 19px; font-weight: 700; line-height: 1.2; }
+  .coach-bubble p { color: #c9c7c2; font-size: 15px; line-height: 1.45; }
+  .coach-bubble .row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .coach-bubble .row .sp { flex: 1; }
+  .coach-bubble .row button { white-space: nowrap; flex-shrink: 0; }
+  .coach-bubble .link { appearance: none; border: 0; background: none; color: var(--text-muted); font: inherit; font-size: 13px; cursor: pointer; padding: 6px 2px; text-decoration: underline; }
+  .coach-bubble .link:hover { color: var(--text); }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .25); }
+  .dots i.on { background: var(--accent); }
+  [data-info] { cursor: help; }
+  @media (max-width: 760px) { .coach-bubble { width: auto; left: 10px !important; right: 10px; } }
+  @media (prefers-reduced-motion: reduce) { .coach-ring, .coach-bubble { transition: none; } }
 
   /* popups inside the board */
   .pg-pop { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .45); }
@@ -520,11 +566,11 @@
           <div class="pg-msg" id="msg" aria-live="polite"></div>
           <div class="pg-row">
             <div class="decks">
-              <div class="pgdeck" id="mainDeck"><img src="cards/dog-cards-face.webp" alt=""><span class="lbl">Deck</span></div>
-              <div class="pgdeck" id="penDeck"><img src="cards/penalty.webp" alt=""><span class="lbl">Penalties</span></div>
+              <div class="pgdeck" id="mainDeck" data-info="deck"><img src="cards/dog-cards-face.webp" alt=""><span class="lbl">Deck</span></div>
+              <div class="pgdeck" id="penDeck" data-info="pens"><img src="cards/penalty.webp" alt=""><span class="lbl">Penalties</span></div>
             </div>
-            <div class="play-slot" id="playSlot"></div>
-            <div class="rules-box"><div class="rules" id="rulesEl"></div><span class="lbl">Rules in play (max 2)</span></div>
+            <div class="play-slot" id="playSlot" data-info="slot"></div>
+            <div class="rules-box" data-info="rules"><div class="rules" id="rulesEl"></div><span class="lbl">Rules in play (max 2)</span></div>
           </div>
         </div>
         <div class="seat" data-p="3"></div>
@@ -546,6 +592,10 @@
           <button class="pg-btn gold big" id="dealBtn" type="button">🃏 Deal the cards</button>
         </div>
       </div>
+      <div class="coach" id="coach" hidden>
+        <div class="coach-ring" id="coachRing"></div>
+        <div class="coach-bubble" id="coachBubble" role="dialog" aria-live="polite"></div>
+      </div>
       <div class="pg-pop" id="pop" hidden><div class="pg-pop-card" id="popCard" role="dialog" aria-modal="true"></div></div>
       <div class="pg-custom" id="customPanel" hidden>
         <h4>Board colour</h4>
@@ -558,6 +608,11 @@
         </div>
         <h4>Your dog</h4>
         <div class="dogs" id="dogs"></div>
+        <h4>Help</h4>
+        <div class="speeds">
+          <button type="button" class="pg-btn" id="tourBtn">Replay the tour</button>
+          <button type="button" class="pg-btn" id="tipsBtn" aria-pressed="true">Tips: on</button>
+        </div>
       </div>
     </div>
   </section>
@@ -1145,7 +1200,7 @@
   function buildSeat(p) {
     var s = seatOf(p);
     s.innerHTML =
-      '<div class="who"><img class="av" alt="' + p.name + '" src="' + AV + 'av-' + p.av + '.webp">' +
+      '<div class="who" data-info="seat"><img class="av" alt="' + p.name + '" src="' + AV + 'av-' + p.av + '.webp">' +
       '<div class="who-txt"><b>' + p.name + '</b><span class="score"><span class="n">0</span><small> / ' + GOAL + '</small></span>' +
       '<div class="meter"><i></i></div>' + (p.human ? '' : '<div class="backs"></div>') + '</div></div>' +
       '<div class="up" aria-label="' + p.name + '’s cards"></div>';
@@ -1279,6 +1334,150 @@
     clearSel(); selected = n; n.classList.add('sel'); showTip(n, true);
   });
 
+
+  // ── Help: a short first-time tour, one-time tips, and info on the table ──
+  var coachEl = $('coach'), ringEl = $('coachRing'), bubble = $('coachBubble');
+  var tipsOn = store('pg-tips') !== 'off';
+  function seen(k) { return store('pg-seen-' + k) === '1'; }
+  function markSeen(k) { store('pg-seen-' + k, '1'); }
+  function place(target) {
+    var br = board.getBoundingClientRect(), r = target.getBoundingClientRect(), pad = 8;
+    var x = r.left - br.left - pad, y = r.top - br.top - pad, w = r.width + pad * 2, h = r.height + pad * 2;
+    ringEl.style.left = x + 'px'; ringEl.style.top = y + 'px'; ringEl.style.width = w + 'px'; ringEl.style.height = h + 'px';
+    var bw = bubble.offsetWidth || 310, bh = bubble.offsetHeight || 180;
+    var below = y + h + 12, above = y - bh - 12;
+    var top = (below + bh < br.height - 8) ? below : (above > 8 ? above : Math.max(8, Math.min(br.height - bh - 8, y + h / 2 - bh / 2)));
+    var left = Math.max(10, Math.min(br.width - bw - 10, x + w / 2 - bw / 2));
+    bubble.style.left = left + 'px'; bubble.style.top = top + 'px';
+  }
+  function bringIntoView(target) {
+    // keep the highlighted part and its bubble on screen
+    var vr = target.getBoundingClientRect();
+    if (vr.bottom > window.innerHeight - 10 || vr.top < 70) target.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+  }
+  function fitView() {
+    // scroll so the highlight and its bubble both sit below the top bar
+    var a = ringEl.getBoundingClientRect(), b = bubble.getBoundingClientRect();
+    var top = Math.min(a.top, b.top), bot = Math.max(a.bottom, b.bottom), head = 72, room = window.innerHeight - head;
+    if (top >= head && bot <= window.innerHeight - 8) return;
+    var dy = (bot - top <= room) ? top - head - (room - (bot - top)) / 2 : b.top - head - 8;
+    window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  function coach(steps, tour) {
+    // steps: [{ target, title, text }]. Resolves when finished, skipped, or dismissed.
+    return new Promise(function (resolve) {
+      var i = 0;
+      clearSel(); hideTip();
+      function render() {
+        var st = steps[i], last = i === steps.length - 1;
+        bubble.innerHTML =
+          '<span class="k">' + (tour ? 'Quick tour · ' + (i + 1) + ' of ' + steps.length : 'Tip') + '</span>' +
+          '<h3>' + st.title + '</h3><p>' + st.text + '</p>' +
+          '<div class="row">' +
+          (tour ? '<button type="button" class="link" data-a="skip">Skip tour</button><span class="sp"></span>' +
+                  '<span class="dots" aria-hidden="true">' + steps.map(function (_, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('') + '</span>' +
+                  (i ? '<button type="button" class="pg-btn" data-a="back">Back</button>' : '') +
+                  '<button type="button" class="pg-btn gold" data-a="next">' + (last ? 'Let’s play' : 'Next') + '</button>'
+                : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>' +
+                  '<button type="button" class="pg-btn gold" data-a="next">Got it</button>') +
+          '</div>';
+        coachEl.hidden = false;
+        bringIntoView(st.target);
+        place(st.target);
+        setTimeout(function () { if (!coachEl.hidden) { place(st.target); fitView(); } }, 450);
+        var go = bubble.querySelector('[data-a="next"]'); if (go) go.focus({ preventScroll: true });
+      }
+      function finish() {
+        coachEl.hidden = true;
+        window.removeEventListener('resize', onMove); window.removeEventListener('scroll', onMove);
+        resolve();
+      }
+      function onMove() { if (!coachEl.hidden) place(steps[i].target); }
+      window.addEventListener('resize', onMove);
+      window.addEventListener('scroll', onMove, { passive: true });
+      bubble.onclick = function (e) {
+        var a = e.target.closest('[data-a]'); if (!a) return;
+        a = a.dataset.a;
+        if (a === 'next') { if (i < steps.length - 1) { i++; render(); } else finish(); }
+        else if (a === 'back') { i = Math.max(0, i - 1); render(); }
+        else if (a === 'skip') finish();
+        else if (a === 'off') { setTips(false); finish(); }
+      };
+      render();
+    });
+  }
+  // A one-time tip, shown the first time something happens (unless tips are off)
+  async function tipOnce(key, target, title, text) {
+    if (!tipsOn || seen(key)) return;
+    markSeen(key);
+    await coach([{ target: target, title: title, text: text }], false);
+  }
+  function tour() {
+    var me = players[0];
+    return coach([
+      { target: hand, title: 'Your hand',
+        text: 'These are your 4 cards. ' + (canHover ? 'Hover over one' : 'Tap one') + ' to see what it does, then play it. You play one card each turn.' },
+      { target: me.seat, title: 'Your score',
+        text: 'Everyone starts at 0. Point cards add up here, penalties take points away. First to 100 wins.' },
+      { target: $('mainDeck').parentNode, title: 'The decks',
+        text: 'After every turn you draw back up to 4 cards. Break a rule and get caught, and you draw from the Penalty pile.' },
+      { target: $('customBtn'), title: 'Make it yours',
+        text: 'Change the board colour, pick your dog, or slow the game down. You can replay this tour from here too.' }
+    ], true).then(function () { markSeen('tour'); });
+  }
+  function setTips(on) {
+    tipsOn = on; store('pg-tips', on ? 'on' : 'off');
+    var b = $('tipsBtn'); b.textContent = 'Tips: ' + (on ? 'on' : 'off'); b.setAttribute('aria-pressed', String(on));
+  }
+
+  // Info on the table: hover on desktop, tap on phones
+  var INFO = {
+    deck: ['Deck', 'You draw from here to get back to 4 cards after every turn.'],
+    pens: ['Penalty pile', 'Break a rule and get caught, and you draw one of these: −5, −10 or −20 points off your score.'],
+    rules: ['Rules in play', 'Up to 2 rules at a time. Everyone except the rule’s owner has to follow it. The little photo shows whose rule it is.'],
+    slot: ['Played cards', 'Steals and Blocks land here while a steal plays out.']
+  };
+  function infoFor(n) {
+    if (n._card) {
+      var c = n._card;
+      return [title(c) + (c.owner && c.type !== 'penalty' ? ' · ' + (c.owner.human ? 'yours' : c.owner.name + '’s') : ''), explain(c)];
+    }
+    var k = n.dataset.info;
+    if (k === 'seat') {
+      var p = players[+n.closest('.seat').dataset.p];
+      return p.human ? ['You', 'Your score: ' + score(p) + ' of ' + GOAL + '. Your face-up cards sit beside it.']
+        : [p.name, 'Playing against you. ' + score(p) + ' of ' + GOAL + ' points, ' + p.hand.length + ' cards in hand. Their face-up point cards can be stolen.'];
+    }
+    return INFO[k];
+  }
+  function showInfo(n, closeBtn) {
+    var t = infoFor(n); if (!t) return;
+    tip.innerHTML = '<b>' + t[0] + '</b>' + t[1] + (closeBtn ? '<div class="act"><button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
+    var br = board.getBoundingClientRect(), r = n.getBoundingClientRect();
+    tip.style.left = Math.max(10, Math.min(br.width - 280, r.left - br.left + r.width / 2 - 135)) + 'px';
+    var top = r.bottom - br.top + 10;
+    tip.style.top = (top + 130 > br.height ? Math.max(10, r.top - br.top - 130) : top) + 'px';
+    tip.classList.add('on');
+    if (closeBtn) $('tipClose').addEventListener('click', hideTip);
+  }
+  board.addEventListener('mouseover', function (e) {
+    if (!canHover || !coachEl.hidden || e.target.closest('#hand')) return;
+    var n = e.target.closest('.pc') || e.target.closest('[data-info]');
+    if (n && !e.target.closest('.pc.pick')) showInfo(n, false);
+  });
+  board.addEventListener('mouseout', function (e) {
+    if (!canHover) return;
+    if (e.target.closest('#hand')) return;
+    var n = e.target.closest('.pc') || e.target.closest('[data-info]');
+    if (n && !n.contains(e.relatedTarget)) hideTip();
+  });
+  board.addEventListener('click', function (e) {
+    if (canHover || !coachEl.hidden) return;
+    if (e.target.closest('#hand') || e.target.closest('.pc.pick') || e.target.closest('.pg-tip')) return;
+    var n = e.target.closest('.pc') || e.target.closest('[data-info]');
+    if (n) { clearSel(); showInfo(n, true); }
+  });
+
   // ── Your turn ──
   var mode = 'wait', pickResolve = null;
   function myTurn() {
@@ -1351,6 +1550,17 @@
       await moveTo(c, rulesEl, from);
       say('<b>' + p.name + '</b> ' + (p.human ? 'set' : 'sets') + ' a rule: ' + RULES[c.rule].text + (c.rule === 'queen-elizapup' ? '' : ' Everyone else must follow it.'));
       await wait(900);
+      if (c.rule === 'queen-elizapup') {
+        await tipOnce('queen', rulesEl.parentNode, 'Safe from all rules',
+          'Queen Elizapup’s Rule doesn’t make anyone do anything. Whoever owns it can’t be caught breaking any rule.');
+      } else if (!p.human) {
+        await tipOnce('rule', rulesEl.parentNode, 'A rule is in play!',
+          '<b style="color:var(--text)">' + p.name + '</b> set a rule: “' + RULES[c.rule].text + '” Everyone except ' + p.name +
+          ' has to follow it. Get caught breaking it and you draw a penalty. The dogs can slip up too, so watch for them!');
+      } else {
+        await tipOnce('myrule', rulesEl.parentNode, 'You set a rule!',
+          'Now the three dogs have to follow it. If one slips up, hit <b style="color:var(--text)">Caught you!</b> fast and they draw a penalty.');
+      }
     } else if (c.type === 'steal') {
       await moveTo(c, playSlot, from);
       var target;
@@ -1390,6 +1600,13 @@
   // Steal ↔ Block back and forth. Returns true if the steal goes through.
   async function blockFight(thief, victim, target) {
     var defender = victim, attacker = thief, blocks = 0, used = [];
+    if (victim.human) {
+      var hasBlock = victim.hand.some(function (x) { return x.type === 'block'; });
+      await tipOnce('stolen', playSlot, 'Someone’s stealing from you!',
+        thief.name + ' played a Steal to take one of your face-up cards. ' +
+        (hasBlock ? 'You have a Block card: play it now to stop the steal, or let it go.'
+                  : 'If you had a Block card, you could play it now to stop the steal. Keep your Blocks for moments like this.'));
+    }
     while (true) {
       var b = defender.hand.filter(function (x) { return x.type === 'block'; })[0];
       if (!b) break;
@@ -1506,6 +1723,8 @@
     });
     if (caught) await penalty(p, 'breaking ' + RULES[r.rule].name + '’s Rule');
     else { say('Too slow! <b>' + p.name + '</b> got away with it.'); await wait(900); }
+    await tipOnce('slip', p.seat, 'Catch the rule-breakers',
+      'When a dog breaks a rule, you get a few seconds to hit <b style="color:var(--text)">Caught you!</b> Catch them and they draw a penalty. Too slow and they get away with it.');
   }
 
   // ── How the dogs play ──
@@ -1629,6 +1848,7 @@
     introEl.hidden = true;
     if (withSeating) await seatDogs();
     await deal();
+    if (!seen('tour')) await tour();
     myTurn();
   }
   function start() {
@@ -1679,6 +1899,7 @@
   });
   function fsChange() {
     var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    board.classList.toggle('fs', on);
     fBtn.innerHTML = on ? '✕ <span class="t">Exit full screen</span>' : '⛶ <span class="t">Full screen</span>';
   }
   document.addEventListener('fullscreenchange', fsChange);
@@ -1753,7 +1974,14 @@
   }
   $('speeds').addEventListener('click', function (e) { var b = e.target.closest('[data-s]'); if (b) setSpeed(b.dataset.s); });
   setSpeed(store('pg-speed') || 'relaxed');
-  setFelt(feltI); setDog(myDog);
+  $('tipsBtn').addEventListener('click', function () { setTips(!tipsOn); });
+  $('tourBtn').addEventListener('click', function () {
+    panel.hidden = true; cBtn.setAttribute('aria-expanded', 'false');
+    if (mode !== 'mine') { say('You can replay the tour on your turn.'); return; }
+    var m = mode; mode = 'busy'; waiting(true);
+    tour().then(function () { mode = m; waiting(false); });
+  });
+  setFelt(feltI); setDog(myDog); setTips(tipsOn);
   showIntro();
   window.__pg = { players: function () { return players; }, rules: function () { return rules; }, boop: spawnSuperBoop };
 })();
