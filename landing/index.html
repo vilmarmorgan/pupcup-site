@@ -253,6 +253,8 @@
   }
   .pc img { width: 100%; display: block; pointer-events: none; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .35)); }
   .up .pc { margin-left: -34px; transition: transform .2s; }
+  .up .pc.gs { margin-left: 6px !important; }
+  .up .pc.is-rule { z-index: 3; }
   .pc.pick { cursor: pointer; z-index: 2; }
   .pc.pick img { filter: drop-shadow(0 0 10px rgba(245, 197, 66, .95)); }
   .pc.pick:hover { transform: translateY(-8px); }
@@ -260,47 +262,50 @@
   .pg-board.picking .up .pc.pick { margin-left: -10px; }
   .pc.target img { filter: drop-shadow(0 0 12px rgba(255, 70, 70, .95)); }
 
-  /* the three dogs are bigger: there's room around them on wider screens */
+  /* every player (you included) is bigger: there's room around them on wider screens */
   @media (min-width: 761px) {
-    .seat:not([data-p="0"]) .av { width: clamp(60px, 9vh, 84px); height: clamp(60px, 9vh, 84px); box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 8px 18px rgba(0, 0, 0, .35); }
-    .seat.turn:not([data-p="0"]) .av { box-shadow: 0 0 0 4px var(--accent), 0 0 24px rgba(245, 197, 66, .65); }
-    .seat:not([data-p="0"]) .who { gap: 14px; }
-    .seat:not([data-p="0"]) .who-txt { min-width: 120px; gap: 4px; }
-    .seat:not([data-p="0"]) .who-txt b { font-size: 18px; }
-    .seat:not([data-p="0"]) .score { font-size: 26px; }
-    .seat:not([data-p="0"]) .score small { font-size: 15px; }
-    .seat:not([data-p="0"]) .meter { height: 6px; }
-    .seat:not([data-p="0"]) .backs span { width: 20px; height: 28px; }
-    .seat:not([data-p="0"]) .backs span + span { margin-left: -10px; }
-    .seat:not([data-p="0"]) .pc { width: clamp(52px, 8.4vh, 78px); }
-    .seat:not([data-p="0"]) .up { min-height: clamp(74px, 12vh, 110px); padding-left: 44px; }
-    .seat:not([data-p="0"]) .up .pc { margin-left: -44px; }
-    .seat:not([data-p="0"]) { min-width: 250px; padding: 12px 18px; }
+    .seat .av { width: clamp(60px, 9vh, 84px); height: clamp(60px, 9vh, 84px); box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 8px 18px rgba(0, 0, 0, .35); }
+    .seat.turn .av { box-shadow: 0 0 0 4px var(--accent), 0 0 24px rgba(245, 197, 66, .65); }
+    .seat .who { gap: 14px; }
+    .seat .who-txt { min-width: 120px; gap: 4px; }
+    .seat .who-txt b { font-size: 18px; }
+    .seat .score { font-size: 26px; }
+    .seat .score small { font-size: 15px; }
+    .seat .meter { height: 6px; }
+    .seat .backs span { width: 20px; height: 28px; }
+    .seat .backs span + span { margin-left: -10px; }
+    .seat .pc { width: clamp(52px, 8.4vh, 78px); }
+    .seat .up { min-height: clamp(74px, 12vh, 110px); padding-left: 44px; }
+    .seat .up .pc { margin-left: -44px; }
+    .seat { min-width: 250px; padding: 12px 18px; }
     /* the top player lays out sideways: profile on the left, cards on the right */
-    .seat[data-p="2"] { grid-auto-flow: column; align-items: center; gap: 22px; }
-    .seat[data-p="2"] .up { min-width: 150px; }
+    .seat[data-p="2"], .seat[data-p="0"] { grid-auto-flow: column; align-items: center; gap: 22px; }
+    .seat[data-p="2"] .up, .seat[data-p="0"] .up { min-width: 150px; }
   }
-  /* full screen has room to spare, so the three dogs grow again */
+  /* full screen has room to spare, so every player grows again */
   @media (min-width: 761px) {
-    .pg-board.fs .seat:not([data-p="0"]) .av { width: clamp(84px, 13vh, 150px); height: clamp(84px, 13vh, 150px); box-shadow: 0 0 0 5px rgba(255, 255, 255, .85), 0 10px 22px rgba(0, 0, 0, .35); }
-    .pg-board.fs .seat.turn:not([data-p="0"]) .av { box-shadow: 0 0 0 5px var(--accent), 0 0 30px rgba(245, 197, 66, .65); }
-    .pg-board.fs .seat:not([data-p="0"]) .who { gap: 20px; }
-    .pg-board.fs .seat:not([data-p="0"]) .who-txt { min-width: 170px; gap: 6px; }
-    .pg-board.fs .seat:not([data-p="0"]) .who-txt b { font-size: clamp(20px, 2.4vh, 28px); }
-    .pg-board.fs .seat:not([data-p="0"]) .score { font-size: clamp(30px, 3.8vh, 44px); }
-    .pg-board.fs .seat:not([data-p="0"]) .score small { font-size: clamp(16px, 1.9vh, 22px); }
-    .pg-board.fs .seat:not([data-p="0"]) .meter { height: 8px; }
-    .pg-board.fs .seat:not([data-p="0"]) .backs span { width: 28px; height: 40px; }
-    .pg-board.fs .seat:not([data-p="0"]) .backs span + span { margin-left: -14px; }
-    .pg-board.fs .seat:not([data-p="0"]) .pc { width: clamp(78px, 11.5vh, 128px); }
-    .pg-board.fs .seat:not([data-p="0"]) .up { min-height: clamp(110px, 16vh, 180px); padding-left: 60px; }
-    .pg-board.fs .seat:not([data-p="0"]) .up .pc { margin-left: -60px; }
-    .pg-board.fs .seat:not([data-p="0"]) { min-width: 320px; padding: 16px 24px; }
-    .pg-board.fs .seat[data-p="2"] { gap: 30px; }
-    .pg-board.fs .seat[data-p="2"] .up { min-width: 220px; }
+    .pg-board.fs .seat .av { width: clamp(62px, 10.5vh, 140px); height: clamp(62px, 10.5vh, 140px); box-shadow: 0 0 0 5px rgba(255, 255, 255, .85), 0 10px 22px rgba(0, 0, 0, .35); }
+    .pg-board.fs .seat.turn .av { box-shadow: 0 0 0 5px var(--accent), 0 0 30px rgba(245, 197, 66, .65); }
+    .pg-board.fs .seat .who { gap: 20px; }
+    .pg-board.fs .seat .who-txt { min-width: 170px; gap: 6px; }
+    .pg-board.fs .seat .who-txt b { font-size: clamp(17px, 2.3vh, 27px); }
+    .pg-board.fs .seat .score { font-size: clamp(24px, 3.5vh, 42px); }
+    .pg-board.fs .seat .score small { font-size: clamp(16px, 1.9vh, 22px); }
+    .pg-board.fs .seat .meter { height: 8px; }
+    .pg-board.fs .seat .backs span { width: 28px; height: 40px; }
+    .pg-board.fs .seat .backs span + span { margin-left: -14px; }
+    .pg-board.fs .seat .pc { width: clamp(58px, 9.5vh, 120px); }
+    .pg-board.fs .seat .up { min-height: clamp(82px, 13.5vh, 170px); padding-left: 60px; }
+    .pg-board.fs .seat .up .pc { margin-left: -60px; }
+    .pg-board.fs .seat { min-width: 300px; padding: 10px 20px; gap: 6px; }
+    .pg-board.fs .seat[data-p="2"], .pg-board.fs .seat[data-p="0"] { gap: 30px; }
+    .pg-board.fs .seat[data-p="2"] .up, .pg-board.fs .seat[data-p="0"] .up { min-width: 220px; }
   }
   /* middle */
-  .pg-mid { grid-area: mid; display: grid; gap: 10px; justify-items: center; align-content: safe center; position: relative; z-index: 3; }
+  /* middle: draw pile on the left, penalties on the right, what's happening in between */
+  .pg-mid { grid-area: mid; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 0 3%; position: relative; z-index: 3; }
+  .pg-center { display: grid; gap: 8px; justify-items: center; align-content: center; min-height: 120px; }
+  .pg-center .pg-hint { text-align: center; max-width: 42ch; text-wrap: balance; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
   .pg-msg:empty { visibility: hidden; }
   .pg-msg {
     font-size: 18px; font-weight: 500; line-height: 1.35; text-align: center; text-wrap: balance; max-width: 36ch;
@@ -311,7 +316,7 @@
   .pg-row { display: flex; gap: 22px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
   .decks { display: flex; gap: 12px; }
   .pgdeck { position: relative; display: grid; justify-items: center; gap: 4px; }
-  .pgdeck img { width: 64px; border-radius: 6px; box-shadow: 3px 3px 0 #d9d2c4, 6px 6px 0 #c9c1b2, 0 10px 18px rgba(0, 0, 0, .4); }
+  .pgdeck img { width: clamp(58px, 8vh, 80px); border-radius: 6px; box-shadow: 3px 3px 0 #d9d2c4, 6px 6px 0 #c9c1b2, 0 10px 18px rgba(0, 0, 0, .4); }
   .lbl { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .7); }
   .rules-box { display: grid; gap: 4px; justify-items: center; }
   .rules { display: flex; gap: 10px; min-height: 92px; }
@@ -321,7 +326,9 @@
   }
   .rules .pc { width: 64px; }
   .rules .pc .own { position: absolute; right: -8px; bottom: -8px; width: 26px; height: 26px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
-  .play-slot { width: 64px; min-height: 90px; position: relative; }
+  /* steals play out right next to the player being stolen from */
+  .play-slot { position: absolute; z-index: 7; width: clamp(60px, 8.6vh, 86px); pointer-events: none; }
+  .play-slot .pc { width: 100%; }
   /* a steal fight stacks up here: Steal, then Block on top, then a Block back on top of that */
   .play-slot .pc + .pc { position: absolute; top: 0; left: 0; width: 100%; }
   .play-slot .pc:nth-child(2) { transform: translate(14px, 8px) rotate(7deg); }
@@ -329,8 +336,28 @@
   .play-slot .pc:nth-child(4) { transform: translate(18px, 20px) rotate(10deg); }
   .play-slot .pc:nth-child(n+5) { transform: translate(-6px, 24px) rotate(-3deg); }
 
+  /* a speech bubble beside a player: "Caught you!" lives here */
+  /* a dog slipping up: low-key on purpose, so you only catch it if you're watching the other players */
+  .seat-pop {
+    position: absolute; z-index: 30; width: 210px; display: grid; gap: 6px; padding: 8px 10px 9px; border-radius: 12px;
+    background: rgba(0, 0, 0, .34); color: rgba(255, 255, 255, .88); box-shadow: none;
+    animation: seatPopIn .5s ease-out;
+  }
+  .seat-pop .who-line { display: flex; gap: 8px; align-items: center; }
+  .seat-pop .who-line img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: none; opacity: .9; }
+  .seat-pop p { margin: 0; font-size: 13px; line-height: 1.3; }
+  .seat-pop p b { color: #fff; font-weight: 600; }
+  .seat-pop p.sub { font-size: 11.5px; color: rgba(255, 255, 255, .55); }
+  .seat-pop .timer { height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+  .seat-pop .timer i { display: block; height: 100%; background: rgba(255, 255, 255, .4); transform-origin: 0 50%; }
+  .seat-pop .pg-btn { justify-content: center; font-size: 13px; padding: 5px 10px; background: rgba(255, 255, 255, .12); color: #fff; }
+  .seat-pop .pg-btn:hover { background: rgba(255, 255, 255, .22); }
+  @keyframes seatPopIn { from { opacity: 0; } to { opacity: 1; } }
+  .coach-bubble ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: #c9c7c2; font-size: 14.5px; line-height: 1.4; }
+  .coach-bubble ul b { color: var(--text); }
+
   /* hand */
-  .pg-hand-wrap { display: grid; justify-items: center; gap: 4px; padding: 0 16px 14px; }
+  .pg-hand-wrap { display: grid; justify-items: center; gap: 4px; padding: 0 16px 30px; }
   .pg-hand { display: flex; justify-content: center; align-items: flex-end; min-height: clamp(150px, 25vh, 200px); padding-top: 22px; }
   .pg-hand .pc {
     width: clamp(92px, min(9.5vw, 17vh), 150px); margin: 0 -8px; cursor: pointer;
@@ -403,27 +430,61 @@
   @media (max-width: 760px) { .coach-bubble { width: auto; left: 10px !important; right: 10px; } }
   @media (prefers-reduced-motion: reduce) { .coach-ring, .coach-bubble { transition: none; } }
 
-  /* popups inside the board */
-  .pg-pop { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .45); }
+  /* messages that need an answer sit in the middle of the table, in place of the usual message */
+  .pg-center { position: relative; }
+  .pg-pop { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 12; width: min(460px, 100%); }
   .pg-pop[hidden] { display: none; }
+  .pg-center.popping .pg-msg, .pg-center.popping .pg-hint { visibility: hidden; }
   .pg-pop-card {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; align-items: center; text-align: left;
+    padding: 14px 16px; border-radius: 18px; background: rgba(12, 14, 18, .9);
+    box-shadow: 0 0 0 2px var(--accent), 0 18px 40px rgba(0, 0, 0, .45);
+    animation: popIn .25s cubic-bezier(.2, .9, .3, 1.2);
+  }
+  @keyframes popIn { from { transform: scale(.9); opacity: 0 } }
+  .pg-pop-card > * { grid-column: 1 / -1; }
+  .pg-pop-card .pop-av, .pg-pop-card .pop-rule { grid-column: 1; grid-row: 1 / span 2; }
+  .pg-pop-card .pop-av + h3, .pg-pop-card .pop-rule + h3 { grid-column: 2; align-self: end; }
+  .pg-pop-card .pop-av ~ p, .pg-pop-card .pop-rule ~ p { grid-column: 2; align-self: start; }
+  .pg-pop-card .pop-av { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #fff; }
+  .pg-pop-card .pop-rule { width: 58px; border-radius: 6px; }
+  .pg-pop-card h3 { font-size: 19px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
+  .pg-pop-card p { color: #c9c7c2; font-size: 14.5px; line-height: 1.4; }
+  .pg-pop-card p b { color: var(--text); }
+  .pg-pop-card .opts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 4px; }
+  .pg-pop-card .opts .pg-btn { font-size: 15px; padding: 10px 16px; background: rgba(255, 255, 255, .1); }
+  .pg-pop-card .opts .pg-btn:hover { background: rgba(255, 255, 255, .2); }
+  .pg-pop-card .opts .pg-btn.gold { background: var(--accent); color: var(--buy-text); }
+  /* the game is over: the original big popup over the board */
+  .pg-end { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .45); }
+  .pg-end[hidden] { display: none; }
+  .pg-end-card {
     width: min(440px, 100%); display: grid; gap: 14px; justify-items: center; text-align: center;
     padding: 26px 24px 22px; border-radius: 22px; background: #15161c; box-shadow: 0 30px 70px rgba(0, 0, 0, .6);
     animation: popIn .25s cubic-bezier(.2, .9, .3, 1.2);
   }
-  @keyframes popIn { from { transform: scale(.9); opacity: 0 } }
-  .pg-pop-card .pop-av { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #fff; }
-  .pg-pop-card .pop-rule { width: 110px; border-radius: 8px; }
-  .pg-pop-card h3 { font-size: 22px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
-  .pg-pop-card p { color: var(--text-muted); font-size: 16px; line-height: 1.4; text-wrap: balance; }
-  .pg-pop-card .opts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-  .pg-pop-card .opts .pg-btn { font-size: 16px; padding: 12px 18px; background: rgba(255, 255, 255, .1); }
-  .pg-pop-card .opts .pg-btn:hover { background: rgba(255, 255, 255, .2); }
-  .pg-pop-card .opts .pg-btn.gold { background: var(--accent); color: var(--buy-text); }
+  .pg-end-card .pop-av { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #fff; }
+  .pg-end-card h3 { font-size: 22px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
+  .pg-end-card p { color: var(--text-muted); font-size: 16px; line-height: 1.4; text-wrap: balance; }
+  .pg-end-card .opts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .pg-end-card .opts .pg-btn { font-size: 16px; padding: 12px 18px; background: rgba(255, 255, 255, .1); }
+  .pg-end-card .opts .pg-btn:hover { background: rgba(255, 255, 255, .2); }
+  .pg-end-card .opts .pg-btn.gold { background: var(--accent); color: var(--buy-text); }
   .timer { width: 100%; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .12); overflow: hidden; }
   .timer i { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: left; }
 
   /* customise panel */
+  /* full screen: the site's top bar (logo + Buy Now) on top, the game's title and buttons along the bottom */
+  .fs-head { display: none; }
+  .pg-board.fs { grid-template-rows: auto minmax(0, 1fr) auto auto; }
+  .pg-board.fs .fs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 24px 0; }
+  .pg-board.fs .fs-head img { height: 34px; width: auto; display: block; filter: brightness(0) invert(.94); }
+  .pg-board.fs .pg-bar { order: 5; padding: 6px 16px 12px; }
+  .pg-board.fs .pg-hand-wrap { padding-bottom: 6px; }
+  .pg-board.fs .pg-hand { min-height: clamp(120px, 19vh, 230px); padding-top: 14px; }
+  .pg-board.fs .pg-hand .pc { width: clamp(80px, min(8.5vw, 13.5vh), 150px); }
+  .pg-board.fs .pg-table { padding-top: 0; padding-bottom: 0; }
+  .pg-board.fs .pg-custom { top: auto; bottom: 62px; }
   .pg-custom {
     position: absolute; z-index: 35; top: 54px; right: 16px; width: 280px; padding: 16px; border-radius: 16px;
     background: #15161c; box-shadow: 0 20px 50px rgba(0, 0, 0, .55); display: grid; gap: 12px;
@@ -476,15 +537,16 @@
     .meter { width: 70px; }
     .up { min-height: 56px; padding-left: 24px; }
     .pc, .rules .pc, .pgdeck img, .play-slot { width: 40px; }
+    .pg-mid { gap: 8px; padding: 0; }
+    .pg-pop { width: min(calc(100vw - 36px), 420px); }
+    .pg-center { min-height: 96px; }
     .up .pc { margin-left: -24px; }
     .seat[data-p="0"] .who { flex-direction: row; }
     .seat[data-p="0"] .up .pc { width: 48px; }
     .rules { min-height: 60px; }
     .rules:empty::after { width: 110px; }
-    .play-slot { min-height: 56px; }
     .pg-msg { font-size: 16px; }
     .lbl { font-size: 9px; letter-spacing: .04em; }
-    .pgdeck .lbl { display: none; }
     .pg-row { gap: 12px; }
     .pg-hand { min-height: 150px; padding-top: 18px; }
     .pg-hand .pc { width: 25vw; max-width: 112px; margin: 0 -7px; }
@@ -551,6 +613,10 @@
 
   <section class="pg" id="try" aria-labelledby="tryTitle">
     <div class="pg-board" id="board">
+      <div class="fs-head" aria-label="Pupcup">
+        <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
+        <a class="buy" href="https://shop.playpupcup.com/" target="_blank" rel="noopener">Buy Now</a>
+      </div>
       <div class="pg-bar">
         <h2 class="pg-goal" id="tryTitle">Practice game · first to <b>100</b> wins</h2>
         <div class="pg-tools">
@@ -563,23 +629,22 @@
         <div class="seat" data-p="2"></div>
         <div class="seat" data-p="1"></div>
         <div class="pg-mid">
-          <div class="pg-msg" id="msg" aria-live="polite"></div>
-          <div class="pg-row">
-            <div class="decks">
-              <div class="pgdeck" id="mainDeck" data-info="deck"><img src="cards/dog-cards-face.webp" alt=""><span class="lbl">Deck</span></div>
-              <div class="pgdeck" id="penDeck" data-info="pens"><img src="cards/penalty.webp" alt=""><span class="lbl">Penalties</span></div>
-            </div>
-            <div class="play-slot" id="playSlot" data-info="slot"></div>
-            <div class="rules-box" data-info="rules"><div class="rules" id="rulesEl"></div><span class="lbl">Rules in play (max 2)</span></div>
+          <div class="pgdeck" id="mainDeck" data-info="deck"><img src="cards/dog-cards-face.webp" alt=""><span class="lbl">Deck</span></div>
+          <div class="pg-center" id="center">
+            <div class="pg-msg" id="msg" aria-live="polite"></div>
+            <div class="pg-hint" id="hint"></div>
+            <div class="pg-pop" id="pop" hidden><div class="pg-pop-card" id="popCard" role="dialog" aria-live="assertive"></div></div>
           </div>
+          <div class="pgdeck" id="penDeck" data-info="pens"><img src="cards/penalty.webp" alt=""><span class="lbl">Penalties</span></div>
         </div>
         <div class="seat" data-p="3"></div>
         <div class="seat" data-p="0"></div>
       </div>
       <div class="pg-hand-wrap">
         <div class="pg-hand" id="hand" aria-label="Your hand"></div>
-        <div class="pg-hint" id="hint"></div>
       </div>
+      <div class="play-slot" id="playSlot" aria-hidden="true"></div>
+      <div class="pg-end" id="endPop" hidden><div class="pg-end-card" id="endCard" role="dialog" aria-modal="true"></div></div>
       <div class="pg-tip" id="tip" role="tooltip"></div>
       <div class="pg-intro" id="intro" hidden>
         <div class="pg-intro-card">
@@ -596,7 +661,6 @@
         <div class="coach-ring" id="coachRing"></div>
         <div class="coach-bubble" id="coachBubble" role="dialog" aria-live="polite"></div>
       </div>
-      <div class="pg-pop" id="pop" hidden><div class="pg-pop-card" id="popCard" role="dialog" aria-modal="true"></div></div>
       <div class="pg-custom" id="customPanel" hidden>
         <h4>Board colour</h4>
         <div class="swatches" id="swatches"></div>
@@ -1087,10 +1151,11 @@
   var GOAL = 100, MAX_RULES = 2;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var phone = window.matchMedia('(max-width: 760px)');
   var $ = function (id) { return document.getElementById(id); };
   var board = $('board'), hand = $('hand'), msgEl = $('msg'), hintEl = $('hint'), tip = $('tip');
-  var rulesEl = $('rulesEl'), playSlot = $('playSlot'), mainDeck = $('mainDeck'), penDeck = $('penDeck');
-  var pop = $('pop'), popCard = $('popCard');
+  var playSlot = $('playSlot'), mainDeck = $('mainDeck'), penDeck = $('penDeck');
+  var pop = $('pop'), popCard = $('popCard'), centerEl = $('center');
 
   // ── The cards ──
   var RULES = {
@@ -1134,9 +1199,11 @@
   function rnd(n) { return Math.floor(Math.random() * n); }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = rnd(i + 1), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   // Game speed (Customise): every pause in the game is stretched by this much
-  var SPEEDS = { relaxed: 1.8, normal: 1.25, fast: 0.8 };
+  var SPEEDS = { relaxed: 2.6, normal: 1.25, fast: 0.8 };
   var pace = SPEEDS.relaxed;
   function wait(ms) { return new Promise(function (r) { setTimeout(r, reduce ? Math.min(ms, 150) : ms * pace); }); }
+  // "Caught you!" and rule-test timers get longer on slower speeds (and during the practice rounds)
+  function timeFor(ms) { return Math.round(ms * Math.max(1, pace / 1.25) * (guided() ? 1.6 : 1)); }
 
   var uid = 0;
   function card(type, extra) { var c = { id: ++uid, type: type }; for (var k in extra) c[k] = extra[k]; return c; }
@@ -1210,14 +1277,45 @@
   function el(c) {
     if (c.el) return c.el;
     var b = document.createElement('button');
-    b.type = 'button'; b.className = 'pc'; b.tabIndex = -1;
+    b.type = 'button'; b.className = 'pc' + (c.type === 'rule' ? ' is-rule' : ''); b.tabIndex = -1;
     b.setAttribute('aria-label', title(c) + '. ' + explain(c));
     var im = document.createElement('img'); im.src = src(c); im.alt = ''; im.decoding = 'async';
     b.appendChild(im); b._card = c; c.el = b;
     return b;
   }
+  // Cards are grouped: rules first (always on top, so you can see a rule is in play), then points (low to high), then penalties
+  var UP_ORDER = { rule: -1, point: 0, penalty: 2, steal: 3, block: 3 }, HAND_ORDER = { point: 0, rule: 1, steal: 2, block: 3, penalty: 4 };
+  function byGroup(order) {
+    return function (a, b) { return (order[a.type] - order[b.type]) || ((a.v || 0) - (b.v || 0)) || (a.id - b.id); };
+  }
+  function arrange(p) {
+    var list = p.up.slice().sort(byGroup(UP_ORDER));
+    list.forEach(function (c, i) {
+      var n = el(c); n.style.order = i;
+      n.classList.toggle('gs', i > 0 && list[i - 1].type !== c.type);
+    });
+    fitUp(p, list);
+  }
+  // When a player has lots of face-up cards, squeeze them closer together so the row always fits their space
+  function fitUp(p, list) {
+    var ns = (list || p.up.slice().sort(byGroup(UP_ORDER))).map(el).filter(function (n) { return n.parentNode === p.upEl; });
+    ns.forEach(function (n) { n.style.removeProperty('margin-left'); });
+    if (ns.length < 2) return;
+    var w = ns[0].offsetWidth, bw = board.clientWidth; if (!w) return;
+    var maxW = phone.matches ? (p.human ? bw - 40 : Math.min(p.seat.clientWidth, bw / 3) - 10)
+      : (p.i === 1 || p.i === 3) ? Math.min(300, bw * 0.2) : Math.min(440, bw * 0.3);
+    var natural = ns.slice(1).reduce(function (t, n) { return t + w + parseFloat(getComputedStyle(n).marginLeft); }, w);
+    if (natural <= maxW) return;
+    var gaps = ns.filter(function (n) { return n.classList.contains('gs'); }).length;
+    var step = Math.max(phone.matches ? 4 : 10, (maxW - w - gaps * 8) / (ns.length - 1));
+    ns.forEach(function (n, i) {
+      if (i) n.style.setProperty('margin-left', (step - w + (n.classList.contains('gs') ? 8 : 0)) + 'px', 'important');
+    });
+  }
+  window.addEventListener('resize', function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); });
   function refresh() {
     players.forEach(function (p) {
+      arrange(p);
       var sc = score(p);
       countTo(p, sc);
       p.meter.style.width = Math.max(0, Math.min(100, sc / GOAL * 100)) + '%';
@@ -1236,8 +1334,10 @@
     })(t0);
   }
   function fanHand() {
-    var cs = [].slice.call(hand.children), n = cs.length;
+    var sort = byGroup(HAND_ORDER);
+    var cs = [].slice.call(hand.children).sort(function (a, b) { return sort(a._card, b._card); }), n = cs.length;
     cs.forEach(function (b, i) {
+      b.style.order = i;
       var k = i - (n - 1) / 2;
       b.style.setProperty('--r', (k * 6) + 'deg');
       b.style.setProperty('--dy', (k * k * 7) + 'px');
@@ -1258,8 +1358,10 @@
   function moveTo(c, parent, fromRect) {
     var node = el(c);
     var a = fromRect || (node.isConnected ? node.getBoundingClientRect() : null);
+    node.classList.remove('glow', 'sel');
     parent.appendChild(node);
     if (parent === hand) fanHand();
+    players.forEach(function (p) { if (p.upEl === parent) arrange(p); });
     return fly(node, a);
   }
   function fromRect(p) { return p.human ? null : p.avEl.getBoundingClientRect(); }
@@ -1287,21 +1389,79 @@
       h += '<div class="opts">' + o.buttons.map(function (b, i) {
         return '<button type="button" class="pg-btn' + (b.gold ? ' gold' : '') + '" data-i="' + i + '">' + b.label + '</button>';
       }).join('') + '</div>';
-      popCard.innerHTML = h;
-      pop.hidden = false;
+      // during play it sits in the middle of the board; at the end of a game it's the big popup
+      var box = o.end ? $('endPop') : pop, cardEl = o.end ? $('endCard') : popCard;
+      cardEl.innerHTML = h;
+      box.hidden = false; if (!o.end) centerEl.classList.add('popping');
+      showOnScreen([cardEl.getBoundingClientRect()]);
       var done = false;
       function finish(v) {
-        if (done) return; done = true; clearTimeout(popTimer); pop.hidden = true; resolve(v);
+        if (done) return; done = true; clearTimeout(popTimer); box.hidden = true; centerEl.classList.remove('popping'); resolve(v);
       }
-      [].forEach.call(popCard.querySelectorAll('[data-i]'), function (b) {
+      [].forEach.call(cardEl.querySelectorAll('[data-i]'), function (b) {
         b.addEventListener('click', function () { finish(o.buttons[+b.dataset.i].value); });
       });
-      var first = popCard.querySelector('[data-i]'); if (first) first.focus({ preventScroll: true });
+      var first = cardEl.querySelector('[data-i]'); if (first) first.focus({ preventScroll: true });
       if (o.timer) {
-        var bar = popCard.querySelector('.timer i');
-        if (!reduce) bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: o.timer, easing: 'linear', fill: 'forwards' });
-        popTimer = setTimeout(function () { finish(o.timeoutValue); }, o.timer);
+        var bar = cardEl.querySelector('.timer i');
+        var T = timeFor(o.timer);
+        if (!reduce) bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: T, easing: 'linear', fill: 'forwards' });
+        popTimer = setTimeout(function () { finish(o.timeoutValue); }, T);
       }
+    });
+  }
+
+  // ── Things that happen beside a player: steals, and "Caught you!" ──
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function besideSeat(p, w, h) {
+    // A spot next to a player that's away from the middle (the messages and the two piles live there):
+    // under the side players, and to the right of the top player and you.
+    var br = board.getBoundingClientRect(), s = p.seat.getBoundingClientRect(), u = p.upEl.getBoundingClientRect();
+    var L = s.left - br.left, T = s.top - br.top, x, y;
+    if (phone.matches) { x = L + s.width / 2 - w / 2; y = p.human ? T - h - 10 : T + s.height + 8; }
+    else if (p.i === 1 || p.i === 3) { x = L + s.width / 2 - w / 2; y = T + s.height + 12; }
+    else { x = Math.max(L + s.width, u.right - br.left) + 16; y = T + s.height / 2 - h / 2; }
+    return { x: clamp(x, 10, br.width - w - 10), y: clamp(y, 10, br.height - h - 10) };
+  }
+  function slotOn(target) {
+    // the Steal lands on top of the card it's taking, a little to the side so you can still see that card
+    var br = board.getBoundingClientRect(), r = el(target).getBoundingClientRect();
+    var w = playSlot.offsetWidth || 70, h = w * 1.45;
+    var x = r.left - br.left + r.width * 0.4, y = r.top - br.top - h * 0.12;
+    playSlot.style.left = clamp(x, 6, br.width - w - 6) + 'px'; playSlot.style.top = clamp(y, 6, br.height - h - 6) + 'px';
+  }
+
+  function showOnScreen(rects) {
+    // Keep things in view without jumping around: if the whole board fits on screen, line it up under the
+    // top bar; otherwise scroll only as far as needed to show these rects.
+    var head = 72, vh = window.innerHeight, br = board.getBoundingClientRect();
+    var top = Math.min.apply(null, rects.map(function (r) { return r.top; }));
+    var bot = Math.max.apply(null, rects.map(function (r) { return r.bottom; }));
+    if (top >= head && bot <= vh - 8) return;
+    var dy;
+    if (br.height <= vh - head + 4 && !document.fullscreenElement) dy = br.top - head;
+    else if (bot - top > vh - head - 8) dy = top - head - 8;
+    else dy = top < head ? top - head - 8 : bot - (vh - 8);
+    window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  var seatPopEl = null;
+  function seatPop(p, o) {
+    // o: { text, sub, label, timer } -> resolves true if you hit the button in time
+    return new Promise(function (resolve) {
+      var n = document.createElement('div'); n.className = 'seat-pop'; n.setAttribute('role', 'alertdialog');
+      n.innerHTML = '<div class="who-line"><img alt="" src="' + AV + 'av-' + p.av + '.webp"><p>' + o.text + '</p></div>' +
+        (o.sub ? '<p class="sub">' + o.sub + '</p>' : '') + '<div class="timer"><i></i></div>' +
+        '<button type="button" class="pg-btn">' + o.label + '</button>';
+      board.appendChild(n); seatPopEl = n;
+      var at = besideSeat(p, n.offsetWidth, n.offsetHeight);
+      n.style.left = at.x + 'px'; n.style.top = at.y + 'px';
+      showOnScreen([n.getBoundingClientRect(), p.avEl.getBoundingClientRect()]);
+      var T = timeFor(o.timer), done = false, tm;
+      function finish(v) { if (done) return; done = true; clearTimeout(tm); n.remove(); seatPopEl = null; resolve(v); }
+      if (!reduce) n.querySelector('.timer i').animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: T, easing: 'linear', fill: 'forwards' });
+      tm = setTimeout(function () { finish(false); }, T);
+      n.querySelector('button').addEventListener('click', function () { finish(true); });
+      n.querySelector('button').focus({ preventScroll: true });
     });
   }
 
@@ -1340,51 +1500,53 @@
   var tipsOn = store('pg-tips') !== 'off';
   function seen(k) { return store('pg-seen-' + k) === '1'; }
   function markSeen(k) { store('pg-seen-' + k, '1'); }
+  var coachMid = false;
   function place(target) {
     var br = board.getBoundingClientRect(), r = target.getBoundingClientRect(), pad = 8;
     var x = r.left - br.left - pad, y = r.top - br.top - pad, w = r.width + pad * 2, h = r.height + pad * 2;
     ringEl.style.left = x + 'px'; ringEl.style.top = y + 'px'; ringEl.style.width = w + 'px'; ringEl.style.height = h + 'px';
     var bw = bubble.offsetWidth || 310, bh = bubble.offsetHeight || 180;
+    if (coachMid) {
+      // tips during the game sit in the middle of the table, where the messages are
+      var c = $('center').getBoundingClientRect();
+      var my = clamp(c.top - br.top + c.height / 2 - bh / 2, 8, br.height - bh - 8);
+      // if the highlighted card is in the middle too, keep clear of it
+      if (my < y + h && my + bh > y && Math.abs((r.left + r.width / 2) - (c.left + c.width / 2)) < bw / 2 + r.width / 2) my = (y > br.height / 2) ? Math.max(8, y - bh - 12) : y + h + 12;
+      bubble.style.left = clamp(c.left - br.left + c.width / 2 - bw / 2, 10, br.width - bw - 10) + 'px'; bubble.style.top = my + 'px';
+      return;
+    }
     var below = y + h + 12, above = y - bh - 12;
     var top = (below + bh < br.height - 8) ? below : (above > 8 ? above : Math.max(8, Math.min(br.height - bh - 8, y + h / 2 - bh / 2)));
     var left = Math.max(10, Math.min(br.width - bw - 10, x + w / 2 - bw / 2));
     bubble.style.left = left + 'px'; bubble.style.top = top + 'px';
   }
-  function bringIntoView(target) {
-    // keep the highlighted part and its bubble on screen
-    var vr = target.getBoundingClientRect();
-    if (vr.bottom > window.innerHeight - 10 || vr.top < 70) target.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
-  }
   function fitView() {
-    // scroll so the highlight and its bubble both sit below the top bar
-    var a = ringEl.getBoundingClientRect(), b = bubble.getBoundingClientRect();
-    var top = Math.min(a.top, b.top), bot = Math.max(a.bottom, b.bottom), head = 72, room = window.innerHeight - head;
-    if (top >= head && bot <= window.innerHeight - 8) return;
-    var dy = (bot - top <= room) ? top - head - (room - (bot - top)) / 2 : b.top - head - 8;
-    window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' });
+    // the highlight and its bubble both on screen, below the top bar
+    showOnScreen([ringEl.getBoundingClientRect(), bubble.getBoundingClientRect()]);
   }
-  function coach(steps, tour) {
-    // steps: [{ target, title, text }]. Resolves when finished, skipped, or dismissed.
+  function coach(steps, tour, label) {
+    // steps: [{ target, title, text }]. tour: Back/Next/Skip. label: a practice-round note (no "turn off tips").
+    // Resolves when finished, skipped, or dismissed.
     return new Promise(function (resolve) {
       var i = 0;
       clearSel(); hideTip();
+      coachMid = !tour;
       function render() {
         var st = steps[i], last = i === steps.length - 1;
         bubble.innerHTML =
-          '<span class="k">' + (tour ? 'Quick tour · ' + (i + 1) + ' of ' + steps.length : 'Tip') + '</span>' +
+          '<span class="k">' + (tour ? 'Quick tour · ' + (i + 1) + ' of ' + steps.length : label || 'Tip') + '</span>' +
           '<h3>' + st.title + '</h3><p>' + st.text + '</p>' +
           '<div class="row">' +
           (tour ? '<button type="button" class="link" data-a="skip">Skip tour</button><span class="sp"></span>' +
                   '<span class="dots" aria-hidden="true">' + steps.map(function (_, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('') + '</span>' +
                   (i ? '<button type="button" class="pg-btn" data-a="back">Back</button>' : '') +
                   '<button type="button" class="pg-btn gold" data-a="next">' + (last ? 'Let’s play' : 'Next') + '</button>'
-                : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>' +
-                  '<button type="button" class="pg-btn gold" data-a="next">Got it</button>') +
+                : (label ? '<span class="sp"></span>' : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>') +
+                  '<button type="button" class="pg-btn gold" data-a="next">' + (st.btn || 'Got it') + '</button>') +
           '</div>';
         coachEl.hidden = false;
-        bringIntoView(st.target);
-        place(st.target);
-        setTimeout(function () { if (!coachEl.hidden) { place(st.target); fitView(); } }, 450);
+        place(st.target); fitView();
+        setTimeout(function () { if (!coachEl.hidden) place(st.target); }, 450);
         var go = bubble.querySelector('[data-a="next"]'); if (go) go.focus({ preventScroll: true });
       }
       function finish() {
@@ -1419,8 +1581,8 @@
         text: 'These are your 4 cards. ' + (canHover ? 'Hover over one' : 'Tap one') + ' to see what it does, then play it. You play one card each turn.' },
       { target: me.seat, title: 'Your score',
         text: 'Everyone starts at 0. Point cards add up here, penalties take points away. First to 100 wins.' },
-      { target: $('mainDeck').parentNode, title: 'The decks',
-        text: 'After every turn you draw back up to 4 cards. Break a rule and get caught, and you draw from the Penalty pile.' },
+      { target: $('mainDeck').parentNode, title: 'The middle of the table',
+        text: 'The deck is on the left: after every turn you draw back up to 4 cards. Penalties are on the right: break a rule and get caught, and you draw one. What’s happening shows in between.' },
       { target: $('customBtn'), title: 'Make it yours',
         text: 'Change the board colour, pick your dog, or slow the game down. You can replay this tour from here too.' }
     ], true).then(function () { markSeen('tour'); });
@@ -1433,9 +1595,7 @@
   // Info on the table: hover on desktop, tap on phones
   var INFO = {
     deck: ['Deck', 'You draw from here to get back to 4 cards after every turn.'],
-    pens: ['Penalty pile', 'Break a rule and get caught, and you draw one of these: −5, −10 or −20 points off your score.'],
-    rules: ['Rules in play', 'Up to 2 rules at a time. Everyone except the rule’s owner has to follow it. The little photo shows whose rule it is.'],
-    slot: ['Played cards', 'Steals and Blocks land here while a steal plays out.']
+    pens: ['Penalty pile', 'Break a rule and get caught, and you draw one of these: −5, −10 or −20 points off your score.']
   };
   function infoFor(n) {
     if (n._card) {
@@ -1446,7 +1606,7 @@
     if (k === 'seat') {
       var p = players[+n.closest('.seat').dataset.p];
       return p.human ? ['You', 'Your score: ' + score(p) + ' of ' + GOAL + '. Your face-up cards sit beside it.']
-        : [p.name, 'Playing against you. ' + score(p) + ' of ' + GOAL + ' points, ' + p.hand.length + ' cards in hand. Their face-up point cards can be stolen.'];
+        : [p.name, 'Playing against you. ' + score(p) + ' of ' + GOAL + ' points, ' + p.hand.length + ' cards in hand. Their face-up points and rules can be stolen.'];
     }
     return INFO[k];
   }
@@ -1478,11 +1638,44 @@
     if (n) { clearSel(); showInfo(n, true); }
   });
 
+  // ── Practice rounds: a first game starts with 3 guided rounds, then it's a normal game ──
+  var firstGame = false, round = 0, guideSteal = false, guideSlip = false, forcedTarget = null;
+  function guided() { return firstGame && round > 0 && round <= 3; }
+  var GUIDE = {
+    rule: { title: 'Play your Rule card',
+      text: 'Rules are the fun part. Play it and the three dogs have to follow it. If one slips up, you catch them and they draw a penalty.' },
+    point: { title: 'Play a Point card',
+      text: 'Point cards go face up in front of you and add to your score. First to 100 wins. Careful: anything face up can be stolen.' },
+    steal: { title: 'Steal some points',
+      text: 'Play your Steal, then pick any face-up card from a dog: points or a rule. It becomes yours. They could Block it, so watch out!' }
+  };
+  function suggestion() {
+    var me = players[0];
+    var want = round === 1 ? ['rule', 'point', 'steal'] : round === 2 ? ['point', 'rule', 'steal'] : ['steal', 'point', 'rule'];
+    for (var i = 0; i < want.length; i++) {
+      var list = me.hand.filter(function (c) { return c.type === want[i] && c.rule !== 'queen-elizapup'; });
+      if (want[i] === 'steal' && !targets(me).length) continue;
+      if (want[i] === 'point') list.sort(function (a, b) { return b.v - a.v; });
+      if (list.length) return list[0];
+    }
+    return null;
+  }
+  function liveFor(p) { return rules.filter(function (r) { return !exempt(p, r) && r.rule !== 'queen-elizapup'; }); }
+
   // ── Your turn ──
   var mode = 'wait', pickResolve = null;
-  function myTurn() {
-    mode = 'mine'; waiting(false); refresh();
+  async function myTurn() {
     var me = players[0];
+    if (firstGame) {
+      round++;
+      if (round === 4) {
+        firstGame = false; markSeen('guided');
+        say('Practice rounds done. <b>Now anything goes!</b>');
+        await coach([{ target: me.seat, title: 'You’ve got the basics!', btn: 'Let’s go',
+          text: 'From now on it’s a normal game. The dogs will steal, set rules and block you. Keep an eye out for rule-breakers. First to 100 wins!' }], false, 'Practice done');
+      }
+    }
+    mode = 'mine'; waiting(false); refresh();
     var playable = me.hand.some(function (c) { return c.type === 'point' || c.type === 'rule' || (c.type === 'steal' && targets(me).length); });
     if (!playable) {
       say('No card you can play right now. You <b>discard a card</b> and draw a new one.');
@@ -1496,6 +1689,17 @@
     }
     say('Your turn. You’re on <b>' + score(me) + '</b>. Pick a card to play.');
     hint(canHover ? 'Hover a card to see what it does. Click to play it.' : 'Tap a card to see what it does.');
+    if (guided()) {
+      var c = suggestion();
+      if (c) {
+        var g = GUIDE[c.type];
+        mode = 'guide';
+        await coach([{ target: el(c), title: g.title, text: g.text }], false, 'Practice round ' + round + ' of 3');
+        mode = 'mine';
+        if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
+        say('<b>Round ' + round + ' of 3:</b> ' + g.title.charAt(0).toLowerCase() + g.title.slice(1) + '. Or pick any card you like.');
+      }
+    }
   }
   function onHandCard(n) {
     var c = n._card, me = players[0];
@@ -1507,13 +1711,13 @@
     if (mode !== 'mine') return;
     if (c.type === 'block') { shake(n); say('Keep it! A <b>Block</b> is only played when someone steals from you.'); return; }
     if (c.type === 'steal' && !targets(me).length) { shake(n); say('Nobody has a face-up card to steal yet.'); return; }
+    [].forEach.call(hand.children, function (x) { x.classList.remove('glow'); });
     mode = 'busy'; waiting(true); hint('');
     takeTurn(me, c).then(next);
   }
   function targets(p) {
     var t = [];
-    players.forEach(function (o) { if (o !== p) o.up.forEach(function (c) { if (c.type === 'point') t.push(c); }); });
-    rules.forEach(function (r) { if (r.owner !== p) t.push(r); });
+    players.forEach(function (o) { if (o !== p) o.up.forEach(function (c) { if (c.type === 'point' || c.type === 'rule') t.push(c); }); });
     return t;
   }
   function choose(list) {
@@ -1535,65 +1739,72 @@
     p.hand.splice(p.hand.indexOf(c), 1);
     var from = fromRect(p);
     if (c.type === 'point') {
-      await moveTo(c, p.upEl, from);
       c.owner = p; p.up.push(c);
+      await moveTo(c, p.upEl, from);
       refresh();
-      say('<b>' + p.name + '</b> ' + (p.human ? 'play' : 'plays') + ' ' + c.v + ' points.');
+      say('<b>' + p.name + '</b> played ' + c.v + ' points.');
     } else if (c.type === 'rule') {
       c.owner = p;
       if (rules.length >= MAX_RULES) {
-        var old = rules.shift(); discard(old); old.owner.up.splice(old.owner.up.indexOf(old), 1);
+        var old = rules.shift(); old.owner.up.splice(old.owner.up.indexOf(old), 1); discard(old);
       }
       rules.push(c); p.up.push(c);
-      var node = el(c);
-      if (!node.querySelector('.own')) { var o = document.createElement('img'); o.className = 'own'; o.alt = ''; o.src = AV + 'av-' + p.av + '.webp'; node.appendChild(o); }
-      await moveTo(c, rulesEl, from);
-      say('<b>' + p.name + '</b> ' + (p.human ? 'set' : 'sets') + ' a rule: ' + RULES[c.rule].text + (c.rule === 'queen-elizapup' ? '' : ' Everyone else must follow it.'));
+      await moveTo(c, p.upEl, from);
+      refresh();
+      say('<b>' + p.name + '</b> set a rule: ' + RULES[c.rule].text + (c.rule === 'queen-elizapup' ? '' : ' Everyone else must follow it.'));
       await wait(900);
       if (c.rule === 'queen-elizapup') {
-        await tipOnce('queen', rulesEl.parentNode, 'Safe from all rules',
+        await tipOnce('queen', el(c), 'Safe from all rules',
           'Queen Elizapup’s Rule doesn’t make anyone do anything. Whoever owns it can’t be caught breaking any rule.');
       } else if (!p.human) {
-        await tipOnce('rule', rulesEl.parentNode, 'A rule is in play!',
-          '<b style="color:var(--text)">' + p.name + '</b> set a rule: “' + RULES[c.rule].text + '” Everyone except ' + p.name +
-          ' has to follow it. Get caught breaking it and you draw a penalty. The dogs can slip up too, so watch for them!');
+        await tipOnce('rule', el(c), 'A rule is in play!',
+          '<b style="color:var(--text)">' + p.name + '</b> set a rule: “' + RULES[c.rule].text + '”<ul>' +
+          '<li><b>What to do:</b> follow it. Everyone except ' + p.name + ' has to.</li>' +
+          '<li><b>If you break it:</b> you get caught and draw a penalty (−5, −10 or −20).</li>' +
+          '<li><b>Watch every dog,</b> even when it’s not their turn: if one breaks it, hit Caught you! next to them. Nobody catches them, no penalty.</li>' +
+          '<li><b>Rules can be stolen:</b> play a Steal on it and it’s yours, so you don’t have to follow it anymore.</li></ul>');
       } else {
-        await tipOnce('myrule', rulesEl.parentNode, 'You set a rule!',
-          'Now the three dogs have to follow it. If one slips up, hit <b style="color:var(--text)">Caught you!</b> fast and they draw a penalty.');
+        await tipOnce('myrule', el(c), 'You set a rule!',
+          'Your rule sits in front of you.<ul>' +
+          '<li><b>The three dogs</b> have to follow it. You don’t.</li>' +
+          '<li><b>Watch all three,</b> not just whose turn it is. A dog can slip up any time: a bubble pops up next to them. Hit Caught you! fast and they draw a penalty. Miss it and they get away with it.</li>' +
+          '<li><b>Guard it:</b> a dog can steal your rule with a Steal card. Block it if you can.</li></ul>');
       }
     } else if (c.type === 'steal') {
-      await moveTo(c, playSlot, from);
       var target;
       if (p.human) {
+        if (c.el) c.el.classList.add('glow');
         say('<b>Steal!</b> Pick a glowing card to take.');
+        hint('Points or a rule, from any dog.');
         target = await choose(targets(p));
+        hint('');
       } else {
         target = botTarget(p);
       }
       var victim = target.owner;
+      slotOn(target);
+      await moveTo(c, playSlot, from);
       el(target).classList.add('target');
-      say('<b>' + p.name + '</b> ' + (p.human ? 'try' : 'tries') + ' to steal ' + poss(victim) + ' ' + (target.type === 'rule' ? 'rule' : target.v) + '!');
+      say('<b>' + p.name + '</b> ' + (p.human ? 'are' : 'is') + ' stealing ' + poss(victim) + ' ' + (target.type === 'rule' ? 'rule' : target.v) + '!');
       await wait(700);
       var ok = await blockFight(p, victim, target);
       el(target).classList.remove('target');
       if (ok) {
         victim.up.splice(victim.up.indexOf(target), 1);
         target.owner = p; p.up.push(target);
-        if (target.type === 'rule') {
-          var own = el(target).querySelector('.own'); if (own) own.src = AV + 'av-' + p.av + '.webp';
-          say('<b>' + p.name + '</b> ' + (p.human ? 'take' : 'takes') + ' ' + poss(victim) + ' rule. Now it’s ' + (p.human ? 'yours' : 'theirs') + '!');
-        } else {
-          await moveTo(target, p.upEl);
-          say('<b>' + p.name + '</b> ' + (p.human ? 'steal' : 'steals') + ' ' + poss(victim) + ' ' + target.v + '!');
-        }
+        await moveTo(target, p.upEl);
+        say(target.type === 'rule'
+          ? '<b>' + p.name + '</b> took ' + poss(victim) + ' rule. Now it’s ' + (p.human ? 'yours' : 'theirs') + '!'
+          : '<b>' + p.name + '</b> stole ' + poss(victim) + ' ' + target.v + '!');
         refresh();
       }
+      await wait(400);
       discard(c);
     }
     await wait(500);
     await refill(p);
-    if (p.human) await ruleTest(p, c);
-    else await botSlip(p, c);
+    if (p.human) { await ruleTest(p, c); await otherSlip(p); }
+    else await growlSlip(p);
     refresh();
   }
 
@@ -1601,11 +1812,16 @@
   async function blockFight(thief, victim, target) {
     var defender = victim, attacker = thief, blocks = 0, used = [];
     if (victim.human) {
-      var hasBlock = victim.hand.some(function (x) { return x.type === 'block'; });
-      await tipOnce('stolen', playSlot, 'Someone’s stealing from you!',
-        thief.name + ' played a Steal to take one of your face-up cards. ' +
-        (hasBlock ? 'You have a Block card: play it now to stop the steal, or let it go.'
-                  : 'If you had a Block card, you could play it now to stop the steal. Keep your Blocks for moments like this.'));
+      var myBlock = victim.hand.filter(function (x) { return x.type === 'block'; })[0];
+      var stolenText = thief.name + ' played a Steal to take ' + (target.type === 'rule' ? 'your rule' : 'your ' + target.v + ' points') + '. ' +
+        (myBlock ? 'You have a Block card: play it now to stop the steal, or let it go.'
+                 : 'If you had a Block card, you could play it now to stop the steal. Keep your Blocks for moments like this.');
+      if (guided() && myBlock && !seen('stolen')) {
+        markSeen('stolen');
+        await coach([{ target: el(myBlock), title: 'Block it!', text: stolenText }], false, 'Practice round ' + round + ' of 3');
+      } else {
+        await tipOnce('stolen', myBlock ? el(myBlock) : victim.seat, 'Someone’s stealing from you!', stolenText);
+      }
     }
     while (true) {
       var b = defender.hand.filter(function (x) { return x.type === 'block'; })[0];
@@ -1613,26 +1829,28 @@
       var use;
       if (defender.human) {
         use = await askBlock(attacker, target, blocks > 0);
+      } else if (guided()) {
+        use = null; // the dogs go easy on you in the practice rounds
       } else {
         var worth = target.type === 'rule' || target.v >= 20 || score(defender) >= 60;
         use = Math.random() < (worth ? 0.85 : 0.5) ? b : null;
       }
       if (!use) break;
       defender.hand.splice(defender.hand.indexOf(use), 1);
-      // the Block lands on top of the card it's blocking, so the table always shows what was just played
+      // the Block lands on top of the Steal, right next to the player, so the table always shows what was just played
       await moveTo(use, playSlot, fromRect(defender));
       used.push(use);
       blocks++;
       say(blocks > 1
-        ? '<b>' + defender.name + '</b> ' + (defender.human ? 'block' : 'blocks') + ' ' + (attacker.human ? 'your' : attacker.name + '’s') + ' Block! <b>NOPE!</b>'
-        : '<b>' + defender.name + '</b> ' + (defender.human ? 'block' : 'blocks') + ' the Steal! <b>NOPE!</b>');
+        ? '<b>' + defender.name + '</b> blocked ' + (attacker.human ? 'your' : attacker.name + '’s') + ' Block! <b>NOPE!</b>'
+        : '<b>' + defender.name + '</b> blocked the Steal! <b>NOPE!</b>');
       await wait(1100);
       await refill(defender);
       var t = defender; defender = attacker; attacker = t;
     }
     var ok = blocks % 2 === 0;
-    if (!ok) say('The steal is <b>blocked</b>.');
-    else if (blocks) say('The Block was blocked, so the <b>steal goes through</b>!');
+    if (!ok) say('The steal was <b>blocked</b>.');
+    else if (blocks) say('The Block was blocked, so the <b>steal went through</b>!');
     if (blocks) await wait(1100);
     used.forEach(discard); // clear the Blocks off the table together
     return ok;
@@ -1643,10 +1861,10 @@
       var me = players[0], b = me.hand.filter(function (x) { return x.type === 'block'; })[0];
       el(b).classList.add('glow');
       say((counter ? '<b>' + attacker.name + '</b> blocked you! Block back?' : '<b>' + attacker.name + '</b> is stealing your ' + (target.type === 'rule' ? 'rule' : target.v) + '! Play your Block?'));
-      hint('Click your glowing Block card, or let it go.');
+      hint('Click your glowing Block card, or');
       var letGo = document.createElement('button');
       letGo.type = 'button'; letGo.className = 'pg-btn'; letGo.textContent = 'Let it go';
-      hintEl.appendChild(document.createTextNode(' ')); hintEl.appendChild(letGo);
+      hintEl.appendChild(letGo);
       function done(v) { el(b).classList.remove('glow'); mode = 'busy'; waiting(true); hint(''); pickResolve = null; resolve(v); }
       pickResolve = done;
       letGo.addEventListener('click', function () { done(null); });
@@ -1667,14 +1885,14 @@
     p.up.push(c);
     await moveTo(c, p.upEl, penDeck.querySelector('img').getBoundingClientRect());
     refresh();
-    say('<b>' + p.name + '</b> ' + (p.human ? 'draw' : 'draws') + ' a <b>−' + v + '</b> penalty' + (why ? ' for ' + why : '') + '.');
+    say('<b>' + p.name + '</b> drew a <b>−' + v + '</b> penalty' + (why ? ' for ' + why : '') + '.');
     el(c).classList.add('shake');
     await wait(900);
     return v;
   }
   // Tempts YOU to break an active rule
   async function ruleTest(me, played) {
-    var live = rules.filter(function (r) { return !exempt(me, r) && r.rule !== 'queen-elizapup'; });
+    var live = liveFor(me);
     if (!live.length) return;
     var growl = live.filter(function (r) { return r.rule === 'lady-puppa'; })[0];
     var r = growl && Math.random() < 0.85 ? growl : live[rnd(live.length)];
@@ -1702,33 +1920,58 @@
       await popup({
         img: C + 'penalty-' + v + '.webp',
         title: 'Caught! −' + v + ' points',
-        text: '<b style="color:var(--text)">' + catcher.name + '</b> caught you breaking ' + RULES[r.rule].name + '’s Rule (“' + RULES[r.rule].text + '”). ' +
-              'You draw a −' + v + ' penalty: ' + before + ' → ' + score(me) + ' points.',
+        text: '<b>' + catcher.name + '</b> caught you breaking their rule: “' + RULES[r.rule].text + '” ' +
+              'You drew a −' + v + ' penalty: ' + before + ' → ' + score(me) + ' points.',
         buttons: [{ label: 'Got it', value: 1, gold: true }]
       });
     } else {
-      say('<b>Safe!</b> That follows ' + RULES[r.rule].name + '’s Rule, so no penalty.');
+      say('<b>Safe!</b> That followed ' + RULES[r.rule].name + '’s Rule, so no penalty.');
       await wait(1200);
     }
   }
-  // Dogs slip up sometimes. Catch them!
-  async function botSlip(p) {
-    var live = rules.filter(function (r) { return !exempt(p, r) && r.rule !== 'queen-elizapup'; });
-    if (!live.length || Math.random() > 0.38) return;
-    var r = live[rnd(live.length)];
-    var caught = await popup({
-      av: p.av, title: p.name + ' ' + TESTS[r.rule].slip + '!',
-      text: 'That breaks ' + RULES[r.rule].name + '’s Rule. Catch them before it’s too late!',
-      buttons: [{ label: '🫵 Caught you!', value: true, gold: true }], timer: 3500, timeoutValue: false
+  // Dogs slip up sometimes. A bubble pops up next to the dog who slipped: catch them!
+  async function slip(p, r, forced, current) {
+    var whose = r.owner.human ? 'your' : (r.owner === p ? 'their own' : r.owner.name + '’s');
+    var caught = await seatPop(p, {
+      text: '<b>' + p.name + '</b> ' + TESTS[r.rule].slip + '!',
+      sub: 'Breaks ' + whose + ' rule' + (forced ? '. Catch them before the bar runs out!' : ''),
+      label: '🫵 Caught you!', timer: 3500
     });
-    if (caught) await penalty(p, 'breaking ' + RULES[r.rule].name + '’s Rule');
-    else { say('Too slow! <b>' + p.name + '</b> got away with it.'); await wait(900); }
-    await tipOnce('slip', p.seat, 'Catch the rule-breakers',
-      'When a dog breaks a rule, you get a few seconds to hit <b style="color:var(--text)">Caught you!</b> Catch them and they draw a penalty. Too slow and they get away with it.');
+    if (caught) {
+      say('You caught <b>' + p.name + '</b> breaking the rule!');
+      await wait(400);
+      await penalty(p, r.owner.human ? 'breaking your rule' : 'breaking ' + RULES[r.rule].name + '’s Rule');
+    } else { say('Too slow! Nobody caught <b>' + p.name + '</b>, so no penalty.'); await wait(900); }
+    await tipOnce('slip', p.seat, 'Watch every dog, not just whose turn it is',
+      'Dogs can slip up at any time, even while someone else is playing. When one breaks a rule, a bubble pops up next to them. Hit <b style="color:var(--text)">Caught you!</b> in time and they draw a penalty. Nobody catches them, no penalty.');
+  }
+  // While one player has the turn, a DIFFERENT dog may break a rule
+  async function otherSlip(current) {
+    var dogs = players.filter(function (o) {
+      return !o.human && o !== current && liveFor(o).some(function (r) { return r.rule !== 'lady-puppa'; });
+    });
+    if (!dogs.length) return;
+    var forced = guided() && !guideSlip && dogs.some(function (d) { return liveFor(d).some(function (r) { return r.owner.human && r.rule !== 'lady-puppa'; }); });
+    if (!forced && Math.random() > 0.3) return;
+    if (forced) {
+      guideSlip = true;
+      dogs = dogs.filter(function (d) { return liveFor(d).some(function (r) { return r.owner.human && r.rule !== 'lady-puppa'; }); });
+    }
+    var p = dogs[rnd(dogs.length)];
+    var live = liveFor(p).filter(function (r) { return r.rule !== 'lady-puppa' && (!forced || r.owner.human); });
+    await slip(p, live[rnd(live.length)], forced, current);
+  }
+  // Lady Puppa's Rule (growl when playing a card) can only be broken by whoever just played
+  async function growlSlip(p) {
+    var r = liveFor(p).filter(function (x) { return x.rule === 'lady-puppa'; })[0];
+    if (!r || Math.random() > 0.3) return;
+    await wait(300);
+    await slip(p, r, false, null);
   }
 
   // ── How the dogs play ──
   function botTarget(p) {
+    if (forcedTarget && forcedTarget.owner && forcedTarget.owner !== p) { var f = forcedTarget; forcedTarget = null; return f; }
     var t = targets(p);
     t.sort(function (a, b) {
       var va = a.type === 'rule' ? 15 : a.v, vb = b.type === 'rule' ? 15 : b.v;
@@ -1736,7 +1979,20 @@
     });
     return Math.random() < 0.75 ? t[0] : t[rnd(t.length)];
   }
+  function guidedPick(p) {
+    // practice rounds: the dogs play points, and in round 2 Frida tries to steal from you so you can Block her
+    var me = players[0], h = p.hand;
+    if (round === 2 && !guideSteal) {
+      var st = h.filter(function (c) { return c.type === 'steal'; })[0];
+      var mineUp = me.up.filter(function (c) { return c.type === 'point'; }).sort(function (a, b) { return b.v - a.v; })
+        .concat(me.up.filter(function (c) { return c.type === 'rule'; }));
+      if (st && mineUp.length) { guideSteal = true; forcedTarget = mineUp[0]; return st; }
+    }
+    var pts = h.filter(function (c) { return c.type === 'point'; });
+    return pts.length ? pts[rnd(pts.length)] : null;
+  }
   function botPick(p) {
+    if (guided()) return guidedPick(p);
     var me = score(p), h = p.hand;
     var pts = h.filter(function (c) { return c.type === 'point'; }).sort(function (a, b) { return b.v - a.v; });
     var steal = h.filter(function (c) { return c.type === 'steal'; })[0];
@@ -1752,17 +2008,24 @@
     return null;
   }
   async function botTurn(p) {
-    mode = 'wait'; waiting(true); hint('');
+    mode = 'wait'; waiting(true);
     say('<b>' + p.name + '</b> is thinking…');
-    await wait(1100);
+    // while a rule is in play, remind you to keep an eye on the dogs
+    var watch = players.some(function (o) { return !o.human && liveFor(o).length; });
+    hint(watch ? '👀 A rule is in play. Watch every dog, not just ' + p.name + '!' : '');
+    await wait(900);
+    await otherSlip(p); // another dog may slip up while this one is thinking
+    say('<b>' + p.name + '</b> is thinking…');
+    await wait(500);
     var c = botPick(p);
     if (!c) {
       c = p.hand[0]; p.hand.shift();
-      say('<b>' + p.name + '</b> can’t play anything and swaps a card.');
+      say('<b>' + p.name + '</b> couldn’t play anything, so they swapped a card.');
       await wait(700); await refill(p);
     } else {
       await takeTurn(p, c);
     }
+    hint('');
     await wait(1000); // time to read what the dog just did
     next();
   }
@@ -1783,18 +2046,20 @@
     if (p.human) {
       say('<b>' + score(p) + ' points. You win!</b>');
       spawnSuperBoop();
-      var again = await popup({ av: p.av, title: 'You win! 🎉', text: score(p) + ' points. Now twerk your tail off!', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
+      var again = await popup({ end: true, av: p.av, title: 'You win! 🎉', text: score(p) + ' points. Now twerk your tail off!', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
     } else {
       say('<b>' + p.name + '</b> wins with ' + score(p) + ' points.');
-      var again = await popup({ av: p.av, title: p.name + ' wins!', text: score(p) + ' points. Want a rematch?', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
+      var again = await popup({ end: true, av: p.av, title: p.name + ' wins!', text: score(p) + ' points. Want a rematch?', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
     }
     if (again) start();
   }
 
   // ── Setting up: an empty table, then the dogs sit down and the cards are dealt ──
   function reset() {
-    clearTimeout(popTimer); pop.hidden = true; clearSel(); board.classList.remove('picking');
-    [hand, rulesEl, playSlot].forEach(function (n) { n.textContent = ''; });
+    clearTimeout(popTimer); pop.hidden = true; $('endPop').hidden = true; centerEl.classList.remove('popping'); clearSel(); board.classList.remove('picking');
+    [hand, playSlot].forEach(function (n) { n.textContent = ''; });
+    if (seatPopEl) { seatPopEl.remove(); seatPopEl = null; }
+    firstGame = !seen('guided'); round = 0; guideSteal = false; guideSlip = false; forcedTarget = null;
     deck = newDeck(true); pens = newPens(); rules = []; over = false; mode = 'intro';
     var me = { i: 0, name: 'You', av: myDog, human: true };
     players = [me].concat(BOTS.map(function (b, k) { return { i: k + 1, name: b.name, av: b.av }; }));
@@ -1813,11 +2078,28 @@
       { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
     return an.finished.catch(function () {}).then(function () { n.remove(); });
   }
+  function pull(test) {
+    for (var i = deck.length - 1; i >= 0; i--) if (test(deck[i])) return deck.splice(i, 1)[0];
+    return draw();
+  }
+  function riggedHands() {
+    // a first game: you get a point, a rule, a Steal and a Block; Frida gets a Steal; everyone else gets points
+    var teach = ['frida', 'kpup', 'pupquiao', 'pupstein', 'rupup'], rr = teach[rnd(teach.length)];
+    function pt() { return pull(function (c) { return c.type === 'point'; }); }
+    return [
+      [pull(function (c) { return c.type === 'point' && c.v === 20; }), pull(function (c) { return c.type === 'rule' && c.rule === rr; }),
+       pull(function (c) { return c.type === 'steal'; }), pull(function (c) { return c.type === 'block'; })],
+      [pt(), pull(function (c) { return c.type === 'steal'; }), pt(), pt()],
+      [pt(), pt(), pt(), pt()],
+      [pt(), pt(), pt(), pt()]
+    ];
+  }
   async function deal() {
     say('Dealing four cards to everyone…');
+    var rig = firstGame ? riggedHands() : null;
     for (var k = 0; k < 4; k++) {
       for (var i = 0; i < players.length; i++) {
-        var p = players[i], c = draw(); p.hand.push(c);
+        var p = players[i], c = rig ? rig[i][k] : draw(); p.hand.push(c);
         if (p.human) {
           var a = mainDeck.querySelector('img').getBoundingClientRect();
           hand.appendChild(el(c)); fanHand(); fly(el(c), a);
@@ -1900,8 +2182,19 @@
   function fsChange() {
     var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
     board.classList.toggle('fs', on);
+    setTimeout(function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); }, 60);
     fBtn.innerHTML = on ? '✕ <span class="t">Exit full screen</span>' : '⛶ <span class="t">Full screen</span>';
   }
+  // "Learn How to Play" opens the game in full screen (a click is allowed to do that; scrolling isn't).
+  // The page also jumps to the game, so leaving full screen puts you right at it.
+  // Both "How to Play" buttons (top bar) and "Learn How to Play" (under the box) do this.
+  [].forEach.call(document.querySelectorAll('.explore[href="#try"], .howto[href="#try"]'), function (btn) {
+    if (fsOK) btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      $('try').scrollIntoView({ behavior: 'auto', block: 'start' });
+      try { var r = fsOK.call(board); if (r && r.catch) r.catch(function () { $('try').scrollIntoView({ behavior: 'smooth' }); }); } catch (err) {}
+    });
+  });
   document.addEventListener('fullscreenchange', fsChange);
   document.addEventListener('webkitfullscreenchange', fsChange);
   $('restartBtn').addEventListener('click', start);
