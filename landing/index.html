@@ -52,12 +52,30 @@
     padding: 18px 24px;
   }
   .top img { height: 34px; width: auto; display: block; filter: brightness(0) invert(0.94); }
-  .top-actions { display: flex; gap: 10px; align-items: center; }
+  .top-actions, .fs-actions { display: flex; gap: 10px; align-items: center; }
+  .share-btn { display: inline-flex; align-items: center; gap: 7px; background: none; border: 0; font-family: inherit; color: var(--text); cursor: pointer; }
+  .share-toast {
+    position: fixed; left: 50%; bottom: 28px; z-index: 2147483000; transform: translate(-50%, 20px); opacity: 0;
+    padding: 10px 18px; border-radius: 999px; background: #15161c; color: var(--text); font-size: 15px; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .45); transition: opacity .25s, transform .25s; pointer-events: none;
+  }
+  .share-toast.on { opacity: 1; transform: translate(-50%, 0); }
+  /* going into and out of full screen is eased: the page dims, then the game fades and grows in */
+  .fs-veil { position: fixed; inset: 0; z-index: 2147482000; background: #0b0c10; opacity: 0; pointer-events: none; transition: opacity .45s ease; }
+  .fs-veil.on { opacity: 1; }
+  .pg-board.fs-in { animation: fsIn .9s cubic-bezier(.2, .8, .2, 1) both; }
+  .pg-board.fs-out { animation: fsOut .45s ease-in both; }
+  @keyframes fsIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+  @keyframes fsOut { to { opacity: 0; transform: scale(.96); } }
+  @media (prefers-reduced-motion: reduce) { .pg-board.fs-in, .pg-board.fs-out { animation: none; } }
   .howto {
     color: var(--text); font-weight: 600; font-size: 15px; padding: 10px 18px; border-radius: 999px;
     box-shadow: inset 0 0 0 2px rgba(240, 236, 228, .45); transition: box-shadow .2s, background .2s;
   }
   .howto:hover { box-shadow: inset 0 0 0 2px var(--text); background: rgba(255, 255, 255, .06); }
+  /* the top bar's outline buttons get a dark backing so they stay readable when a card passes behind them */
+  .top .howto { background: rgba(14, 15, 20, .62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .top .howto:hover { background: rgba(40, 42, 50, .75); }
   .howto:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
   .buy {
     background: var(--buy-bg); color: var(--buy-text); font-weight: 700;
@@ -139,7 +157,7 @@
   .card-flat .card-face { border-radius: 10px; }
   /* Big call to action once the cards have landed */
   .cta-row {
-    position: absolute; left: 50%; bottom: 28px; z-index: 6; transform: translateX(-50%);
+    position: absolute; left: 50%; top: 0; z-index: 6; transform: translateX(-50%);
     display: flex; gap: 14px; align-items: center;
     opacity: 0; visibility: hidden;
   }
@@ -162,7 +180,7 @@
   .explore:hover span { transform: translateX(4px); }
   .explore[href="#try"]:hover span { transform: translateY(3px); }
   @media (max-width: 600px) {
-    .cta-row { bottom: 22px; flex-direction: column; gap: 10px; }
+    .cta-row { flex-direction: column; gap: 10px; }
     .explore { font-size: 16px; padding: 13px 24px; min-width: 230px; justify-content: center; }
   }
   .hint {
@@ -182,9 +200,19 @@
     .top { padding: 14px 16px; }
     .top img { height: 26px; }
     .buy { padding: 8px 16px; font-size: 14px; }
+    .share-btn { padding: 8px 10px; }
+    .share-btn .t { display: none; }
+    .top-actions { gap: 6px; }
+    .top-actions .howto, .top-actions .buy { white-space: nowrap; }
     .howto { padding: 8px 12px; font-size: 14px; }
     .hero-copy { top: 80px; }
     .draft-tag { display: none; }
+  }
+  @media (max-width: 380px) {
+    .top { padding: 14px 12px; }
+    .top img { height: 22px; }
+    .top-actions .howto { padding: 8px 10px; font-size: 13px; }
+    .top-actions .buy { padding: 8px 12px; font-size: 13px; }
   }
   @media (prefers-reduced-motion: reduce) { .hint i::after { animation: none; } }
 
@@ -209,7 +237,7 @@
   .pg-board:-webkit-full-screen { height: 100vh; max-width: none; border-radius: 0; overflow: auto; }
 
   /* top bar */
-  .pg-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px 0; }
+  .pg-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px 0;  position: relative; z-index: 37; }
   .pg-goal { font-size: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .8); }
   .pg-goal b { color: var(--accent); }
   .pg-tools { display: flex; gap: 8px; }
@@ -383,7 +411,33 @@
   }
   .pg-tip.on { opacity: 1; transform: none; }
   .pg-tip b { display: block; font-size: 16px; color: var(--accent); margin-bottom: 4px; }
-  .pg-tip .act { pointer-events: auto; margin-top: 10px; display: flex; gap: 8px; }
+  .goal-set { display: flex; align-items: center; gap: 12px; }
+  .goal-set input { flex: 1; accent-color: var(--accent); }
+  .goal-set output { min-width: 44px; text-align: right; font-weight: 700; font-size: 18px; color: var(--accent); }
+  .goal-note { display: grid; gap: 8px; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 197, 66, .12); font-size: 13.5px; line-height: 1.35; }
+  .goal-note[hidden] { display: none; }
+  .goal-note .pg-btn { justify-self: start; }
+  .pg-tip .act { pointer-events: auto; margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  /* dog cards (rules, steals, blocks) can be opened full size to see the art */
+  .pc .zoom {
+    position: absolute; right: 4px; top: 4px; z-index: 2; width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center; background: rgba(12, 14, 18, .78); color: #fff; font-size: 13px; line-height: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35); opacity: 0; transition: opacity .15s; cursor: zoom-in;
+  }
+  .pc:hover .zoom, .pc:focus-visible .zoom { opacity: 1; }
+  .pg-board.picking .pc .zoom { display: none; }
+  @media (hover: none) { .pc .zoom { display: none; } }
+  .up .pc.is-dog:not(.pick) { cursor: zoom-in; }
+  .card-view {
+    position: fixed; inset: 0; z-index: 2147481000; display: grid; place-items: center; align-content: center; gap: 16px;
+    padding: 20px; background: rgba(6, 8, 10, .82); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    animation: popIn .22s ease-out;
+  }
+  .card-view[hidden] { display: none; }
+  .card-view figure { margin: 0; display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 520px; }
+  .card-view img { height: min(70vh, 640px); width: auto; max-width: 88vw; object-fit: contain; border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, .6); }
+  .card-view figcaption { display: grid; gap: 4px; color: #c9c7c2; font-size: 15px; line-height: 1.4; }
+  .card-view figcaption b { color: var(--text); font-size: 18px; }
 
   /* intro: an empty table until you deal */
   .seat { transition: background .3s, box-shadow .3s, opacity .45s, transform .45s cubic-bezier(.2, .9, .3, 1.2); }
@@ -477,9 +531,21 @@
   /* full screen: the site's top bar (logo + Buy Now) on top, the game's title and buttons along the bottom */
   .fs-head { display: none; }
   .pg-board.fs { grid-template-rows: auto minmax(0, 1fr) auto auto; }
-  .pg-board.fs .fs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 24px 0; }
+  .pg-board.fs .fs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 24px 0; position: relative; z-index: 37; }
   .pg-board.fs .fs-head img { height: 34px; width: auto; display: block; filter: brightness(0) invert(.94); }
+  .pg-board.fs .fs-head .howto { padding: 9px 16px; font-size: 14px; background: none; border: 0; font-family: inherit; color: var(--text); cursor: pointer; }
+  .pg-board.fs .fs-head .howto:hover { background: rgba(255, 255, 255, .08); }
+  .pg-board.fs .fs-head .buy { white-space: nowrap; }
+  @media (max-width: 600px) {
+    .pg-board.fs .fs-head { padding: 10px 12px 0; }
+    .pg-board.fs .fs-head img { height: 26px; }
+    .pg-board.fs .fs-head .fs-actions { gap: 6px; }
+    .pg-board.fs .fs-head .howto { padding: 8px 11px; }
+    .pg-board.fs .fs-head #fsExit .t { display: none; }
+    .pg-board.fs .fs-head .buy { padding: 8px 14px; font-size: 14px; }
+  }
   .pg-board.fs .pg-bar { order: 5; padding: 6px 16px 12px; }
+  .pg-board.fs #fullBtn { display: none; }
   .pg-board.fs .pg-hand-wrap { padding-bottom: 6px; }
   .pg-board.fs .pg-hand { min-height: clamp(120px, 19vh, 230px); padding-top: 14px; }
   .pg-board.fs .pg-hand .pc { width: clamp(80px, min(8.5vw, 13.5vh), 150px); }
@@ -560,7 +626,14 @@
   }
 
   /* After the reveal */
-  .after { padding: 96px 24px 120px; }
+  .after { padding: 96px 24px 96px; }
+  /* same disclaimer and footer as the main site */
+  .site-foot { max-width: 1012px; margin: 0 auto; padding: 18px 24px 40px; border-top: 1px solid rgba(255, 255, 255, .12); color: var(--text-muted); font-size: 14px; line-height: 1.45; display: grid; gap: 10px; }
+  .site-foot .parody { margin: 0; }
+  .site-foot .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; }
+  .site-foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  .site-foot .made { display: inline-flex; align-items: center; gap: 6px; }
+  .card-view .parody { max-width: 420px; font-size: 13px; color: rgba(255, 255, 255, .55); }
   .after-inner { max-width: 960px; margin: 0 auto; display: grid; gap: 28px; justify-items: start; }
   .after h2 { font-size: clamp(30px, 5vw, 52px); font-weight: 700; line-height: 1.05; }
   .after p { color: var(--text-muted); font-size: 18px; max-width: 56ch; }
@@ -568,10 +641,13 @@
 </head>
 <body>
 
+<div class="fs-veil" id="fsVeil" aria-hidden="true"></div>
+<div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
 <header class="top">
   <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
   <div class="top-actions">
     <a class="howto" href="#try">How to Play</a>
+    <button type="button" class="howto share-btn" data-share="page" aria-label="Share this page"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/></svg><span class="t">Share</span></button>
     <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
   </div>
 </header>
@@ -615,13 +691,17 @@
     <div class="pg-board" id="board">
       <div class="fs-head" aria-label="Pupcup">
         <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
-        <a class="buy" href="https://shop.playpupcup.com/" target="_blank" rel="noopener">Buy Now</a>
+        <div class="fs-actions">
+          <button type="button" class="howto" id="fsExit" aria-label="Exit full screen">✕ <span class="t">Exit full screen</span></button>
+          <button type="button" class="howto share-btn" data-share="game" aria-label="Share the practice game"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/></svg><span class="t">Share</span></button>
+          <a class="buy" href="https://shop.playpupcup.com/" target="_blank" rel="noopener">Buy Now</a>
+        </div>
       </div>
       <div class="pg-bar">
-        <h2 class="pg-goal" id="tryTitle">Practice game · first to <b>100</b> wins</h2>
+        <h2 class="pg-goal" id="tryTitle">Practice game · first to <b class="goal-n">100</b> wins</h2>
         <div class="pg-tools">
+          <button class="pg-btn" id="fullBtn" type="button" hidden>⛶ <span class="t">Full screen</span></button>
           <button class="pg-btn" id="customBtn" type="button" aria-expanded="false" aria-controls="customPanel">🎨 <span class="t">Customise</span></button>
-          <button class="pg-btn" id="fullBtn" type="button">⛶ <span class="t">Full screen</span></button>
           <button class="pg-btn" id="restartBtn" type="button">↻ <span class="t">New game</span></button>
         </div>
       </div>
@@ -653,9 +733,17 @@
           </div>
           <span class="eyebrow">Practice game</span>
           <h3>Ready to learn how to play?</h3>
-          <p>You against three dogs. Everyone starts at 0, and the first to 100 points wins. Hover or tap any card to see what it does.</p>
+          <p>You against three dogs. Everyone starts at 0, and the first to <span class="goal-n">100</span> points wins. Hover or tap any card to see what it does.</p>
           <button class="pg-btn gold big" id="dealBtn" type="button">🃏 Deal the cards</button>
         </div>
+      </div>
+      <div class="card-view" id="cardView" hidden role="dialog" aria-modal="true" aria-label="Full card">
+        <figure>
+          <img id="cvImg" alt="">
+          <figcaption><b id="cvTitle"></b><span id="cvText"></span></figcaption>
+          <p class="parody" id="cvParody" hidden>Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
+        </figure>
+        <button type="button" class="pg-btn gold" id="cvClose">Close</button>
       </div>
       <div class="coach" id="coach" hidden>
         <div class="coach-ring" id="coachRing"></div>
@@ -669,6 +757,15 @@
           <button type="button" class="pg-btn" data-s="relaxed">Relaxed</button>
           <button type="button" class="pg-btn" data-s="normal">Normal</button>
           <button type="button" class="pg-btn" data-s="fast">Fast</button>
+        </div>
+        <h4>Points to win</h4>
+        <div class="goal-set">
+          <input type="range" id="goalRange" min="50" max="200" step="25" value="100" aria-label="Points to win">
+          <output id="goalOut" for="goalRange">100</output>
+        </div>
+        <div class="goal-note" id="goalNote" hidden>
+          <span id="goalNoteText"></span>
+          <button type="button" class="pg-btn gold" id="goalNew">Start a new game</button>
         </div>
         <h4>Your dog</h4>
         <div class="dogs" id="dogs"></div>
@@ -691,6 +788,13 @@
       <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
     </div>
   </section>
+  <footer class="site-foot">
+    <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
+    <div class="foot-row">
+      <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
+      <span class="made">Made with <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
+    </div>
+  </footer>
 </main>
 
 <div class="draft-tag">Draft · not linked from the menu</div>
@@ -922,13 +1026,14 @@
   // card goes behind the ones already out, so cards never pass over each other.
   // Nothing lands on the box itself, so you can always see where they came from.
   var SLOTS = {
+    // The space right above the box is kept clear for the two buttons, so the 30 and Frida land out to the sides.
     wide: [
-      [[-193, 275, -6], [-424, 335, 9], [-560, 200, -12], [-380, 115, 15], [-237, 465, -10], [-517, 500, 7]],
-      [[193, 275, 6], [424, 345, -9], [562, 200, 12], [380, 115, -15], [16, 470, 4], [275, 505, 11], [539, 470, -7]]
+      [[-395, 255, -6], [-548, 385, 9], [-560, 160, -12], [-385, 75, 15], [-240, 470, -10], [-470, 525, 7]],
+      [[395, 260, 6], [550, 390, -9], [562, 160, 12], [395, 75, -15], [20, 475, 4], [275, 510, 11], [520, 520, -7]]
     ],
     narrow: [
-      [[-78, 320, -7], [-194, 440, 10], [-205, 275, -13], [-86, 560, 8], [-200, 650, -9], [-65, 690, 5]],
-      [[78, 320, 7], [194, 440, -10], [205, 275, 13], [86, 560, -8], [200, 650, 9], [-5, 745, -4], [-140, 770, 6]]
+      [[-78, 520, -7], [-194, 640, 10], [-205, 475, -13], [-86, 760, 8], [-200, 850, -9], [-65, 890, 5]],
+      [[78, 520, 7], [194, 640, -10], [205, 475, 13], [86, 760, -8], [200, 850, 9], [-5, 945, -4], [-140, 970, 6]]
     ]
   };
 
@@ -1110,9 +1215,18 @@
   }
   window.addEventListener('scroll', checkPast, { passive: true });
   function updateExplore() {
-    var eo = pastScene ? 0 : seg(revealP, 0.9, 0.97);
+    var eo = pastScene ? 0 : seg(revealP, 0.5, 0.62);
     css(exploreEl, 'opacity', eo.toFixed(3));
     css(exploreEl, 'visibility', eo > 0.02 ? 'visible' : 'hidden');
+    if (eo > 0.02) {
+      // right above the two decks in the box
+      var top = Infinity;
+      groups.forEach(function (g) { if (g.shown) top = Math.min(top, g.topImgs[g.shown].getBoundingClientRect().top); });
+      if (top === Infinity) top = baseFront.getBoundingClientRect().top;
+      var host = exploreEl.offsetParent ? exploreEl.offsetParent.getBoundingClientRect().top : 0;
+      css(exploreEl, 'top', Math.round(top - host - exploreEl.offsetHeight - (narrow ? 14 : Math.round(innerHeight * 0.11))) + 'px');
+      css(exploreEl, 'transform', 'translateX(-50%) translateY(' + Math.round((1 - eo) * 14) + 'px)');
+    }
   }
 
   var last = 0, lastP = -1, needsDraw = true;
@@ -1201,7 +1315,14 @@
   // Game speed (Customise): every pause in the game is stretched by this much
   var SPEEDS = { relaxed: 2.6, normal: 1.25, fast: 0.8 };
   var pace = SPEEDS.relaxed;
-  function wait(ms) { return new Promise(function (r) { setTimeout(r, reduce ? Math.min(ms, 150) : ms * pace); }); }
+  // Each new game gets a number. Anything still running from an older game (a dog's move, a timer, a popup)
+  // simply never continues, so "New game" can start straight away.
+  var gen = 0;
+  function guard(p) {
+    var g = gen;
+    return new Promise(function (res, rej) { p.then(function (v) { if (g === gen) res(v); }, function (e) { if (g === gen) rej(e); }); });
+  }
+  function wait(ms) { return guard(new Promise(function (r) { setTimeout(r, reduce ? Math.min(ms, 150) : ms * pace); })); }
   // "Caught you!" and rule-test timers get longer on slower speeds (and during the practice rounds)
   function timeFor(ms) { return Math.round(ms * Math.max(1, pace / 1.25) * (guided() ? 1.6 : 1)); }
 
@@ -1221,7 +1342,7 @@
     return c.type === 'steal' ? 'Steal' : 'Block';
   }
   function explain(c) {
-    if (c.type === 'point') return 'Play it face up to add ' + c.v + ' to your score. First to 100 wins.';
+    if (c.type === 'point') return 'Play it face up to add ' + c.v + ' to your score. First to ' + GOAL + ' wins.';
     if (c.type === 'penalty') return 'Takes ' + c.v + ' off your score. You draw one when you’re caught breaking a rule.';
     if (c.type === 'rule') return c.rule === 'queen-elizapup'
       ? 'You’re safe from all rules. Play it and no rule can catch you.'
@@ -1281,6 +1402,11 @@
     b.setAttribute('aria-label', title(c) + '. ' + explain(c));
     var im = document.createElement('img'); im.src = src(c); im.alt = ''; im.decoding = 'async';
     b.appendChild(im); b._card = c; c.el = b;
+    if (isDog(c)) {
+      b.classList.add('is-dog');
+      var z = document.createElement('span'); z.className = 'zoom'; z.textContent = '🔍'; z.title = 'See the full card';
+      b.appendChild(z);
+    }
     return b;
   }
   // Cards are grouped: rules first (always on top, so you can see a rule is in play), then points (low to high), then penalties
@@ -1353,7 +1479,7 @@
       { transform: 'translate(' + (from.left - b.left) + 'px,' + (from.top - b.top) + 'px) scale(' + (from.width / b.width) + ') ' + end, transformOrigin: '0 0' },
       { transform: end || 'none', transformOrigin: '0 0' }
     ], { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    return a.finished.catch(function () {});
+    return guard(a.finished.catch(function () {}));
   }
   function moveTo(c, parent, fromRect) {
     var node = el(c);
@@ -1377,7 +1503,8 @@
 
   // ── Popups ──
   var popTimer = null;
-  function popup(o) {
+  function popup(o) { return guard(popup_(o)); }
+  function popup_(o) {
     // o: { av, img, title, text, buttons: [{label, value, gold}], timer: ms, timeoutValue }
     return new Promise(function (resolve) {
       var h = '';
@@ -1445,7 +1572,8 @@
     window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' });
   }
   var seatPopEl = null;
-  function seatPop(p, o) {
+  function seatPop(p, o) { return guard(seatPop_(p, o)); }
+  function seatPop_(p, o) {
     // o: { text, sub, label, timer } -> resolves true if you hit the button in time
     return new Promise(function (resolve) {
       var n = document.createElement('div'); n.className = 'seat-pop'; n.setAttribute('role', 'alertdialog');
@@ -1465,12 +1593,30 @@
     });
   }
 
+  // ── The full-size card viewer (dog cards) ──
+  function isDog(c) { return c.type === 'rule' || c.type === 'steal' || c.type === 'block'; }
+  var cardView = $('cardView');
+  function viewCard(c) {
+    hideTip();
+    $('cvImg').src = src(c); $('cvImg').alt = title(c);
+    $('cvTitle').textContent = title(c); $('cvText').textContent = explain(c);
+    $('cvParody').hidden = c.type !== 'rule';
+    // inside full screen, only the game is on screen, so the viewer has to live inside it
+    (isFS() ? board : document.body).appendChild(cardView);
+    cardView.hidden = false; $('cvClose').focus({ preventScroll: true });
+  }
+  function closeView() { cardView.hidden = true; }
+  cardView.addEventListener('click', function (e) { if (e.target === cardView || e.target.closest('#cvClose')) closeView(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !cardView.hidden) closeView(); });
+
   // ── Card explanations: hover on desktop, tap on phones ──
   var selected = null;
   function showTip(n, withPlay) {
     var c = n._card;
     tip.innerHTML = '<b>' + title(c) + '</b>' + explain(c) +
-      (withPlay ? '<div class="act"><button type="button" class="pg-btn gold" id="tipPlay">Play this card</button><button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
+      (withPlay ? '<div class="act"><button type="button" class="pg-btn gold" id="tipPlay">Play this card</button>' +
+        (isDog(c) ? '<button type="button" class="pg-btn" id="tipView">See full card</button>' : '') +
+        '<button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
     var br = board.getBoundingClientRect(), r = n.getBoundingClientRect();
     tip.style.left = Math.max(10, Math.min(br.width - 280, r.left - br.left + r.width / 2 - 135)) + 'px';
     tip.style.top = Math.max(10, r.top - br.top - 150) + 'px';
@@ -1478,6 +1624,7 @@
     if (withPlay) {
       $('tipPlay').addEventListener('click', function () { var s = selected; clearSel(); if (s) onHandCard(s); });
       $('tipClose').addEventListener('click', clearSel);
+      if ($('tipView')) $('tipView').addEventListener('click', function () { clearSel(); viewCard(c); });
     }
   }
   function hideTip() { tip.classList.remove('on'); }
@@ -1487,7 +1634,10 @@
   hand.addEventListener('focusin', function (e) { var n = e.target.closest('.pc'); if (n && canHover) showTip(n, false); });
   hand.addEventListener('focusout', function () { if (canHover) hideTip(); });
   hand.addEventListener('click', function (e) {
+    // a played card moves to the table during this click, so stop here or the table would treat it as a click on that card
+    e.stopPropagation();
     var n = e.target.closest('.pc'); if (!n) return;
+    if (e.target.closest('.zoom')) { e.stopPropagation(); viewCard(n._card); return; }
     if (canHover) { hideTip(); onHandCard(n); return; }
     // phones: first tap explains the card, then "Play this card"
     if (selected === n) { clearSel(); onHandCard(n); return; }
@@ -1524,7 +1674,8 @@
     // the highlight and its bubble both on screen, below the top bar
     showOnScreen([ringEl.getBoundingClientRect(), bubble.getBoundingClientRect()]);
   }
-  function coach(steps, tour, label) {
+  function coach(steps, tour, label) { return guard(coach_(steps, tour, label)); }
+  function coach_(steps, tour, label) {
     // steps: [{ target, title, text }]. tour: Back/Next/Skip. label: a practice-round note (no "turn off tips").
     // Resolves when finished, skipped, or dismissed.
     return new Promise(function (resolve) {
@@ -1612,13 +1763,19 @@
   }
   function showInfo(n, closeBtn) {
     var t = infoFor(n); if (!t) return;
-    tip.innerHTML = '<b>' + t[0] + '</b>' + t[1] + (closeBtn ? '<div class="act"><button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
+    var dog = n._card && isDog(n._card);
+    tip.innerHTML = '<b>' + t[0] + '</b>' + t[1] + (closeBtn ? '<div class="act">' +
+      (dog ? '<button type="button" class="pg-btn gold" id="tipView">See full card</button>' : '') +
+      '<button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
     var br = board.getBoundingClientRect(), r = n.getBoundingClientRect();
     tip.style.left = Math.max(10, Math.min(br.width - 280, r.left - br.left + r.width / 2 - 135)) + 'px';
     var top = r.bottom - br.top + 10;
     tip.style.top = (top + 130 > br.height ? Math.max(10, r.top - br.top - 130) : top) + 'px';
     tip.classList.add('on');
-    if (closeBtn) $('tipClose').addEventListener('click', hideTip);
+    if (closeBtn) {
+      $('tipClose').addEventListener('click', hideTip);
+      if (dog) $('tipView').addEventListener('click', function () { viewCard(n._card); });
+    }
   }
   board.addEventListener('mouseover', function (e) {
     if (!canHover || !coachEl.hidden || e.target.closest('#hand')) return;
@@ -1632,6 +1789,10 @@
     if (n && !n.contains(e.relatedTarget)) hideTip();
   });
   board.addEventListener('click', function (e) {
+    if (canHover && coachEl.hidden && !e.target.closest('#hand')) {
+      var d = e.target.closest('.up .pc.is-dog');
+      if (d && !d.classList.contains('pick')) { viewCard(d._card); return; }
+    }
     if (canHover || !coachEl.hidden) return;
     if (e.target.closest('#hand') || e.target.closest('.pc.pick') || e.target.closest('.pg-tip')) return;
     var n = e.target.closest('.pc') || e.target.closest('[data-info]');
@@ -1645,7 +1806,7 @@
     rule: { title: 'Play your Rule card',
       text: 'Rules are the fun part. Play it and the three dogs have to follow it. If one slips up, you catch them and they draw a penalty.' },
     point: { title: 'Play a Point card',
-      text: 'Point cards go face up in front of you and add to your score. First to 100 wins. Careful: anything face up can be stolen.' },
+      text: 'Point cards go face up in front of you and add to your score. The first to reach the goal wins. Careful: anything face up can be stolen.' },
     steal: { title: 'Steal some points',
       text: 'Play your Steal, then pick any face-up card from a dog: points or a rule. It becomes yours. They could Block it, so watch out!' }
   };
@@ -1672,7 +1833,7 @@
         firstGame = false; markSeen('guided');
         say('Practice rounds done. <b>Now anything goes!</b>');
         await coach([{ target: me.seat, title: 'You’ve got the basics!', btn: 'Let’s go',
-          text: 'From now on it’s a normal game. The dogs will steal, set rules and block you. Keep an eye out for rule-breakers. First to 100 wins!' }], false, 'Practice done');
+          text: 'From now on it’s a normal game. The dogs will steal, set rules and block you. Keep an eye out for rule-breakers. First to ' + GOAL + ' wins!' }], false, 'Practice done');
       }
     }
     mode = 'mine'; waiting(false); refresh();
@@ -1720,7 +1881,8 @@
     players.forEach(function (o) { if (o !== p) o.up.forEach(function (c) { if (c.type === 'point' || c.type === 'rule') t.push(c); }); });
     return t;
   }
-  function choose(list) {
+  function choose(list) { return guard(choose_(list)); }
+  function choose_(list) {
     // you pick which card to steal
     return new Promise(function (resolve) {
       board.classList.add('picking');
@@ -1730,7 +1892,7 @@
         list.forEach(function (x) { var n = el(x); n.classList.remove('pick'); n.tabIndex = -1; n.removeEventListener('click', n._pick); });
         resolve(c);
       }
-      list.forEach(function (c) { var n = el(c); n._pick = function () { done(c); }; n.addEventListener('click', n._pick); });
+      list.forEach(function (c) { var n = el(c); n._pick = function (e) { if (e) e.stopPropagation(); done(c); }; n.addEventListener('click', n._pick); });
     });
   }
 
@@ -1855,7 +2017,8 @@
     used.forEach(discard); // clear the Blocks off the table together
     return ok;
   }
-  function askBlock(attacker, target, counter) {
+  function askBlock(attacker, target, counter) { return guard(askBlock_(attacker, target, counter)); }
+  function askBlock_(attacker, target, counter) {
     return new Promise(function (resolve) {
       mode = 'blockPrompt'; waiting(false);
       var me = players[0], b = me.hand.filter(function (x) { return x.type === 'block'; })[0];
@@ -1988,7 +2151,7 @@
         .concat(me.up.filter(function (c) { return c.type === 'rule'; }));
       if (st && mineUp.length) { guideSteal = true; forcedTarget = mineUp[0]; return st; }
     }
-    var pts = h.filter(function (c) { return c.type === 'point'; });
+    var pts = h.filter(function (c) { return c.type === 'point' && score(p) + c.v < GOAL; });
     return pts.length ? pts[rnd(pts.length)] : null;
   }
   function botPick(p) {
@@ -2046,16 +2209,20 @@
     if (p.human) {
       say('<b>' + score(p) + ' points. You win!</b>');
       spawnSuperBoop();
-      var again = await popup({ end: true, av: p.av, title: 'You win! 🎉', text: score(p) + ' points. Now twerk your tail off!', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
+      var again = await popup({ av: p.av, title: 'You win! 🎉', text: score(p) + ' points. Now twerk your tail off!', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
     } else {
       say('<b>' + p.name + '</b> wins with ' + score(p) + ' points.');
-      var again = await popup({ end: true, av: p.av, title: p.name + ' wins!', text: score(p) + ' points. Want a rematch?', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
+      dogConfetti(p);
+      var again = await popup({ av: p.av, title: p.name + ' wins!', text: score(p) + ' points. Want a rematch?', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
     }
     if (again) start();
   }
 
   // ── Setting up: an empty table, then the dogs sit down and the cards are dealt ──
   function reset() {
+    gen++;
+    applyGoal();
+    coachEl.hidden = true; cardView.hidden = true; pickResolve = null;
     clearTimeout(popTimer); pop.hidden = true; $('endPop').hidden = true; centerEl.classList.remove('popping'); clearSel(); board.classList.remove('picking');
     [hand, playSlot].forEach(function (n) { n.textContent = ''; });
     if (seatPopEl) { seatPopEl.remove(); seatPopEl = null; }
@@ -2076,7 +2243,7 @@
     var dx = toRect.left + toRect.width / 2 - (a.left + a.width / 2), dy = toRect.top + toRect.height / 2 - (a.top + a.height / 2);
     var an = n.animate([{ transform: 'none', opacity: 1 }, { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (rnd(40) - 20) + 'deg) scale(.45)', opacity: .9 }],
       { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
-    return an.finished.catch(function () {}).then(function () { n.remove(); });
+    return guard(an.finished.catch(function () {}).then(function () { n.remove(); }));
   }
   function pull(test) {
     for (var i = deck.length - 1; i >= 0; i--) if (test(deck[i])) return deck.splice(i, 1)[0];
@@ -2133,15 +2300,27 @@
     if (!seen('tour')) await tour();
     myTurn();
   }
-  function start() {
-    // New game: if the dogs are mid-move, wait for that move to finish first
-    if (mode !== 'mine' && mode !== 'over' && mode !== 'intro') {
-      restartQueued = true; say('Starting a new game after this move…'); return;
-    }
+  async function start(goalChanged) {
+    // New game starts right away, even in the middle of a dog's move
     if (mode === 'intro' && !introEl.hidden) return;
-    reset(); play(false);
+    var before = GOAL;
+    reset();
+    if (goalChanged || GOAL !== before) {
+      // the points to win changed: say so on the board before dealing
+      var ok = await popup({ title: 'New game: first to ' + GOAL + ' points', text: 'You changed the points to win. Be the first to reach <b>' + GOAL + ' points</b> to win this game.',
+        buttons: [{ label: 'Got it', value: 1, gold: true }] });
+      if (!ok) return;
+    }
+    play(false);
   }
-  $('dealBtn').addEventListener('click', function () { play(true); });
+  // "Deal the cards" goes full screen, says how to win, then deals
+  $('dealBtn').addEventListener('click', async function () {
+    introEl.hidden = true;
+    await enterFS();
+    await popup({ title: 'How to win', text: 'Be the first to reach <b>' + GOAL + ' points</b>.',
+      buttons: [{ label: 'Okay, got it', value: 1, gold: true }] });
+    play(true);
+  });
 
   // ── Customise: board colour and your dog ──
   var feltI = +store('pg-felt') || 0; if (!FELTS[feltI]) feltI = 0;
@@ -2164,40 +2343,103 @@
   }).join('');
   $('swatches').addEventListener('click', function (e) { var s = e.target.closest('.swatch'); if (s) setFelt(+s.dataset.i); });
   $('dogs').addEventListener('click', function (e) { var s = e.target.closest('.dog-pick'); if (s) setDog(s.dataset.dog); });
+  // Points to win: a change applies from the next game, not the one you're playing
+  var goalNext = +store('pg-goal') || 100;
+  if (goalNext < 50 || goalNext > 200) goalNext = 100;
+  function applyGoal() {
+    GOAL = goalNext;
+    [].forEach.call(document.querySelectorAll('.goal-n'), function (n) { n.textContent = GOAL; });
+    if (players) players.forEach(function (p) { var sm = p.seat && p.seat.querySelector('.score small'); if (sm) sm.textContent = ' / ' + GOAL; });
+    if ($('goalNote')) $('goalNote').hidden = true;
+  }
+  $('goalRange').value = goalNext; $('goalOut').textContent = goalNext;
+  $('goalRange').addEventListener('input', function () {
+    goalNext = +this.value; store('pg-goal', String(goalNext)); $('goalOut').textContent = goalNext;
+    var playing = players && mode !== 'intro';
+    $('goalNote').hidden = !playing || goalNext === GOAL;
+    $('goalNoteText').innerHTML = 'This game is still to <b>' + GOAL + '</b>. Start a new game to play to <b>' + goalNext + '</b> points.';
+    if (!playing) applyGoal();
+  });
+  $('goalNew').addEventListener('click', function () { panel.hidden = true; cBtn.setAttribute('aria-expanded', 'false'); start(true); });
   var panel = $('customPanel'), cBtn = $('customBtn');
   cBtn.addEventListener('click', function () { panel.hidden = !panel.hidden; cBtn.setAttribute('aria-expanded', String(!panel.hidden)); });
   document.addEventListener('click', function (e) { if (!panel.hidden && !panel.contains(e.target) && !cBtn.contains(e.target)) { panel.hidden = true; cBtn.setAttribute('aria-expanded', 'false'); } });
 
-  // ── Full screen ──
-  var fBtn = $('fullBtn');
+  // ── Full screen (eased in and out) ──
   var fsOK = board.requestFullscreen || board.webkitRequestFullscreen;
-  if (!fsOK) fBtn.hidden = true;
-  fBtn.addEventListener('click', function () {
-    var on = document.fullscreenElement || document.webkitFullscreenElement;
-    try {
-      if (on) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-      else { var r = (board.requestFullscreen || board.webkitRequestFullscreen).call(board); if (r && r.catch) r.catch(function () {}); }
-    } catch (e) {}
-  });
-  function fsChange() {
-    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    board.classList.toggle('fs', on);
-    setTimeout(function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); }, 60);
-    fBtn.innerHTML = on ? '✕ <span class="t">Exit full screen</span>' : '⛶ <span class="t">Full screen</span>';
+  var veil = $('fsVeil');
+  function isFS() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function animate(cls, ms) {
+    board.classList.remove('fs-in', 'fs-out'); void board.offsetWidth; board.classList.add(cls);
+    return new Promise(function (r) { setTimeout(function () { if (cls === 'fs-in') board.classList.remove('fs-in'); r(); }, reduce ? 0 : ms); });
   }
-  // "Learn How to Play" opens the game in full screen (a click is allowed to do that; scrolling isn't).
-  // The page also jumps to the game, so leaving full screen puts you right at it.
-  // Both "How to Play" buttons (top bar) and "Learn How to Play" (under the box) do this.
-  [].forEach.call(document.querySelectorAll('.explore[href="#try"], .howto[href="#try"]'), function (btn) {
-    if (fsOK) btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      $('try').scrollIntoView({ behavior: 'auto', block: 'start' });
-      try { var r = fsOK.call(board); if (r && r.catch) r.catch(function () { $('try').scrollIntoView({ behavior: 'smooth' }); }); } catch (err) {}
+  // Must be called from a click or tap. Resolves once the game is in full screen (or couldn't be).
+  function enterFS() {
+    return new Promise(function (resolve) {
+      if (isFS()) return resolve(true);
+      if (!fsOK) { $('try').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); return resolve(false); }
+      veil.classList.add('on');
+      setTimeout(function () {
+        $('try').scrollIntoView({ behavior: 'auto', block: 'start' });
+        function done(ok) {
+          veil.classList.remove('on');
+          if (ok) animate('fs-in', 900).then(function () { resolve(true); }); else resolve(false);
+        }
+        try {
+          var r = fsOK.call(board);
+          if (r && r.then) r.then(function () { done(true); }, function () { done(false); });
+          else setTimeout(function () { done(isFS()); }, 120);
+        } catch (err) { done(false); }
+      }, reduce ? 0 : 450);
     });
+  }
+  function exitFS() {
+    if (!isFS()) return;
+    animate('fs-out', 450).then(function () {
+      try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
+    });
+  }
+  var wasFS = false;
+  function fsChange() {
+    var on = isFS();
+    board.classList.toggle('fs', on);
+    board.classList.remove('fs-out');
+    if (!on && wasFS) { $('try').scrollIntoView({ behavior: 'auto', block: 'start' }); animate('fs-in', 700); }
+    wasFS = on;
+    setTimeout(function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); }, 60);
+  }
+  $('fsExit').addEventListener('click', exitFS);
+  // outside full screen, a button to go (back) into it; hidden where full screen isn't available (iPhone)
+  if (fsOK) { $('fullBtn').hidden = false; $('fullBtn').addEventListener('click', function () { enterFS(); }); }
+
+  // ── Share: the top bar shares this page; the one in the game shares a link straight to the game ──
+  var toastEl = $('shareToast'), toastT;
+  function toast(t) {
+    (isFS() ? board : document.body).appendChild(toastEl);
+    toastEl.textContent = t; toastEl.classList.add('on');
+    clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('on'); }, 2200);
+  }
+  [].forEach.call(document.querySelectorAll('.share-btn'), function (b) {
+    b.addEventListener('click', function () {
+      var game = b.dataset.share === 'game';
+      var url = location.origin + location.pathname + (game ? '#try' : '');
+      var data = { title: game ? 'Pupcup practice game' : 'Pupcup',
+        text: game ? 'Play a quick practice game of Pupcup: you against three dogs.' : 'Pupcup: the party card game where dogs rule the world.', url: url };
+      if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+      var done = function () { toast('Link copied'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { toast(url); });
+      else toast(url);
+    });
+  });
+  // Both "How to Play" buttons (top bar) and "Learn How to Play" (under the box) open the game in full screen.
+  // (A click is allowed to do that; scrolling isn't.) The page also moves to the game, so leaving full
+  // screen puts you right at it.
+  [].forEach.call(document.querySelectorAll('.explore[href="#try"], .howto[href="#try"]'), function (btn) {
+    btn.addEventListener('click', function (e) { e.preventDefault(); enterFS(); });
   });
   document.addEventListener('fullscreenchange', fsChange);
   document.addEventListener('webkitfullscreenchange', fsChange);
-  $('restartBtn').addEventListener('click', start);
+  $('restartBtn').addEventListener('click', function () { start(); });
 
   // ── Super Boop confetti (same as the homepage) ──
   function spawnSuperBoop() {
@@ -2209,17 +2451,24 @@
     setTimeout(function () { spawnBoneRain(); }, 100);
     setTimeout(function () { spawnTailWagRipple(cx, cy); }, 200);
   }
+  // A dog won: a smaller burst of confetti right where that dog sits
+  function dogConfetti(p) {
+    if (reduce) return;
+    var r = p.avEl.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    spawnPawBurst(x, y, 0.38, 22);
+    setTimeout(function () { spawnPawBurst(x, y, 0.3, 14); }, 450);
+  }
   function host() { return document.fullscreenElement ? board : $('superBoopFx'); }
-  function spawnPawBurst(x, y) {
-    var box = host(), em = ['🐾', '🦴', '✨', '💛', '🐾', '🐶'], n = 36;
+  function spawnPawBurst(x, y, spread, count) {
+    var box = host(), em = ['🐾', '🦴', '✨', '💛', '🐾', '🐶'], n = count || 36, k = spread || 1;
     for (var i = 0; i < n; i++) {
       var s = document.createElement('span'); s.className = 'paw-particle';
       s.textContent = em[rnd(em.length)];
-      var ang = Math.PI * 2 * i / n + (Math.random() - .5) * .5, d = (60 + Math.random() * 100) * 2.5;
+      var ang = Math.PI * 2 * i / n + (Math.random() - .5) * .5, d = (60 + Math.random() * 100) * 2.5 * k;
       var dur = 1 + Math.random() * .4;
       s.style.setProperty('--tx', Math.cos(ang) * d + 'px'); s.style.setProperty('--ty', Math.sin(ang) * d + 'px');
       s.style.setProperty('--rot', Math.random() * 360 + 'deg'); s.style.setProperty('--dur', dur + 's');
-      s.style.fontSize = (22 * 1.8) + 'px'; s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.position = 'fixed';
+      s.style.fontSize = (22 * (k < 1 ? 1.2 : 1.8)) + 'px'; s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.position = 'fixed';
       s.style.animationDelay = Math.random() * .3 + 's'; s.style.zIndex = 9998;
       box.appendChild(s); (function (s) { setTimeout(function () { s.remove(); }, (dur + .4) * 1000); })(s);
     }
