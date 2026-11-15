@@ -60,6 +60,23 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, .45); transition: opacity .25s, transform .25s; pointer-events: none;
   }
   .share-toast.on { opacity: 1; transform: translate(-50%, 0); }
+  /* our own share menu (computers) */
+  .share-menu {
+    position: fixed; z-index: 2147482500; min-width: 200px; display: grid; gap: 2px; padding: 6px; border-radius: 14px;
+    background: #15161c; box-shadow: 0 0 0 1px rgba(255, 255, 255, .1), 0 18px 40px rgba(0, 0, 0, .5); animation: popIn .18s ease-out;
+  }
+  .share-menu[hidden] { display: none; }
+  .share-menu a, .share-menu button {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; border: 0; background: none;
+    color: var(--text); font: inherit; font-size: 15px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
+  }
+  .share-menu a:hover, .share-menu button:hover, .share-menu :focus-visible { background: rgba(255, 255, 255, .08); outline: none; }
+  .share-menu .ic { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 800; color: #fff; flex: none; }
+  .share-menu .fb { background: #1877f2; font-family: Arial, sans-serif; font-size: 16px; }
+  .share-menu .x { background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
+  .share-menu .wa { background: #25d366; }
+  .share-menu .em { background: #6b7280; }
+  .share-menu .cp { background: #3a3d48; font-size: 13px; }
   /* going into and out of full screen is eased: the page dims, then the game fades and grows in */
   .fs-veil { position: fixed; inset: 0; z-index: 2147482000; background: #0b0c10; opacity: 0; pointer-events: none; transition: opacity .45s ease; }
   .fs-veil.on { opacity: 1; }
@@ -643,6 +660,13 @@
 
 <div class="fs-veil" id="fsVeil" aria-hidden="true"></div>
 <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
+<div class="share-menu" id="shareMenu" role="menu" hidden>
+  <a role="menuitem" data-net="facebook" target="_blank" rel="noopener"><span class="ic fb">f</span>Facebook</a>
+  <a role="menuitem" data-net="x" target="_blank" rel="noopener"><span class="ic x">𝕏</span>X</a>
+  <a role="menuitem" data-net="whatsapp" target="_blank" rel="noopener"><span class="ic wa">✆</span>WhatsApp</a>
+  <a role="menuitem" data-net="email"><span class="ic em">✉</span>Email</a>
+  <button type="button" role="menuitem" data-net="copy"><span class="ic cp">🔗</span>Copy link</button>
+</div>
 <header class="top">
   <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
   <div class="top-actions">
@@ -2419,16 +2443,53 @@
     toastEl.textContent = t; toastEl.classList.add('on');
     clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('on'); }, 2200);
   }
+  var shareMenu = $('shareMenu'), shareData = null;
+  function copyLink(url) {
+    var done = function () { toast('Link copied'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { toast(url); });
+    else toast(url);
+  }
+  function closeShare() { shareMenu.hidden = true; }
+  function openShareMenu(btn, d) {
+    shareData = d;
+    var u = encodeURIComponent(d.url), t = encodeURIComponent(d.text);
+    var links = {
+      facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + u,
+      x: 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u,
+      whatsapp: 'https://wa.me/?text=' + t + '%20' + u,
+      email: 'mailto:?subject=' + encodeURIComponent(d.title) + '&body=' + t + '%0A%0A' + u
+    };
+    [].forEach.call(shareMenu.querySelectorAll('a[data-net]'), function (a) { a.href = links[a.dataset.net]; });
+    // inside full screen only the game shows, so the menu has to live inside it
+    (isFS() ? board : document.body).appendChild(shareMenu);
+    shareMenu.hidden = false;
+    var r = btn.getBoundingClientRect(), w = shareMenu.offsetWidth;
+    shareMenu.style.top = (r.bottom + 8) + 'px';
+    shareMenu.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w)) + 'px';
+    shareMenu.querySelector('a').focus({ preventScroll: true });
+  }
+  shareMenu.addEventListener('click', function (e) {
+    var it = e.target.closest('[data-net]'); if (!it) return;
+    if (it.dataset.net === 'copy') copyLink(shareData.url);
+    closeShare();
+  });
+  document.addEventListener('click', function (e) { if (!shareMenu.hidden && !e.target.closest('#shareMenu, .share-btn')) closeShare(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeShare(); });
+  window.addEventListener('scroll', closeShare, { passive: true });
   [].forEach.call(document.querySelectorAll('.share-btn'), function (b) {
     b.addEventListener('click', function () {
+      if (!shareMenu.hidden) return closeShare();
       var game = b.dataset.share === 'game';
-      var url = location.origin + location.pathname + (game ? '#try' : '');
+      var url = location.href.split('#')[0] + (game ? '#try' : '');
       var data = { title: game ? 'Pupcup practice game' : 'Pupcup',
         text: game ? 'Play a quick practice game of Pupcup: you against three dogs.' : 'Pupcup: the party card game where dogs rule the world.', url: url };
-      if (navigator.share) { navigator.share(data).catch(function () {}); return; }
-      var done = function () { toast('Link copied'); };
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { toast(url); });
-      else toast(url);
+      // Phones and tablets (on the live site) get their own share sheet. Computers get our menu: Chrome on
+      // Windows can crash on its built-in share window.
+      var phoneLike = window.matchMedia('(pointer: coarse)').matches;
+      if (navigator.share && phoneLike && /^https?:$/.test(location.protocol)) {
+        try { navigator.share(data).catch(function () {}); return; } catch (e) {}
+      }
+      openShareMenu(b, data);
     });
   });
   // Both "How to Play" buttons (top bar) and "Learn How to Play" (under the box) open the game in full screen.
