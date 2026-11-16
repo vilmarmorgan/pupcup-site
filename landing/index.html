@@ -1,0 +1,2594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pupcup Box Reveal (Draft)</title>
+<meta name="description" content="Draft landing page: the Pupcup box opens as you scroll.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="Pupcup">
+<meta property="og:description" content="Open the box and meet the dogs.">
+<meta property="og:type" content="website">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+<style>
+  /* ───── DRAFT: scroll-driven box reveal. Self-contained; touches nothing else on the site.
+     Box art in box-art/ is cut from the print PDFs (5.75 x 3.75 x 1 in box, full-depth lift-off lid). ───── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1e2028;
+    --surface: #1a1a1e;
+    --accent: #f5c542;
+    --text: #f0ece4;
+    --text-muted: #9a9a9e;
+    --buy-bg: #ff8d1e;
+    --buy-text: #231f20;
+    --lid-inside: #d9115b;   /* magenta turn-in from the lid print file */
+    --base-inside: #141210;  /* base print is black */
+    --base-outside: #2e2c2a; /* outside of the base, a touch lighter so it reads against the backdrop */
+    --card-edge: #ece6da;
+    --studio: #1e2028;       /* same as the site background */
+  }
+
+  html { background: var(--bg); scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    background: var(--bg);
+    font-family: 'Jost', system-ui, sans-serif;
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* Header */
+  .top {
+    position: fixed; inset: 0 0 auto; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 18px 24px;
+  }
+  .top img { height: 34px; width: auto; display: block; filter: brightness(0) invert(0.94); }
+  .top-actions, .fs-actions { display: flex; gap: 10px; align-items: center; }
+  .share-btn { display: inline-flex; align-items: center; gap: 7px; background: none; border: 0; font-family: inherit; color: var(--text); cursor: pointer; }
+  .share-toast {
+    position: fixed; left: 50%; bottom: 28px; z-index: 2147483000; transform: translate(-50%, 20px); opacity: 0;
+    padding: 10px 18px; border-radius: 999px; background: #15161c; color: var(--text); font-size: 15px; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .45); transition: opacity .25s, transform .25s; pointer-events: none;
+  }
+  .share-toast.on { opacity: 1; transform: translate(-50%, 0); }
+  /* our own share menu (computers) */
+  .share-menu {
+    position: fixed; z-index: 2147482500; min-width: 200px; display: grid; gap: 2px; padding: 6px; border-radius: 14px;
+    background: #15161c; box-shadow: 0 0 0 1px rgba(255, 255, 255, .1), 0 18px 40px rgba(0, 0, 0, .5); animation: popIn .18s ease-out;
+  }
+  .share-menu[hidden] { display: none; }
+  .share-menu a, .share-menu button {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; border: 0; background: none;
+    color: var(--text); font: inherit; font-size: 15px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
+  }
+  .share-menu a:hover, .share-menu button:hover, .share-menu :focus-visible { background: rgba(255, 255, 255, .08); outline: none; }
+  .share-menu .ic { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 800; color: #fff; flex: none; }
+  .share-menu .fb { background: #1877f2; font-family: Arial, sans-serif; font-size: 16px; }
+  .share-menu .x { background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
+  .share-menu .wa { background: #25d366; }
+  .share-menu .em { background: #6b7280; }
+  .share-menu .cp { background: #3a3d48; font-size: 13px; }
+  /* going into and out of full screen is eased: the page dims, then the game fades and grows in */
+  .fs-veil { position: fixed; inset: 0; z-index: 2147482000; background: #0b0c10; opacity: 0; pointer-events: none; transition: opacity .45s ease; }
+  .fs-veil.on { opacity: 1; }
+  .pg-board.fs-in { animation: fsIn .9s cubic-bezier(.2, .8, .2, 1) both; }
+  .pg-board.fs-out { animation: fsOut .45s ease-in both; }
+  @keyframes fsIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+  @keyframes fsOut { to { opacity: 0; transform: scale(.96); } }
+  @media (prefers-reduced-motion: reduce) { .pg-board.fs-in, .pg-board.fs-out { animation: none; } }
+  .howto {
+    color: var(--text); font-weight: 600; font-size: 15px; padding: 10px 18px; border-radius: 999px;
+    box-shadow: inset 0 0 0 2px rgba(240, 236, 228, .45); transition: box-shadow .2s, background .2s;
+  }
+  .howto:hover { box-shadow: inset 0 0 0 2px var(--text); background: rgba(255, 255, 255, .06); }
+  /* the top bar's outline buttons get a dark backing so they stay readable when a card passes behind them */
+  .top .howto { background: rgba(14, 15, 20, .62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .top .howto:hover { background: rgba(40, 42, 50, .75); }
+  .howto:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .buy {
+    background: var(--buy-bg); color: var(--buy-text); font-weight: 700;
+    padding: 10px 20px; border-radius: 999px; font-size: 15px;
+    box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
+  }
+  .buy:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .draft-tag {
+    position: fixed; left: 24px; bottom: 18px; z-index: 50;
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted);
+  }
+
+  /* Pinned reveal */
+  #reveal { position: relative; height: 893vh; }
+  .stage {
+    position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
+    background: transparent; /* the homepage's moving colours play behind it as a video */
+  }
+  /* The homepage's drifting colour background, pre-recorded as a looping video.
+     Playing a video is far cheaper than redrawing six huge blurred shapes every frame. */
+  .bg-video {
+    position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%;
+    object-fit: cover; pointer-events: none; opacity: 0; transition: opacity 1.2s ease;
+  }
+  .bg-video.ready { opacity: 1; }
+  main { position: relative; z-index: 1; }
+  .viewport { position: absolute; inset: 0; perspective: 1900px; perspective-origin: 50% 30%; }
+  /* Each flying card gets its own wrapper with its own perspective, so cards stack in order
+     and can never slice through each other or the box. */
+  .cards-layer { position: absolute; inset: 0; pointer-events: none; }
+  .card-wrap { position: absolute; inset: 0; perspective: 1900px; perspective-origin: 50% 30%; }
+  .card-flat { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  .card-flat .card-face { position: absolute; }
+  .fit, .box, .lid, .mirror, .card, .deck { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+  .f {
+    position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    background-size: 100% 100%; background-repeat: no-repeat;
+    outline: 1px solid transparent; /* smoother edges on 3D panels in Chrome */
+  }
+  .shadow {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0,0,0,.6), rgba(0,0,0,0));
+  }
+  .lid-in { background: var(--lid-inside); }
+  .base-out { background-color: var(--base-outside); }
+  .rim { background: #4a4844; }
+  .mirror-in, .mirror-solid { background: #24252d; } /* dim, neutral: matches the reflection of the box below it */
+  /* Glossy floor: sits over the mirrored box so the reflection reads dim and fades out */
+  .floor {
+    background:
+      radial-gradient(closest-side, rgba(96, 104, 134, .55) 0%, rgba(44, 48, 66, .45) 34%, rgba(30, 32, 40, .3) 64%, rgba(30, 32, 40, 0) 100%);
+  }
+  .base-in { background: var(--base-inside); }
+  .card-face img { width: 100%; height: 100%; display: block; }
+  .card-edge { border-radius: 11px; background: var(--card-edge); }
+  .divider { background: #0d0c0b; }
+
+  /* Copy layered over the stage */
+  .hero-copy {
+    position: absolute; left: 0; right: 0; top: 96px; z-index: 5;
+    display: grid; justify-items: center; gap: 10px; text-align: center; padding: 0 20px;
+  }
+  .hero-copy h1 { font-size: clamp(38px, 7vw, 84px); font-weight: 700; line-height: 1; text-wrap: balance; }
+  .hero-copy h1 em { font-style: normal; color: var(--accent); }
+  /* Landed cards are links to the main site */
+  /* Hover: the card comes to the front, straightens up and grows a little (like Cards Against Humanity) */
+  .card-flat .card-face.live {
+    pointer-events: auto; cursor: pointer;
+    /* going back: quick and plain */
+    transition: transform .16s ease-out, box-shadow .16s ease-out;
+  }
+  .card-flat .card-face.live:hover, .card-flat .card-face.live:focus-visible {
+    /* coming forward: straightens fully, grows and lifts, with a small bounce */
+    transform: translateY(-10px) rotate(var(--untilt, 0deg)) scale(1.28);
+    box-shadow: 0 26px 50px rgba(0, 0, 0, .6); outline: none;
+    transition: transform .22s cubic-bezier(.2, .9, .3, 1.25), box-shadow .22s ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) { .card-flat .card-face.live { transition: none; } }
+  .card-flat .card-face { border-radius: 10px; }
+  /* Big call to action once the cards have landed */
+  .cta-row {
+    position: absolute; left: 50%; top: 0; z-index: 6; transform: translateX(-50%);
+    display: flex; gap: 14px; align-items: center;
+    opacity: 0; visibility: hidden;
+  }
+  .explore {
+    display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+    padding: 18px 34px; border-radius: 999px; font-size: 20px; font-weight: 700; letter-spacing: .01em;
+    background: var(--accent); color: var(--buy-text);
+    box-shadow: 0 10px 30px rgba(245, 197, 66, .35), 0 2px 0 rgba(255, 255, 255, .4) inset;
+    transition: background .2s, box-shadow .2s, border-color .2s;
+  }
+  /* second button: same size, outlined */
+  .explore.ghost {
+    background: rgba(20, 21, 27, .55); color: var(--text); box-shadow: inset 0 0 0 2px rgba(240, 236, 228, .55);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  }
+  .explore.ghost:hover { background: rgba(20, 21, 27, .75); box-shadow: inset 0 0 0 2px var(--text); }
+  .explore:hover { background: #ffd65c; box-shadow: 0 12px 36px rgba(245, 197, 66, .5), 0 2px 0 rgba(255, 255, 255, .4) inset; }
+  .explore:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .explore span { transition: transform .2s; }
+  .explore:hover span { transform: translateX(4px); }
+  .explore[href="#try"]:hover span { transform: translateY(3px); }
+  @media (max-width: 600px) {
+    .cta-row { flex-direction: column; gap: 10px; }
+    .explore { font-size: 16px; padding: 13px 24px; min-width: 230px; justify-content: center; }
+  }
+  .hint {
+    position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 5;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted);
+  }
+  .hint i { width: 22px; height: 34px; border: 2px solid var(--text-muted); border-radius: 12px; position: relative; }
+  .hint i::after {
+    content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px;
+    border-radius: 2px; background: var(--accent); animation: nudge 1.6s ease-in-out infinite;
+  }
+  @keyframes nudge { 0%,100% { transform: translateY(0); opacity: 1 } 60% { transform: translateY(9px); opacity: .2 } }
+
+
+  @media (max-width: 600px) {
+    .top { padding: 14px 16px; }
+    .top img { height: 26px; }
+    .buy { padding: 8px 16px; font-size: 14px; }
+    .share-btn { padding: 8px 10px; }
+    .share-btn .t { display: none; }
+    .top-actions { gap: 6px; }
+    .top-actions .howto, .top-actions .buy { white-space: nowrap; }
+    .howto { padding: 8px 12px; font-size: 14px; }
+    .hero-copy { top: 80px; }
+    .draft-tag { display: none; }
+  }
+  @media (max-width: 380px) {
+    .top { padding: 14px 12px; }
+    .top img { height: 22px; }
+    .top-actions .howto { padding: 8px 10px; font-size: 13px; }
+    .top-actions .buy { padding: 8px 12px; font-size: 13px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .hint i::after { animation: none; } }
+
+  .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+
+  /* ───── Practice game ───── */
+  /* fills the screen right under the site header */
+  .pg { padding: 8px max(12px, 1.2vw) 40px; scroll-margin-top: 70px; }
+  .pg-head { display: grid; gap: 6px; justify-items: center; text-align: center; padding: 70px 0 14px; }
+  .pg-head h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 700; line-height: 1; }
+  .pg-head p { color: var(--text-muted); font-size: 17px; }
+  .pg-board {
+    --felt: #1d5a3a; --felt-2: #123d27;
+    position: relative; max-width: 1500px; margin: 0 auto; border-radius: 28px; overflow: hidden;
+    height: auto; min-height: max(560px, calc(100svh - 82px)); /* fills the screen, grows rather than overlap */
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+    background: radial-gradient(80% 70% at 50% 45%, var(--felt) 0%, var(--felt-2) 100%);
+    box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .06), 0 30px 60px rgba(0, 0, 0, .45);
+    transition: background .4s;
+  }
+  .pg-board:fullscreen { height: 100vh; max-width: none; border-radius: 0; overflow: auto; }
+  .pg-board:-webkit-full-screen { height: 100vh; max-width: none; border-radius: 0; overflow: auto; }
+
+  /* top bar */
+  .pg-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px 0;  position: relative; z-index: 37; }
+  .pg-goal { font-size: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .8); }
+  .pg-goal b { color: var(--accent); }
+  .pg-tools { display: flex; gap: 8px; }
+  .pg-btn {
+    appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 600; font-size: 14px;
+    padding: 8px 14px; border-radius: 999px; color: var(--text); background: rgba(0, 0, 0, .28);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pg-btn:hover { background: rgba(0, 0, 0, .45); }
+  .pg-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .pg-btn.gold { background: var(--accent); color: var(--buy-text); }
+  .pg-btn.gold:hover { background: #ffd65c; }
+
+  /* table */
+  .pg-table {
+    display: grid; min-height: 0; padding: 6px 16px;
+    grid-template-columns: minmax(170px, 1fr) minmax(0, 2.4fr) minmax(170px, 1fr);
+    grid-template-rows: auto minmax(min-content, 1fr) auto; /* the middle never gets squeezed under the seats */
+    grid-template-areas: ". top ." "left mid right" "me me me";
+    gap: 6px 14px; align-items: center;
+  }
+  .seat { display: grid; gap: 8px; justify-items: center; align-content: center; justify-self: center; min-width: 210px; border-radius: 18px; padding: 8px 14px; transition: background .3s, box-shadow .3s; }
+  .seat[data-p="1"] { grid-area: left; } .seat[data-p="2"] { grid-area: top; } .seat[data-p="3"] { grid-area: right; } .seat[data-p="0"] { grid-area: me; }
+  .seat.turn { background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 2px rgba(245, 197, 66, .55); }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .av { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px rgba(255, 255, 255, .85), 0 6px 14px rgba(0, 0, 0, .35); }
+  .seat.turn .av { box-shadow: 0 0 0 3px var(--accent), 0 0 18px rgba(245, 197, 66, .6); }
+  .who-txt { display: grid; gap: 3px; min-width: 96px; }
+  .who-txt b { font-size: 15px; font-weight: 600; line-height: 1.1; }
+  .score { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 20px; color: var(--accent); line-height: 1; }
+  .score small { color: rgba(255, 255, 255, .55); font-weight: 500; font-size: 13px; }
+  .meter { height: 5px; border-radius: 3px; background: rgba(0, 0, 0, .3); overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width .5s; }
+  .backs { display: flex; }
+  .backs span { width: 16px; height: 22px; border-radius: 3px; background: #fff url("cards/dog-cards-face.webp") center/cover; box-shadow: 0 2px 4px rgba(0, 0, 0, .3); }
+  .backs span + span { margin-left: -8px; }
+  .up { display: flex; justify-content: center; min-height: clamp(62px, 9.4vh, 84px); padding-left: 34px; }
+  .pc {
+    appearance: none; border: 0; padding: 0; background: none; display: block; position: relative; flex: none;
+    width: clamp(44px, 6.6vh, 60px); border-radius: 6px; cursor: default; font: inherit;
+  }
+  .pc img { width: 100%; display: block; pointer-events: none; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .35)); }
+  .up .pc { margin-left: -34px; transition: transform .2s; }
+  .up .pc.gs { margin-left: 6px !important; }
+  .up .pc.is-rule { z-index: 3; }
+  .pc.pick { cursor: pointer; z-index: 2; }
+  .pc.pick img { filter: drop-shadow(0 0 10px rgba(245, 197, 66, .95)); }
+  .pc.pick:hover { transform: translateY(-8px); }
+  .pg-board.picking .up .pc:not(.pick), .pg-board.picking .rules .pc:not(.pick) { opacity: .4; }
+  .pg-board.picking .up .pc.pick { margin-left: -10px; }
+  .pc.target img { filter: drop-shadow(0 0 12px rgba(255, 70, 70, .95)); }
+
+  /* every player (you included) is bigger: there's room around them on wider screens */
+  @media (min-width: 761px) {
+    .seat .av { width: clamp(60px, 9vh, 84px); height: clamp(60px, 9vh, 84px); box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 8px 18px rgba(0, 0, 0, .35); }
+    .seat.turn .av { box-shadow: 0 0 0 4px var(--accent), 0 0 24px rgba(245, 197, 66, .65); }
+    .seat .who { gap: 14px; }
+    .seat .who-txt { min-width: 120px; gap: 4px; }
+    .seat .who-txt b { font-size: 18px; }
+    .seat .score { font-size: 26px; }
+    .seat .score small { font-size: 15px; }
+    .seat .meter { height: 6px; }
+    .seat .backs span { width: 20px; height: 28px; }
+    .seat .backs span + span { margin-left: -10px; }
+    .seat .pc { width: clamp(52px, 8.4vh, 78px); }
+    .seat .up { min-height: clamp(74px, 12vh, 110px); padding-left: 44px; }
+    .seat .up .pc { margin-left: -44px; }
+    .seat { min-width: 250px; padding: 12px 18px; }
+    /* the top player lays out sideways: profile on the left, cards on the right */
+    .seat[data-p="2"], .seat[data-p="0"] { grid-auto-flow: column; align-items: center; gap: 22px; }
+    .seat[data-p="2"] .up, .seat[data-p="0"] .up { min-width: 150px; }
+  }
+  /* full screen has room to spare, so every player grows again */
+  @media (min-width: 761px) {
+    .pg-board.fs .seat .av { width: clamp(62px, 10.5vh, 140px); height: clamp(62px, 10.5vh, 140px); box-shadow: 0 0 0 5px rgba(255, 255, 255, .85), 0 10px 22px rgba(0, 0, 0, .35); }
+    .pg-board.fs .seat.turn .av { box-shadow: 0 0 0 5px var(--accent), 0 0 30px rgba(245, 197, 66, .65); }
+    .pg-board.fs .seat .who { gap: 20px; }
+    .pg-board.fs .seat .who-txt { min-width: 170px; gap: 6px; }
+    .pg-board.fs .seat .who-txt b { font-size: clamp(17px, 2.3vh, 27px); }
+    .pg-board.fs .seat .score { font-size: clamp(24px, 3.5vh, 42px); }
+    .pg-board.fs .seat .score small { font-size: clamp(16px, 1.9vh, 22px); }
+    .pg-board.fs .seat .meter { height: 8px; }
+    .pg-board.fs .seat .backs span { width: 28px; height: 40px; }
+    .pg-board.fs .seat .backs span + span { margin-left: -14px; }
+    .pg-board.fs .seat .pc { width: clamp(58px, 9.5vh, 120px); }
+    .pg-board.fs .seat .up { min-height: clamp(82px, 13.5vh, 170px); padding-left: 60px; }
+    .pg-board.fs .seat .up .pc { margin-left: -60px; }
+    .pg-board.fs .seat { min-width: 300px; padding: 10px 20px; gap: 6px; }
+    .pg-board.fs .seat[data-p="2"], .pg-board.fs .seat[data-p="0"] { gap: 30px; }
+    .pg-board.fs .seat[data-p="2"] .up, .pg-board.fs .seat[data-p="0"] .up { min-width: 220px; }
+  }
+  /* middle */
+  /* middle: draw pile on the left, penalties on the right, what's happening in between */
+  .pg-mid { grid-area: mid; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 0 3%; position: relative; z-index: 3; }
+  .pg-center { display: grid; gap: 8px; justify-items: center; align-content: center; min-height: 120px; }
+  .pg-center .pg-hint { text-align: center; max-width: 42ch; text-wrap: balance; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+  .pg-msg:empty { visibility: hidden; }
+  .pg-msg {
+    font-size: 18px; font-weight: 500; line-height: 1.35; text-align: center; text-wrap: balance; max-width: 36ch;
+    min-height: 2.7em; display: block; padding: 7px 18px; border-radius: 14px;
+    background: rgba(0, 0, 0, .32); position: relative; z-index: 4;
+  }
+  .pg-msg b { color: var(--accent); }
+  .pg-row { display: flex; gap: 22px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+  .decks { display: flex; gap: 12px; }
+  .pgdeck { position: relative; display: grid; justify-items: center; gap: 4px; }
+  .pgdeck img { width: clamp(58px, 8vh, 80px); border-radius: 6px; box-shadow: 3px 3px 0 #d9d2c4, 6px 6px 0 #c9c1b2, 0 10px 18px rgba(0, 0, 0, .4); }
+  .lbl { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .7); }
+  .rules-box { display: grid; gap: 4px; justify-items: center; }
+  .rules { display: flex; gap: 10px; min-height: 92px; }
+  .rules:empty::after {
+    content: "No rules yet"; display: grid; place-items: center; width: 140px; border: 2px dashed rgba(255, 255, 255, .2);
+    border-radius: 10px; font-size: 12px; color: rgba(255, 255, 255, .45);
+  }
+  .rules .pc { width: 64px; }
+  .rules .pc .own { position: absolute; right: -8px; bottom: -8px; width: 26px; height: 26px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+  /* steals play out right next to the player being stolen from */
+  .play-slot { position: absolute; z-index: 7; width: clamp(60px, 8.6vh, 86px); pointer-events: none; }
+  .play-slot .pc { width: 100%; }
+  /* a steal fight stacks up here: Steal, then Block on top, then a Block back on top of that */
+  .play-slot .pc + .pc { position: absolute; top: 0; left: 0; width: 100%; }
+  .play-slot .pc:nth-child(2) { transform: translate(14px, 8px) rotate(7deg); }
+  .play-slot .pc:nth-child(3) { transform: translate(-12px, 14px) rotate(-6deg); }
+  .play-slot .pc:nth-child(4) { transform: translate(18px, 20px) rotate(10deg); }
+  .play-slot .pc:nth-child(n+5) { transform: translate(-6px, 24px) rotate(-3deg); }
+
+  /* a speech bubble beside a player: "Caught you!" lives here */
+  /* a dog slipping up: low-key on purpose, so you only catch it if you're watching the other players */
+  .seat-pop {
+    position: absolute; z-index: 30; width: 210px; display: grid; gap: 6px; padding: 8px 10px 9px; border-radius: 12px;
+    background: rgba(0, 0, 0, .34); color: rgba(255, 255, 255, .88); box-shadow: none;
+    animation: seatPopIn .5s ease-out;
+  }
+  .seat-pop .who-line { display: flex; gap: 8px; align-items: center; }
+  .seat-pop .who-line img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: none; opacity: .9; }
+  .seat-pop p { margin: 0; font-size: 13px; line-height: 1.3; }
+  .seat-pop p b { color: #fff; font-weight: 600; }
+  .seat-pop p.sub { font-size: 11.5px; color: rgba(255, 255, 255, .55); }
+  .seat-pop .timer { height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+  .seat-pop .timer i { display: block; height: 100%; background: rgba(255, 255, 255, .4); transform-origin: 0 50%; }
+  .seat-pop .pg-btn { justify-content: center; font-size: 13px; padding: 5px 10px; background: rgba(255, 255, 255, .12); color: #fff; }
+  .seat-pop .pg-btn:hover { background: rgba(255, 255, 255, .22); }
+  @keyframes seatPopIn { from { opacity: 0; } to { opacity: 1; } }
+  .coach-bubble ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: #c9c7c2; font-size: 14.5px; line-height: 1.4; }
+  .coach-bubble ul b { color: var(--text); }
+
+  /* hand */
+  .pg-hand-wrap { display: grid; justify-items: center; gap: 4px; padding: 0 16px 30px; }
+  .pg-hand { display: flex; justify-content: center; align-items: flex-end; min-height: clamp(150px, 25vh, 200px); padding-top: 22px; }
+  .pg-hand .pc {
+    width: clamp(92px, min(9.5vw, 17vh), 150px); margin: 0 -8px; cursor: pointer;
+    transform: translateY(var(--dy, 0)) rotate(var(--r, 0deg)); transform-origin: 50% 110%;
+    transition: transform .2s cubic-bezier(.2, .8, .2, 1);
+  }
+  .pg-hand .pc:hover, .pg-hand .pc:focus-visible, .pg-hand .pc.sel { transform: translateY(-26px) rotate(0) scale(1.08); z-index: 5; outline: none; }
+  .pg-hand .pc:focus-visible img { filter: drop-shadow(0 0 0 #fff) drop-shadow(0 0 8px rgba(255, 255, 255, .9)); }
+  .pg-board.wait .pg-hand .pc { cursor: default; }
+  .pg-board.wait .pg-hand .pc:not(.glow) { filter: saturate(.75) brightness(.85); }
+  .pg-hand .pc.glow { animation: glow 1s ease-in-out infinite; z-index: 5; }
+  @keyframes glow { 0%, 100% { transform: translateY(-14px) scale(1.04) } 50% { transform: translateY(-26px) scale(1.08) } }
+  .shake { animation: shake .4s; }
+  @keyframes shake { 0%, 100% { translate: 0 } 25% { translate: -8px } 75% { translate: 8px } }
+  .pg-hint { font-size: 13px; color: rgba(255, 255, 255, .6); min-height: 1.3em; }
+
+  /* hover / tap card explanation */
+  .pg-tip {
+    position: absolute; z-index: 30; width: 270px; padding: 14px 16px; border-radius: 14px;
+    background: #101116; color: var(--text); box-shadow: 0 16px 40px rgba(0, 0, 0, .55);
+    font-size: 14px; line-height: 1.45; pointer-events: none; opacity: 0; transform: translateY(6px);
+    transition: opacity .15s, transform .15s;
+  }
+  .pg-tip.on { opacity: 1; transform: none; }
+  .pg-tip b { display: block; font-size: 16px; color: var(--accent); margin-bottom: 4px; }
+  .goal-set { display: flex; align-items: center; gap: 12px; }
+  .goal-set input { flex: 1; accent-color: var(--accent); }
+  .goal-set output { min-width: 44px; text-align: right; font-weight: 700; font-size: 18px; color: var(--accent); }
+  .goal-note { display: grid; gap: 8px; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 197, 66, .12); font-size: 13.5px; line-height: 1.35; }
+  .goal-note[hidden] { display: none; }
+  .goal-note .pg-btn { justify-self: start; }
+  .pg-tip .act { pointer-events: auto; margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  /* dog cards (rules, steals, blocks) can be opened full size to see the art */
+  .pc .zoom {
+    position: absolute; right: 4px; top: 4px; z-index: 2; width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center; background: rgba(12, 14, 18, .78); color: #fff; font-size: 13px; line-height: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35); opacity: 0; transition: opacity .15s; cursor: zoom-in;
+  }
+  .pc:hover .zoom, .pc:focus-visible .zoom { opacity: 1; }
+  .pg-board.picking .pc .zoom { display: none; }
+  @media (hover: none) { .pc .zoom { display: none; } }
+  .up .pc.is-dog:not(.pick) { cursor: zoom-in; }
+  .card-view {
+    position: fixed; inset: 0; z-index: 2147481000; display: grid; place-items: center; align-content: center; gap: 16px;
+    padding: 20px; background: rgba(6, 8, 10, .82); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    animation: popIn .22s ease-out;
+  }
+  .card-view[hidden] { display: none; }
+  .card-view figure { margin: 0; display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 520px; }
+  .card-view img { height: min(70vh, 640px); width: auto; max-width: 88vw; object-fit: contain; border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, .6); }
+  .card-view figcaption { display: grid; gap: 4px; color: #c9c7c2; font-size: 15px; line-height: 1.4; }
+  .card-view figcaption b { color: var(--text); font-size: 18px; }
+
+  /* intro: an empty table until you deal */
+  .seat { transition: background .3s, box-shadow .3s, opacity .45s, transform .45s cubic-bezier(.2, .9, .3, 1.2); }
+  .seat.away { opacity: 0; transform: scale(.7); }
+  .pg-intro { position: absolute; inset: 0; z-index: 36; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .35); }
+  .pg-intro[hidden] { display: none; }
+  .pg-intro-card {
+    width: min(480px, 100%); display: grid; gap: 12px; justify-items: center; text-align: center;
+    padding: 30px 28px 28px; border-radius: 24px; background: #15161c;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(255, 255, 255, .06);
+  }
+  .pg-intro-card h3 { font-size: clamp(26px, 3vw, 34px); font-weight: 700; line-height: 1.1; text-wrap: balance; }
+  .pg-intro-card p { color: var(--text-muted); font-size: 16px; line-height: 1.45; text-wrap: balance; }
+  .intro-dogs { display: flex; margin-bottom: 4px; }
+  .intro-dogs img { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #15161c; }
+  .intro-dogs img + img { margin-left: -14px; }
+  .pg-btn.big { font-size: 18px; padding: 14px 28px; margin-top: 6px; }
+  .deal-fly { position: absolute; z-index: 20; border-radius: 6px; pointer-events: none; box-shadow: 0 6px 14px rgba(0, 0, 0, .4); }
+
+  /* tour and first-time tips: a spotlight on one part of the table with a bubble beside it */
+  .coach { position: absolute; inset: 0; z-index: 37; }
+  .coach[hidden] { display: none; }
+  .coach-ring {
+    position: absolute; border-radius: 18px; pointer-events: none;
+    box-shadow: 0 0 0 3px var(--accent), 0 0 0 9999px rgba(0, 0, 0, .55);
+    transition: left .3s, top .3s, width .3s, height .3s;
+  }
+  .coach-bubble {
+    position: absolute; width: 310px; padding: 16px 18px 14px; border-radius: 16px; background: #15161c;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, .6); display: grid; gap: 8px; transition: left .3s, top .3s;
+  }
+  .coach-bubble .k { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .coach-bubble h3 { font-size: 19px; font-weight: 700; line-height: 1.2; }
+  .coach-bubble p { color: #c9c7c2; font-size: 15px; line-height: 1.45; }
+  .coach-bubble .row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .coach-bubble .row .sp { flex: 1; }
+  .coach-bubble .row button { white-space: nowrap; flex-shrink: 0; }
+  .coach-bubble .link { appearance: none; border: 0; background: none; color: var(--text-muted); font: inherit; font-size: 13px; cursor: pointer; padding: 6px 2px; text-decoration: underline; }
+  .coach-bubble .link:hover { color: var(--text); }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .25); }
+  .dots i.on { background: var(--accent); }
+  [data-info] { cursor: help; }
+  @media (max-width: 760px) { .coach-bubble { width: auto; left: 10px !important; right: 10px; } }
+  @media (prefers-reduced-motion: reduce) { .coach-ring, .coach-bubble { transition: none; } }
+
+  /* messages that need an answer sit in the middle of the table, in place of the usual message */
+  .pg-center { position: relative; }
+  .pg-pop { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 12; width: min(460px, 100%); }
+  .pg-pop[hidden] { display: none; }
+  .pg-center.popping .pg-msg, .pg-center.popping .pg-hint { visibility: hidden; }
+  .pg-pop-card {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; align-items: center; text-align: left;
+    padding: 14px 16px; border-radius: 18px; background: rgba(12, 14, 18, .9);
+    box-shadow: 0 0 0 2px var(--accent), 0 18px 40px rgba(0, 0, 0, .45);
+    animation: popIn .25s cubic-bezier(.2, .9, .3, 1.2);
+  }
+  @keyframes popIn { from { transform: scale(.9); opacity: 0 } }
+  .pg-pop-card > * { grid-column: 1 / -1; }
+  .pg-pop-card .pop-av, .pg-pop-card .pop-rule { grid-column: 1; grid-row: 1 / span 2; }
+  .pg-pop-card .pop-av + h3, .pg-pop-card .pop-rule + h3 { grid-column: 2; align-self: end; }
+  .pg-pop-card .pop-av ~ p, .pg-pop-card .pop-rule ~ p { grid-column: 2; align-self: start; }
+  .pg-pop-card .pop-av { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #fff; }
+  .pg-pop-card .pop-rule { width: 58px; border-radius: 6px; }
+  .pg-pop-card h3 { font-size: 19px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
+  .pg-pop-card p { color: #c9c7c2; font-size: 14.5px; line-height: 1.4; }
+  .pg-pop-card p b { color: var(--text); }
+  .pg-pop-card .opts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 4px; }
+  .pg-pop-card .opts .pg-btn { font-size: 15px; padding: 10px 16px; background: rgba(255, 255, 255, .1); }
+  .pg-pop-card .opts .pg-btn:hover { background: rgba(255, 255, 255, .2); }
+  .pg-pop-card .opts .pg-btn.gold { background: var(--accent); color: var(--buy-text); }
+  /* the game is over: the original big popup over the board */
+  .pg-end { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .45); }
+  .pg-end[hidden] { display: none; }
+  .pg-end-card {
+    width: min(440px, 100%); display: grid; gap: 14px; justify-items: center; text-align: center;
+    padding: 26px 24px 22px; border-radius: 22px; background: #15161c; box-shadow: 0 30px 70px rgba(0, 0, 0, .6);
+    animation: popIn .25s cubic-bezier(.2, .9, .3, 1.2);
+  }
+  .pg-end-card .pop-av { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #fff; }
+  .pg-end-card h3 { font-size: 22px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
+  .pg-end-card p { color: var(--text-muted); font-size: 16px; line-height: 1.4; text-wrap: balance; }
+  .pg-end-card .opts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .pg-end-card .opts .pg-btn { font-size: 16px; padding: 12px 18px; background: rgba(255, 255, 255, .1); }
+  .pg-end-card .opts .pg-btn:hover { background: rgba(255, 255, 255, .2); }
+  .pg-end-card .opts .pg-btn.gold { background: var(--accent); color: var(--buy-text); }
+  .timer { width: 100%; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+  .timer i { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: left; }
+
+  /* customise panel */
+  /* full screen: the site's top bar (logo + Buy Now) on top, the game's title and buttons along the bottom */
+  .fs-head { display: none; }
+  .pg-board.fs { grid-template-rows: auto minmax(0, 1fr) auto auto; }
+  .pg-board.fs .fs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 24px 0; position: relative; z-index: 37; }
+  .pg-board.fs .fs-head img { height: 34px; width: auto; display: block; filter: brightness(0) invert(.94); }
+  .pg-board.fs .fs-head .howto { padding: 9px 16px; font-size: 14px; background: none; border: 0; font-family: inherit; color: var(--text); cursor: pointer; }
+  .pg-board.fs .fs-head .howto:hover { background: rgba(255, 255, 255, .08); }
+  .pg-board.fs .fs-head .buy { white-space: nowrap; }
+  @media (max-width: 600px) {
+    .pg-board.fs .fs-head { padding: 10px 12px 0; }
+    .pg-board.fs .fs-head img { height: 26px; }
+    .pg-board.fs .fs-head .fs-actions { gap: 6px; }
+    .pg-board.fs .fs-head .howto { padding: 8px 11px; }
+    .pg-board.fs .fs-head #fsExit .t { display: none; }
+    .pg-board.fs .fs-head .buy { padding: 8px 14px; font-size: 14px; }
+  }
+  .pg-board.fs .pg-bar { order: 5; padding: 6px 16px 12px; }
+  .pg-board.fs #fullBtn { display: none; }
+  .pg-board.fs .pg-hand-wrap { padding-bottom: 6px; }
+  .pg-board.fs .pg-hand { min-height: clamp(120px, 19vh, 230px); padding-top: 14px; }
+  .pg-board.fs .pg-hand .pc { width: clamp(80px, min(8.5vw, 13.5vh), 150px); }
+  .pg-board.fs .pg-table { padding-top: 0; padding-bottom: 0; }
+  .pg-board.fs .pg-custom { top: auto; bottom: 62px; }
+  .pg-custom {
+    position: absolute; z-index: 35; top: 54px; right: 16px; width: 280px; padding: 16px; border-radius: 16px;
+    background: #15161c; box-shadow: 0 20px 50px rgba(0, 0, 0, .55); display: grid; gap: 12px;
+  }
+  .pg-custom[hidden] { display: none; }
+  .pg-custom h4 { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); }
+  .swatches, .dogs, .speeds { display: flex; flex-wrap: wrap; gap: 8px; }
+  .speeds .pg-btn { background: rgba(255, 255, 255, .08); }
+  .speeds .pg-btn[aria-pressed="true"] { background: var(--accent); color: var(--buy-text); }
+  .swatch { width: 34px; height: 34px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25); }
+  .dog-pick { width: 42px; height: 42px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; overflow: hidden; background: none; }
+  .dog-pick img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .swatch[aria-pressed="true"], .dog-pick[aria-pressed="true"] { box-shadow: 0 0 0 3px #15161c, 0 0 0 5px var(--accent); }
+  .swatch:focus-visible, .dog-pick:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+  /* Super Boop confetti — same as the homepage */
+  .boop-fx, .super-boop-fx { position: fixed; inset: 0; pointer-events: none; overflow: visible; z-index: 600; }
+  .paw-particle { position: absolute; font-size: 22px; pointer-events: none; animation: pawBurst var(--dur) ease-out forwards; opacity: 0; }
+  @keyframes pawBurst { 0% { transform: translate(0, 0) scale(.3) rotate(0deg); opacity: 1 } 60% { opacity: 1 } 100% { transform: translate(var(--tx), var(--ty)) scale(1) rotate(var(--rot)); opacity: 0 } }
+  .bone-particle { position: absolute; font-size: 20px; pointer-events: none; top: -30px; animation: boneRain var(--dur) ease-in forwards; opacity: 0; }
+  @keyframes boneRain { 0% { transform: translateY(0) rotate(0deg); opacity: 1 } 80% { opacity: 1 } 100% { transform: translateY(var(--fall)) rotate(var(--rot)); opacity: 0 } }
+  .ripple-ring { position: absolute; width: 40px; height: 40px; margin-left: -20px; border-radius: 50%; border: 3px solid var(--accent); pointer-events: none; animation: rippleGrow var(--dur) ease-out forwards; opacity: 0; }
+  @keyframes rippleGrow { 0% { transform: scale(.3); opacity: .9 } 100% { transform: scale(var(--scale)); opacity: 0 } }
+  .ripple-paw { position: absolute; font-size: 16px; pointer-events: none; animation: ripplePawFloat var(--dur) ease-out forwards; opacity: 0; }
+  @keyframes ripplePawFloat { 0% { transform: translate(0, 0) scale(.5); opacity: .9 } 50% { opacity: .7 } 100% { transform: translate(var(--tx), var(--ty)) scale(1.1); opacity: 0 } }
+  .super-boop-flash { position: fixed; inset: 0; z-index: 610; pointer-events: none; background: radial-gradient(circle at center, rgba(245, 197, 66, .5), transparent 60%); opacity: 0; }
+  .super-boop-flash.active { animation: superFlash .6s ease-out forwards; }
+  @keyframes superFlash { 0% { opacity: 1 } 100% { opacity: 0 } }
+
+  /* phones: opponents in a row on top, smaller cards, tap to see what a card does */
+  @media (max-width: 760px) {
+    .pg { padding: 6px 6px 30px; scroll-margin-top: 58px; }
+    .pg-board { border-radius: 20px; height: auto; min-height: calc(100svh - 66px); }
+    .pg-bar { padding: 10px 10px 0; }
+    .pg-goal { font-size: 12px; }
+    .pg-btn { padding: 7px 11px; font-size: 13px; }
+    .pg-btn .t { display: none; }
+    .pg-table {
+      padding: 6px 8px; gap: 6px;
+      grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto;
+      grid-template-areas: "left top right" "mid mid mid" "me me me";
+    }
+    .seat { padding: 6px 2px; gap: 5px; min-width: 0; justify-self: stretch; }
+    .seat[data-p="0"] { justify-self: center; padding: 6px 14px; }
+    .who { flex-direction: column; gap: 4px; text-align: center; }
+    .who-txt { min-width: 0; justify-items: center; }
+    .who-txt b { font-size: 12px; }
+    .av { width: 40px; height: 40px; }
+    .score { font-size: 16px; }
+    .meter { width: 70px; }
+    .up { min-height: 56px; padding-left: 24px; }
+    .pc, .rules .pc, .pgdeck img, .play-slot { width: 40px; }
+    .pg-mid { gap: 8px; padding: 0; }
+    .pg-pop { width: min(calc(100vw - 36px), 420px); }
+    .pg-center { min-height: 96px; }
+    .up .pc { margin-left: -24px; }
+    .seat[data-p="0"] .who { flex-direction: row; }
+    .seat[data-p="0"] .up .pc { width: 48px; }
+    .rules { min-height: 60px; }
+    .rules:empty::after { width: 110px; }
+    .pg-msg { font-size: 16px; }
+    .lbl { font-size: 9px; letter-spacing: .04em; }
+    .pg-row { gap: 12px; }
+    .pg-hand { min-height: 150px; padding-top: 18px; }
+    .pg-hand .pc { width: 25vw; max-width: 112px; margin: 0 -7px; }
+    .pg-tip { width: auto; left: 10px !important; right: 10px; top: auto !important; bottom: 205px; }
+    .pg-tip.on { pointer-events: auto; }
+    .pg-custom { right: 10px; left: 10px; width: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pg-hand .pc, .pg-tip, .meter i { transition: none; }
+    .pg-hand .pc.glow, .pg-pop-card { animation: none; }
+  }
+
+  /* After the reveal */
+  .after { padding: 96px 24px 96px; }
+  /* same disclaimer and footer as the main site */
+  .site-foot { max-width: 1012px; margin: 0 auto; padding: 18px 24px 40px; border-top: 1px solid rgba(255, 255, 255, .12); color: var(--text-muted); font-size: 14px; line-height: 1.45; display: grid; gap: 10px; }
+  .site-foot .parody { margin: 0; }
+  .site-foot .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; }
+  .site-foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  .site-foot .made { display: inline-flex; align-items: center; gap: 6px; }
+  .card-view .parody { max-width: 420px; font-size: 13px; color: rgba(255, 255, 255, .55); }
+  .after-inner { max-width: 960px; margin: 0 auto; display: grid; gap: 28px; justify-items: start; }
+  .after h2 { font-size: clamp(30px, 5vw, 52px); font-weight: 700; line-height: 1.05; }
+  .after p { color: var(--text-muted); font-size: 18px; max-width: 56ch; }
+</style>
+</head>
+<body>
+
+<div class="fs-veil" id="fsVeil" aria-hidden="true"></div>
+<div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
+<div class="share-menu" id="shareMenu" role="menu" hidden>
+  <a role="menuitem" data-net="facebook" target="_blank" rel="noopener"><span class="ic fb">f</span>Facebook</a>
+  <a role="menuitem" data-net="x" target="_blank" rel="noopener"><span class="ic x">𝕏</span>X</a>
+  <a role="menuitem" data-net="whatsapp" target="_blank" rel="noopener"><span class="ic wa">✆</span>WhatsApp</a>
+  <a role="menuitem" data-net="email"><span class="ic em">✉</span>Email</a>
+  <button type="button" role="menuitem" data-net="copy"><span class="ic cp">🔗</span>Copy link</button>
+</div>
+<header class="top">
+  <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
+  <div class="top-actions">
+    <a class="howto" href="#try">How to Play</a>
+    <button type="button" class="howto share-btn" data-share="page" aria-label="Share this page"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/></svg><span class="t">Share</span></button>
+    <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
+  </div>
+</header>
+<video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1">
+  <source src="bg/prism.webm" type="video/webm">
+  <source src="bg/prism.mp4" type="video/mp4">
+</video>
+<script>
+(function () {
+  var v = document.getElementById('bgVideo');
+  function ready() { v.classList.add('ready'); }
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    v.removeAttribute('autoplay'); v.addEventListener('loadeddata', ready); v.pause();
+  } else {
+    v.addEventListener('playing', ready);
+    var p = v.play(); if (p && p.catch) p.catch(function () { v.addEventListener('loadeddata', ready); });
+  }
+})();
+</script>
+
+<main>
+  <section id="reveal" aria-label="Pupcup box reveal">
+    <div class="stage">
+      <div class="viewport"><div class="fit" id="fit"></div></div>
+      <div class="cards-layer" id="cardLayer"></div>
+
+      <div class="hero-copy" id="heroCopy">
+        <h1>Open the box. <em>Meet the dogs.</em></h1>
+      </div>
+
+      <div class="hint" id="hint"><i></i>Scroll to open</div>
+      <div class="cta-row" id="explore">
+        <a class="explore" href="#try">Learn How to Play <span aria-hidden="true">&darr;</span></a>
+        <a class="explore ghost" href="../">Explore the Cards <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="pg" id="try" aria-labelledby="tryTitle">
+    <div class="pg-board" id="board">
+      <div class="fs-head" aria-label="Pupcup">
+        <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
+        <div class="fs-actions">
+          <button type="button" class="howto" id="fsExit" aria-label="Exit full screen">✕ <span class="t">Exit full screen</span></button>
+          <button type="button" class="howto share-btn" data-share="game" aria-label="Share the practice game"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/></svg><span class="t">Share</span></button>
+          <a class="buy" href="https://shop.playpupcup.com/" target="_blank" rel="noopener">Buy Now</a>
+        </div>
+      </div>
+      <div class="pg-bar">
+        <h2 class="pg-goal" id="tryTitle">Practice game · first to <b class="goal-n">100</b> wins</h2>
+        <div class="pg-tools">
+          <button class="pg-btn" id="fullBtn" type="button" hidden>⛶ <span class="t">Full screen</span></button>
+          <button class="pg-btn" id="customBtn" type="button" aria-expanded="false" aria-controls="customPanel">🎨 <span class="t">Customise</span></button>
+          <button class="pg-btn" id="restartBtn" type="button">↻ <span class="t">New game</span></button>
+        </div>
+      </div>
+      <div class="pg-table" id="tableEl">
+        <div class="seat" data-p="2"></div>
+        <div class="seat" data-p="1"></div>
+        <div class="pg-mid">
+          <div class="pgdeck" id="mainDeck" data-info="deck"><img src="cards/dog-cards-face.webp" alt=""><span class="lbl">Deck</span></div>
+          <div class="pg-center" id="center">
+            <div class="pg-msg" id="msg" aria-live="polite"></div>
+            <div class="pg-hint" id="hint"></div>
+            <div class="pg-pop" id="pop" hidden><div class="pg-pop-card" id="popCard" role="dialog" aria-live="assertive"></div></div>
+          </div>
+          <div class="pgdeck" id="penDeck" data-info="pens"><img src="cards/penalty.webp" alt=""><span class="lbl">Penalties</span></div>
+        </div>
+        <div class="seat" data-p="3"></div>
+        <div class="seat" data-p="0"></div>
+      </div>
+      <div class="pg-hand-wrap">
+        <div class="pg-hand" id="hand" aria-label="Your hand"></div>
+      </div>
+      <div class="play-slot" id="playSlot" aria-hidden="true"></div>
+      <div class="pg-end" id="endPop" hidden><div class="pg-end-card" id="endCard" role="dialog" aria-modal="true"></div></div>
+      <div class="pg-tip" id="tip" role="tooltip"></div>
+      <div class="pg-intro" id="intro" hidden>
+        <div class="pg-intro-card">
+          <div class="intro-dogs" aria-hidden="true">
+            <img src="avatars/av-frida.webp" alt=""><img src="avatars/av-pupstein.webp" alt=""><img src="avatars/av-kpup.webp" alt="">
+          </div>
+          <span class="eyebrow">Practice game</span>
+          <h3>Ready to learn how to play?</h3>
+          <p>You against three dogs. Everyone starts at 0, and the first to <span class="goal-n">100</span> points wins. Hover or tap any card to see what it does.</p>
+          <button class="pg-btn gold big" id="dealBtn" type="button">🃏 Deal the cards</button>
+        </div>
+      </div>
+      <div class="card-view" id="cardView" hidden role="dialog" aria-modal="true" aria-label="Full card">
+        <figure>
+          <img id="cvImg" alt="">
+          <figcaption><b id="cvTitle"></b><span id="cvText"></span></figcaption>
+          <p class="parody" id="cvParody" hidden>Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
+        </figure>
+        <button type="button" class="pg-btn gold" id="cvClose">Close</button>
+      </div>
+      <div class="coach" id="coach" hidden>
+        <div class="coach-ring" id="coachRing"></div>
+        <div class="coach-bubble" id="coachBubble" role="dialog" aria-live="polite"></div>
+      </div>
+      <div class="pg-custom" id="customPanel" hidden>
+        <h4>Board colour</h4>
+        <div class="swatches" id="swatches"></div>
+        <h4>Game speed</h4>
+        <div class="speeds" id="speeds" role="group" aria-label="Game speed">
+          <button type="button" class="pg-btn" data-s="relaxed">Relaxed</button>
+          <button type="button" class="pg-btn" data-s="normal">Normal</button>
+          <button type="button" class="pg-btn" data-s="fast">Fast</button>
+        </div>
+        <h4>Points to win</h4>
+        <div class="goal-set">
+          <input type="range" id="goalRange" min="50" max="200" step="25" value="100" aria-label="Points to win">
+          <output id="goalOut" for="goalRange">100</output>
+        </div>
+        <div class="goal-note" id="goalNote" hidden>
+          <span id="goalNoteText"></span>
+          <button type="button" class="pg-btn gold" id="goalNew">Start a new game</button>
+        </div>
+        <h4>Your dog</h4>
+        <div class="dogs" id="dogs"></div>
+        <h4>Help</h4>
+        <div class="speeds">
+          <button type="button" class="pg-btn" id="tourBtn">Replay the tour</button>
+          <button type="button" class="pg-btn" id="tipsBtn" aria-pressed="true">Tips: on</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="boop-fx" id="boopFx" aria-hidden="true"></div>
+  <div class="super-boop-fx" id="superBoopFx" aria-hidden="true"></div>
+  <div class="super-boop-flash" id="superBoopFlash" aria-hidden="true"></div>
+
+  <section class="after">
+    <div class="after-inner">
+      <h2>Ready to play?</h2>
+      <p>Best with 4 to 6 players. A game takes 10 to 30 minutes.</p>
+      <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
+    </div>
+  </section>
+  <footer class="site-foot">
+    <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
+    <div class="foot-row">
+      <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
+      <span class="made">Made with <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
+    </div>
+  </footer>
+</main>
+
+<div class="draft-tag">Draft · not linked from the menu</div>
+
+<script>
+(function () {
+  // ── Art ────────────────────────────────────────────────────────────────
+  var ART = 'box-art/';
+  var C = 'cards/';
+  // Left compartment: penalty + point cards. The PENALTY face pops first and lands in front.
+  // Listed in the order they leave the deck (hero 0 = first out, stays in front).
+  // The PENALTY face isn't in the scatter; it stays on the deck as the last card in the box.
+  var LEFT = { hero: 0, cards: [C + 'point-30.webp', C + 'penalty-20.webp', C + 'point-10.webp', C + 'penalty-5.webp',
+                                C + 'point-20.webp', C + 'penalty-10.webp'],
+               alt: 'Pupcup 30 point card' };
+  // Right compartment: the dog cards. Frida rises last and pops forward.
+  var RIGHT = { hero: 3, cards: [C + 'steal-popcorn.webp', C + 'block-lucky.webp', C + 'rule-kpup.webp', C + 'rule-frida.webp',
+                                 C + 'rule-pupstein.webp', C + 'steal-coco.webp', C + 'block-maximus.webp'],
+               alt: "Frida Puplo's Rule card" };
+  var LEFT_STACK_TOP = C + 'penalty.webp';
+  var RIGHT_STACK_TOP = C + 'dog-cards-face.webp'; // face of the Rule/Steal/Block deck, left showing once the fan is out
+
+  // ── Real proportions: 1 inch = 72px ───────────────────────────────────
+  var W = 414, D = 270, H = 72;      // base 5.75 x 3.75 x 1 in
+  var LW = 420, LD = 276, LH = 74;   // full-depth lid, a hair bigger than the base
+  var CW = 186, CH = 264;            // card, same ratio as the card files
+  var STACK_X = 103;                 // centre of each compartment
+  var TILT = 58;                     // how far the box leans back toward the viewer
+
+  var fit = document.getElementById('fit');
+  var cardLayer = document.getElementById('cardLayer');
+  var heroCopy = document.getElementById('heroCopy');
+  var hint = document.getElementById('hint');
+  var section = document.getElementById('reveal');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function el(parent, cls) { var d = document.createElement('div'); d.className = cls; parent.appendChild(d); return d; }
+  function face(parent, w, h, transform, cls, img, light) {
+    var f = el(parent, 'f ' + (cls || ''));
+    f.style.width = w + 'px'; f.style.height = h + 'px';
+    f.style.left = (-w / 2) + 'px'; f.style.top = (-h / 2) + 'px';
+    f.style.transform = transform;
+    var layers = [];
+    if (light) layers.push(light);
+    if (img) layers.push('url("' + img + '")');
+    if (layers.length) f.style.backgroundImage = layers.join(', ');
+    return f;
+  }
+  // Studio lighting: key light from above and slightly left, so the top is brightest,
+  // the front a little darker and the sides darkest.
+  var LIGHT = {
+    top: 'radial-gradient(60% 70% at 46% 34%, rgba(255,255,255,.22), rgba(255,255,255,0) 70%), ' +
+         'radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.22) 100%)',
+    front: 'linear-gradient(to bottom, rgba(0,0,0,.12), rgba(0,0,0,.34))',
+    back: 'linear-gradient(to bottom, rgba(0,0,0,.25), rgba(0,0,0,.45))',
+    left: 'linear-gradient(to bottom, rgba(0,0,0,.30), rgba(0,0,0,.52))',
+    right: 'linear-gradient(to bottom, rgba(0,0,0,.38), rgba(0,0,0,.58))',
+    plain: 'linear-gradient(to bottom, rgba(255,255,255,.34) 0, rgba(255,255,255,.12) 5%, rgba(255,255,255,.04) 45%, rgba(0,0,0,.15) 100%)',
+    // Reflections are dim, and fade further from the floor (the image top is the far edge in the mirror)
+    mirror: 'linear-gradient(to bottom, rgba(30,32,40,.72), rgba(30,32,40,.32))',
+    mirrorTop: 'linear-gradient(rgba(30,32,40,.72), rgba(30,32,40,.72))',
+    mirrorBase: 'linear-gradient(to bottom, rgba(30,32,40,.85), rgba(30,32,40,.25))'
+  };
+  function cardFace(parent, transform, src, alt) {
+    var f = face(parent, CW, CH, transform, 'card-face');
+    var i = document.createElement('img'); i.src = src; i.alt = alt || ''; i.decoding = 'async'; f.appendChild(i);
+    return f;
+  }
+  // Four walls around the origin. Each wall's image has its top edge at the top of the wall.
+  function walls(parent, w, d, h, zMid, img, insideCls, outCls, lightAll, overlapInside) {
+    var keys = ['front', 'back', 'left', 'right'];
+    var hz = 'translateZ(' + zMid + 'px) ';
+    var specs = [
+      [w, 'translateY(' + (d / 2) + 'px) ' + hz + 'rotateX(-90deg)', img.front],
+      [w, 'translateY(' + (-d / 2) + 'px) ' + hz + 'rotateX(-90deg) rotateY(180deg)', img.back],
+      [d, 'translateX(' + (-w / 2) + 'px) ' + hz + 'rotateY(-90deg) rotateZ(90deg)', img.left],
+      [d, 'translateX(' + (w / 2) + 'px) ' + hz + 'rotateY(90deg) rotateZ(-90deg)', img.right]
+    ];
+    // Outer panels are a touch wider and taller than the box so the corners and top edge overlap
+    // instead of leaving hairline gaps that let the inside show through.
+    var outer = [];
+    specs.forEach(function (s, k) {
+      // no art = plain colour with an edge highlight
+      // front and back overhang the corners slightly; the sides end exactly behind them,
+      // so corners are closed without any edge poking out
+      outer.push(face(parent, k < 2 ? s[0] + 3 : s[0] - 4, h + 3, s[1], s[2] ? '' : (outCls || insideCls), s[2], lightAll || (s[2] ? LIGHT[keys[k]] : LIGHT.plain)));
+      // On the open box, the inside panels overlap at the corners so no background shows through.
+      // Elsewhere (lid, reflection) they stay just inside the outer panels, so no dark edge peeks out.
+      // inside panels stop 2px short of each corner so they never flicker against the walls they meet
+      face(parent, s[0] - 4, h, s[1] + ' rotateY(180deg)', insideCls);
+    });
+    if (overlapInside) {
+      // Close each inside corner with a small L-shaped post that sits just inside the walls:
+      // looking into the box you see the post, never the background through the corner seam.
+      var P = 7, hz = 'translateZ(' + zMid + 'px) ';
+      [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (c) {
+        var sx = c[0], sy = c[1];
+        // part parallel to the side wall (plane x = ±(w/2 - P))
+        var side = 'translateX(' + (sx * (w / 2 - P)) + 'px) translateY(' + (sy * (d / 2 - P / 2 - 1)) + 'px) ' + hz + 'rotateY(90deg) rotateZ(-90deg)';
+        // part parallel to the front/back wall (plane y = ±(d/2 - P))
+        var fb = 'translateY(' + (sy * (d / 2 - P)) + 'px) translateX(' + (sx * (w / 2 - P / 2 - 1)) + 'px) ' + hz + 'rotateX(-90deg)';
+        [side, fb].forEach(function (tr) {
+          // stops 1px short of the outer walls so it never shows through them
+          face(parent, P, h - 1, tr, insideCls);
+          face(parent, P, h - 1, tr + ' rotateY(180deg)', insideCls);
+        });
+      });
+    }
+    if (overlapInside) {
+      // A thin rim along the top of all four walls, like the board's thickness. The four strips
+      // overlap at the corners, so looking down into the box there's no seam to see through.
+      var T = 5, zTop = 'translateZ(' + (zMid + h / 2 + 1.6) + 'px)';
+      [[0, d / 2 - T / 2, w + 3, T], [0, -(d / 2 - T / 2), w + 3, T],
+       [w / 2 - T / 2, 0, T, d + 3], [-(w / 2 - T / 2), 0, T, d + 3]].forEach(function (r) {
+        var tr = 'translate(' + r[0] + 'px,' + r[1] + 'px) ' + zTop;
+        face(parent, r[2], r[3], tr, 'rim');
+        face(parent, r[2], r[3], tr + ' rotateY(180deg)', 'rim');
+      });
+    }
+    return outer;
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────
+  var box = el(fit, 'box');
+  // Reflection: a copy of the box flipped under the floor. Turning it over swaps front and back,
+  // so the art is swapped too and the reflected front shows the front's own art.
+  var mirror = el(box, 'mirror');
+  mirror.style.transform = 'rotateX(180deg)';
+  walls(mirror, W, D, H, H / 2, {
+    // flipped over, so 'back' here is what shows under the real (blank) front
+    front: ART + 'base-back.jpg', back: null, left: ART + 'base-left.jpg', right: ART + 'base-right.jpg'
+  }, 'base-in', 'base-out', LIGHT.mirrorBase);
+  var mirrorLid = el(mirror, 'lid');
+  face(mirrorLid, LW - 2, LD - 2, 'translateZ(1.5px)', 'mirror-solid');
+  face(mirrorLid, LW - 2, LD - 2, 'translateZ(1.5px) rotateY(180deg)', 'mirror-solid');
+  face(mirrorLid, LW - 2, LD - 2, 'translateZ(' + (-LH + 1) + 'px)', 'mirror-solid');
+  face(mirrorLid, LW - 2, LD - 2, 'translateZ(' + (-LH + 1) + 'px) rotateY(180deg)', 'mirror-solid');
+  walls(mirrorLid, LW, LD, LH, -LH / 2, {
+    front: ART + 'lid-back.jpg', back: ART + 'lid-front.jpg', left: ART + 'lid-left.jpg', right: ART + 'lid-right.jpg'
+  }, 'mirror-in', null, LIGHT.mirror);
+  face(box, W * 3.2, D * 3.6, 'translateZ(0.2px)', 'floor');
+
+  var shadow = el(box, 'shadow');
+  shadow.style.width = (W * 1.25) + 'px'; shadow.style.height = (D * 1.35) + 'px';
+  shadow.style.left = (-W * 0.625) + 'px'; shadow.style.top = (-D * 0.675) + 'px';
+  shadow.style.transform = 'translateZ(0.5px)';
+
+  // Base: black print, open top, divider down the middle
+  face(box, W, D, 'translateZ(1px)', 'base-in');
+  var baseFront = walls(box, W, D, H, H / 2, {
+    front: null, /* left blank for now (was the dedication) */ back: ART + 'base-back.jpg',
+    left: ART + 'base-left.jpg', right: ART + 'base-right.jpg'
+  }, 'base-in', 'base-out', null, true)[0];
+  var DH = H - 8;
+  [-1.5, 1.5].forEach(function (x) {
+    face(box, D, DH, 'translateX(' + x + 'px) translateZ(' + (DH / 2) + 'px) rotateY(90deg) rotateZ(-90deg)', 'divider');
+    face(box, D, DH, 'translateX(' + x + 'px) translateZ(' + (DH / 2) + 'px) rotateY(-90deg) rotateZ(90deg)', 'divider');
+  });
+
+  function stack(x, topSrc, layers) {
+    for (var k = 0; k < layers; k++) face(box, CW, CH, 'translateX(' + x + 'px) translateZ(' + (4 + k * 6) + 'px)', 'card-edge');
+    var top = cardFace(box, 'translateX(' + x + 'px) translateZ(' + (4 + layers * 6) + 'px)', topSrc);
+    return { z: 4 + layers * 6, face: top };
+  }
+  var leftStack = stack(-STACK_X, LEFT_STACK_TOP, 6);
+  var rightStack = stack(STACK_X, RIGHT_STACK_TOP, 6);
+  var leftTop = leftStack.z, rightTop = rightStack.z;
+
+  // Each fan: which compartment, when it starts, and who leaves first
+  var EXPLORE_URL = '../';
+  function goExplore() { window.location.href = EXPLORE_URL; }
+  function makeGroup(g, fromX, pileTop, start, step, heroFirst, front) {
+    var n = g.cards.length;
+    var rank = g.cards.map(function (_, i) { return i; }).sort(function (a, b) {
+      var da = Math.abs(a - g.hero), db = Math.abs(b - g.hero);
+      return heroFirst ? da - db : db - da;
+    });
+    g.fromX = fromX; g.start = start; g.step = step; g.front = front;
+    g.list = g.cards.map(function (src, i) {
+      var wrap = el(cardLayer, 'card-wrap');
+      wrap.style.visibility = 'hidden';
+      var c = el(wrap, 'card-flat');
+      var faceEl = cardFace(c, 'none', src, i === g.hero ? g.alt : '');
+      faceEl.style.removeProperty('transform'); // let the hover style move the card
+      faceEl.setAttribute('role', 'link');
+      faceEl.setAttribute('aria-label', 'Explore the cards on the main site');
+      faceEl.addEventListener('click', goExplore);
+      // bring the hovered card to the front; it drops back once it has eased into place
+      var rec = null;
+      function lift() { rec = rec || g.list[i]; clearTimeout(rec.dropT); rec.lifted = true; rec.wrap.style.zIndex = 5000; rec.wrap._zIndex = '5000'; }
+      function drop() {
+        rec = rec || g.list[i]; clearTimeout(rec.dropT);
+        rec.dropT = setTimeout(function () { rec.lifted = false; rec.wrap.style.zIndex = rec.baseZ; rec.wrap._zIndex = String(rec.baseZ); }, 170);
+      }
+      faceEl.addEventListener('mouseenter', lift); faceEl.addEventListener('focus', lift);
+      faceEl.addEventListener('mouseleave', drop); faceEl.addEventListener('blur', drop);
+      faceEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goExplore(); } });
+      var r = rank.indexOf(i);
+      return { el: c, wrap: wrap, face: faceEl, src: src, i: i, r: r, pileZ: pileTop + 1 + (n - 1 - r) * 0.6 };
+    });
+    return g;
+  }
+  var PERSP = 1900; // same as .card-wrap's perspective
+  var DOMMatrixRO = window.DOMMatrixReadOnly || window.DOMMatrix || null;
+  var groups = [
+    makeGroup(LEFT, -STACK_X, leftTop, 0.34, 0.05, true, 0),   // both compartments start together
+    makeGroup(RIGHT, STACK_X, rightTop, 0.34, 0.04, true, 40)  // hero first: it stays in front
+  ];
+  // The top of each deck always shows the next card to leave, like a real deck.
+  // Once every card is out, it shows the deck's face card.
+  LEFT.stackFace = leftStack.face; LEFT.finalSrc = LEFT_STACK_TOP;
+  RIGHT.stackFace = rightStack.face; RIGHT.finalSrc = RIGHT_STACK_TOP;
+  groups.forEach(function (g) {
+    g.topImgs = {};
+    g.stackFace.textContent = '';
+    g.cards.concat([g.finalSrc]).forEach(function (src) {
+      var im = document.createElement('img');
+      im.src = src; im.alt = ''; im.decoding = 'sync';
+      im.style.position = 'absolute'; im.style.inset = '0'; im.style.visibility = 'hidden';
+      g.stackFace.appendChild(im);
+      g.topImgs[src] = im;
+    });
+    g.byRank = g.list.slice().sort(function (a, b) { return a.r - b.r; });
+    g.shown = '';
+  });
+
+  // Where each card lands, scattered like cards tossed on a table: [x, height above the box, tilt°].
+  // Listed in the order the cards leave the deck; the first one lands in front, and every later
+  // card goes behind the ones already out, so cards never pass over each other.
+  // Nothing lands on the box itself, so you can always see where they came from.
+  var SLOTS = {
+    // The space right above the box is kept clear for the two buttons, so the 30 and Frida land out to the sides.
+    wide: [
+      [[-395, 255, -6], [-548, 385, 9], [-560, 160, -12], [-385, 75, 15], [-240, 470, -10], [-470, 525, 7]],
+      [[395, 260, 6], [550, 390, -9], [562, 160, 12], [395, 75, -15], [20, 475, 4], [275, 510, 11], [520, 520, -7]]
+    ],
+    narrow: [
+      [[-78, 520, -7], [-194, 640, 10], [-205, 475, -13], [-86, 760, 8], [-200, 850, -9], [-65, 890, 5]],
+      [[78, 520, 7], [194, 640, -10], [205, 475, 13], [86, 760, -8], [200, 850, 9], [-5, 945, -4], [-140, 970, 6]]
+    ]
+  };
+
+  // Lid: origin at the centre of its top panel; walls hang down from there
+  var lid = el(box, 'lid');
+  face(lid, LW + 3, LD + 3, 'translateZ(1.5px)', '', ART + 'lid-top.jpg', LIGHT.top);
+  face(lid, LW - 2, LD - 2, 'translateZ(-1px) rotateY(180deg)', 'lid-in');
+  walls(lid, LW, LD, LH, -LH / 2, {
+    front: ART + 'lid-front.jpg', back: ART + 'lid-back.jpg',
+    left: ART + 'lid-left.jpg', right: ART + 'lid-right.jpg'
+  }, 'lid-in');
+
+  // ── Motion helpers ─────────────────────────────────────────────────────
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  function seg(p, a, b) { return clamp((p - a) / (b - a), 0, 1); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function easeInOut(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+  function easeOutBack(t) { var c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+
+  var scale = 1, narrow = false;
+  function resize() {
+    narrow = window.innerWidth < 760;
+    scale = narrow ? Math.min(window.innerWidth / 640, window.innerHeight / 900)
+                   : Math.min(window.innerWidth / 1420, window.innerHeight / 820, 1.15);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  var target = 0, current = 0, revealP = 0;
+  function readScroll() {
+    var r = section.getBoundingClientRect();
+    var total = section.offsetHeight - window.innerHeight;
+    target = clamp(-r.top / total, 0, 1);
+  }
+  window.addEventListener('scroll', readScroll, { passive: true });
+
+  // ── Timeline (p = 0..1 through the pinned section) ─────────────────────
+  //  0.00–0.30  box turns to face you
+  //  0.08–0.22  lid lifts straight up
+  //  0.18–0.36  lid tips toward you and floats out of frame
+  //  0.34–0.82  left compartment: PENALTY card first, then penalties & points scatter left
+  //  0.34–0.86  right compartment, at the same time: Frida first, then dog cards scatter right
+  //  0.86–0.94  Frida pops forward
+  // Writes a style only when its value changes; unchanged writes still cost the browser work.
+  function css(el, prop, val) {
+    var key = '_' + prop;
+    val = String(val);
+    if (el[key] !== val) { el.style[prop] = val; el[key] = val; }
+  }
+
+  function apply(p, t) {
+    var intro = easeOut(seg(p, 0, 0.3));
+    var lift = easeInOut(seg(p, 0.08, 0.22));
+    var away = easeInOut(seg(p, 0.18, 0.36));
+    var focus = easeInOut(seg(p, 0.3, 0.85));
+    var pop = seg(p, 0.86, 0.94);
+
+    var spin = lerp(-22, 0, intro) + Math.sin(t * 0.6) * 1.2 * (1 - intro);
+    var bob = Math.sin(t * 1.4) * 6 * (1 - intro);
+    var shiftY = lerp(narrow ? 110 : 90, narrow ? 250 : 210, focus) + bob;
+
+    var fitT = 'translate(0px,' + shiftY + 'px) scale(' + scale + ')';
+    var boxT = 'rotateX(' + TILT + 'deg) rotateZ(' + spin + 'deg)';
+    css(fit, 'transform', fitT);
+    css(box, 'transform', boxT);
+    var base = fitT + ' ' + boxT + ' ';
+
+    // Lid: straight up, then tips its art toward you and floats up out of frame
+    var lz = LH + 1 + lift * 150 + away * (narrow ? 1500 : 760);
+    var ly = -away * 260;
+    var la = -away * 40;
+    css(lid, 'transform', 'translateY(' + ly + 'px) translateZ(' + lz + 'px) rotateX(' + la + 'deg) rotateZ(' + (away * -8) + 'deg)');
+    css(lid, 'visibility', away >= 1 ? 'hidden' : 'visible');
+    // Reflection of the lid follows it straight up (down, in the floor), then disappears
+    // Reflection of the lid: the same move, mirrored in the floor
+    css(mirrorLid, 'transform', 'translateY(' + (-ly) + 'px) translateZ(' + lz + 'px) rotateX(' + (-la) + 'deg) rotateZ(' + (away * 8) + 'deg)');
+    // the reflection only makes sense while the lid is near the floor: fade it out as the lid leaves
+    // The lid's reflection makes the mirror-image move: it sinks out of frame as the lid floats out.
+    css(mirrorLid, 'visibility', away >= 1 ? 'hidden' : 'visible');
+
+    // Cards are drawn on their own layer above the box, so while a card is still down in the box
+    // we cut away the part that the front wall would hide. That way cards slide in and out
+    // behind the rim instead of floating in front of it.
+    var clipBehindWall = null;
+    function wallClip() {
+      if (clipBehindWall) return clipBehindWall;
+      var stageR = cardLayer.getBoundingClientRect();
+      var fr = baseFront.getBoundingClientRect();
+      var hole = 'M0 0 H' + stageR.width + ' V' + stageR.height + ' H0 Z ' +
+        'M' + Math.round(fr.left - stageR.left - 4) + ' ' + Math.round(fr.top - stageR.top + 1) +
+        ' H' + Math.round(fr.right - stageR.left + 4) + ' V' + Math.round(stageR.height) + ' H' + Math.round(fr.left - stageR.left - 4) + ' Z';
+      return (clipBehindWall = 'path(evenodd, "' + hole + '")');
+    }
+
+    groups.forEach(function (g, gi) {
+      var slots = SLOTS[narrow ? 'narrow' : 'wide'][gi];
+      var fs = narrow ? 0.6 : 0.86; // landed card size (all cards land the same size)
+
+      g.list.forEach(function (c) {
+        var slot = slots[c.r];
+        var st = g.start + c.r * g.step;
+        var rise = easeInOut(seg(p, st, st + 0.2));
+        var lift = easeOutBack(seg(p, st, st + 0.2));       // slight overshoot so each card pops up
+        var turn = easeInOut(seg(p, st + 0.04, st + 0.24));
+        var spin = easeInOut(seg(p, st + 0.08, st + 0.28));
+        var isHero = c.r === 0;
+
+        var s = lerp(1, fs, rise);
+        var x = lerp(g.fromX, slot[0], rise);
+        var y = lerp(0, -30, turn);
+        var z = lerp(c.pileZ, slot[1], lift);
+        var wobble = Math.sin(rise * Math.PI) * 6 * (slot[2] >= 0 ? 1 : -1);
+
+        var shown = p > st;
+        css(c.wrap, 'visibility', shown ? 'visible' : 'hidden');
+        var landed = spin >= 1 && rise >= 1;
+        if (landed) c.face.style.setProperty('--untilt', (-slot[2]) + 'deg');
+        if (landed !== c.live) {
+          c.live = landed;
+          c.face.classList.toggle('live', landed);
+          if (landed) c.face.tabIndex = 0; else c.face.removeAttribute('tabindex');
+        }
+        if (!shown) return; // nothing else to update for a card still in its deck
+        // Hide the part of the card behind the box's front wall, but only while the card is
+        // really inside the box: its bottom edge is below the rim and it's over the box.
+        var halfH = CH * s / 2, halfW = CW * s / 2;
+        var bottom = z - halfH * Math.sin(TILT * turn * Math.PI / 180);
+        var inside = bottom < H && Math.abs(x) - halfW < W / 2;
+        css(c.wrap, 'clipPath', inside ? wallClip() : 'none');
+        // earlier out = in front; the two first cards tie, Frida wins
+        c.baseZ = 2000 - Math.round(st * 1000) * 2 + (gi === 1 ? 1 : 0);
+        if (!c.lifted) css(c.wrap, 'zIndex', c.baseZ);
+        var place = base +
+          'translate3d(' + x + 'px,' + y + 'px,' + z + 'px) rotateX(' + (-TILT * turn) + 'deg) ' +
+          'rotateZ(' + (slot[2] * spin + wobble) + 'deg)';
+        // Perspective makes cards that sit closer to the camera look bigger. Undo that as each
+        // card lands, so every card on the table shows at exactly the same size.
+        var depth = DOMMatrixRO ? new DOMMatrixRO(place).m43 : 0;
+        var even = (PERSP - depth) / PERSP;
+        css(c.el, 'transform', place + ' scale(' + (s * lerp(1, even, rise)).toFixed(4) + ')');
+      });
+    });
+
+    groups.forEach(function (g) {
+      var next = null;
+      for (var k = 0; k < g.byRank.length; k++) {
+        if (p <= g.start + g.byRank[k].r * g.step) { next = g.byRank[k]; break; }
+      }
+      var src = next ? g.cards[next.i] : g.finalSrc;
+      if (src !== g.shown) {
+        if (g.shown) g.topImgs[g.shown].style.visibility = 'hidden';
+        g.topImgs[src].style.visibility = 'visible';
+        g.shown = src;
+      }
+    });
+
+    css(heroCopy, 'opacity', 1 - seg(p, 0.02, 0.12));
+    css(heroCopy, 'transform', 'translateY(' + (-seg(p, 0, 0.12) * 30) + 'px)');
+    css(hint, 'opacity', 1 - seg(p, 0.01, 0.06));
+    revealP = p;
+  }
+
+  // The animation follows the scroll position smoothly, with a speed limit: even a fast flick
+  // of the scroll wheel plays the cards going out or back in one after another, never a jump cut.
+  var MAX_SPEED = 0.42; // timeline per second (the whole reveal takes at least ~2.4s)
+  // The reveal plays over the first 90% of the pinned section; the last 10% is a short pause with
+  // the cards laid out, then the scene scrolls up and away with the page. Scrolling back up brings
+  // it back with the cards still out, until they go back into the box.
+  var REVEAL_END = 0.9;
+
+  // "Explore the Cards" fades in once the cards have landed
+  var exploreEl = document.getElementById('explore');
+  var draftEl = document.querySelector('.draft-tag');
+  var pastScene = false;
+  function checkPast() {
+    var past = section.getBoundingClientRect().bottom < window.innerHeight * 0.45;
+    if (past !== pastScene) { pastScene = past; updateExplore(); if (draftEl) draftEl.style.visibility = past ? 'hidden' : ''; }
+  }
+  window.addEventListener('scroll', checkPast, { passive: true });
+  function updateExplore() {
+    var eo = pastScene ? 0 : seg(revealP, 0.5, 0.62);
+    css(exploreEl, 'opacity', eo.toFixed(3));
+    css(exploreEl, 'visibility', eo > 0.02 ? 'visible' : 'hidden');
+    if (eo > 0.02) {
+      // right above the two decks in the box
+      var top = Infinity;
+      groups.forEach(function (g) { if (g.shown) top = Math.min(top, g.topImgs[g.shown].getBoundingClientRect().top); });
+      if (top === Infinity) top = baseFront.getBoundingClientRect().top;
+      var host = exploreEl.offsetParent ? exploreEl.offsetParent.getBoundingClientRect().top : 0;
+      css(exploreEl, 'top', Math.round(top - host - exploreEl.offsetHeight - (narrow ? 14 : Math.round(innerHeight * 0.11))) + 'px');
+      css(exploreEl, 'transform', 'translateX(-50%) translateY(' + Math.round((1 - eo) * 14) + 'px)');
+    }
+  }
+
+  var last = 0, lastP = -1, needsDraw = true;
+  window.addEventListener('resize', function () { needsDraw = true; });
+  function loop(ms) {
+    var dt = last ? Math.min((ms - last) / 1000, 0.1) : 0.016;
+    last = ms;
+    if (reduce) current = target;
+    else {
+      var step = (target - current) * (1 - Math.exp(-dt * 5));
+      var cap = MAX_SPEED * dt;
+      current += Math.max(-cap, Math.min(cap, step));
+    }
+    if (Math.abs(target - current) < 0.0005) current = target;
+    // Before the box opens it sways gently, so keep drawing; after that, only redraw when the scroll moved.
+    if (current !== lastP || current < 0.3 * REVEAL_END || needsDraw) {
+      apply(Math.min(1, current / REVEAL_END), reduce ? 0 : ms / 1000);
+      updateExplore();
+      lastP = current; needsDraw = false;
+    }
+    requestAnimationFrame(loop);
+  }
+  readScroll(); current = target;
+  requestAnimationFrame(loop);
+})();
+</script>
+
+<script>
+/* ───── Practice game: you vs three dogs, first to 100 ─────
+   Rules follow the Pupcup instructions: on your turn play ONE Point, Rule or Steal card, then draw
+   back up to four. Rules make everyone else follow them (max 2 in play); get caught breaking one
+   and you draw a Penalty. A Steal takes any face-up Point or Rule card. Blocks are played only when
+   someone steals from you, and a Block can be blocked. */
+(function () {
+  var C = 'cards/', AV = 'avatars/';
+  var GOAL = 100, MAX_RULES = 2;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var phone = window.matchMedia('(max-width: 760px)');
+  var $ = function (id) { return document.getElementById(id); };
+  var board = $('board'), hand = $('hand'), msgEl = $('msg'), hintEl = $('hint'), tip = $('tip');
+  var playSlot = $('playSlot'), mainDeck = $('mainDeck'), penDeck = $('penDeck');
+  var pop = $('pop'), popCard = $('popCard'), centerEl = $('center');
+
+  // ── The cards ──
+  var RULES = {
+    'frida':          { name: 'Frida Puplo', text: 'Don’t touch your head. Hair and glasses are OK.' },
+    'kpup':           { name: 'K-Pup', text: 'Don’t show your teeth.' },
+    'lady-puppa':     { name: 'Lady Puppa', text: 'Growl when playing a card.' },
+    'pupquiao':       { name: 'Pupquiao', text: 'Use only your snout (lips) to point.' },
+    'pupstein':       { name: 'Pupstein', text: 'Bark before answering any questions.' },
+    'queen-elizapup': { name: 'Queen Elizapup', text: 'You’re safe from all rules.' },
+    'rupup':          { name: 'RuPup', text: 'Don’t say “I”.' }
+  };
+  // How a rule tests YOU (two choices, one breaks it) and how a dog slips up
+  var TESTS = {
+    'frida':    { q: 'Your head is itchy!', ok: 'Fix your hair', bad: 'Scratch your head', slip: 'just scratched their head' },
+    'kpup':     { q: 'Pupstein tells a really good joke…', ok: '🙂 Smile, lips closed', bad: '😁 Big grin', slip: 'just flashed a big toothy grin' },
+    'pupquiao': { q: 'Point at the card you want.', ok: '👄 Point with your lips', bad: '👉 Point with your finger', slip: 'just pointed with a paw' },
+    'pupstein': { q: 'Frida asks: “Want a treat?”', ok: '“Woof! Yes please!”', bad: '“Yes please!”', slip: 'answered a question without barking' },
+    'rupup':    { q: 'K-Pup asks what you’re doing.', ok: '“Playing a card!”', bad: '“I’m playing a card!”', slip: 'just said “I”' },
+    'lady-puppa': { slip: 'played a card without growling' }
+  };
+  var STEAL_ART = ['steal-coco', 'steal-popcorn', 'steal-charlie', 'steal-shadow', 'steal-vuitton', 'steal-butchoi'];
+  var BLOCK_ART = ['block-lucky', 'block-maximus', 'block-lola', 'block-marley', 'block-lola-nope'];
+
+  var BOTS = [
+    { name: 'Frida Puplo', av: 'frida' },
+    { name: 'Pupstein', av: 'pupstein' },
+    { name: 'K-Pup', av: 'kpup' }
+  ];
+  var MY_DOGS = ['pupquiao', 'lady-puppa', 'queen-elizapup', 'rupup'];
+  var FELTS = [
+    { name: 'Green felt', a: '#1d5a3a', b: '#123d27' },
+    { name: 'Royal blue', a: '#1f3f8c', b: '#142a5e' },
+    { name: 'Cherry red', a: '#8c1f2b', b: '#5c121b' },
+    { name: 'Grape', a: '#5a2a86', b: '#3a1a59' },
+    { name: 'Bubblegum', a: '#b23a78', b: '#7a2350' },
+    { name: 'Sunny', a: '#b8860b', b: '#7d5a06' },
+    { name: 'Midnight', a: '#2a2d3a', b: '#15161c' }
+  ];
+
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = rnd(i + 1), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  // Game speed (Customise): every pause in the game is stretched by this much
+  var SPEEDS = { relaxed: 2.6, normal: 1.25, fast: 0.8 };
+  var pace = SPEEDS.relaxed;
+  // Each new game gets a number. Anything still running from an older game (a dog's move, a timer, a popup)
+  // simply never continues, so "New game" can start straight away.
+  var gen = 0;
+  function guard(p) {
+    var g = gen;
+    return new Promise(function (res, rej) { p.then(function (v) { if (g === gen) res(v); }, function (e) { if (g === gen) rej(e); }); });
+  }
+  function wait(ms) { return guard(new Promise(function (r) { setTimeout(r, reduce ? Math.min(ms, 150) : ms * pace); })); }
+  // "Caught you!" and rule-test timers get longer on slower speeds (and during the practice rounds)
+  function timeFor(ms) { return Math.round(ms * Math.max(1, pace / 1.25) * (guided() ? 1.6 : 1)); }
+
+  var uid = 0;
+  function card(type, extra) { var c = { id: ++uid, type: type }; for (var k in extra) c[k] = extra[k]; return c; }
+  function src(c) {
+    if (c.type === 'point') return C + 'point-' + c.v + '.webp';
+    if (c.type === 'penalty') return C + 'penalty-' + c.v + '.webp';
+    if (c.type === 'rule') return C + 'rule-' + c.rule + '.webp';
+    return C + c.art + '.webp';
+  }
+  function poss(p) { return p.human ? 'your' : p.name + '’s'; }
+  function title(c) {
+    if (c.type === 'point') return c.v + ' Points';
+    if (c.type === 'penalty') return 'Penalty −' + c.v;
+    if (c.type === 'rule') return RULES[c.rule].name + '’s Rule';
+    return c.type === 'steal' ? 'Steal' : 'Block';
+  }
+  function explain(c) {
+    if (c.type === 'point') return 'Play it face up to add ' + c.v + ' to your score. First to ' + GOAL + ' wins.';
+    if (c.type === 'penalty') return 'Takes ' + c.v + ' off your score. You draw one when you’re caught breaking a rule.';
+    if (c.type === 'rule') return c.rule === 'queen-elizapup'
+      ? 'You’re safe from all rules. Play it and no rule can catch you.'
+      : '“' + RULES[c.rule].text + '” Everyone else has to follow it. Get caught breaking it and you draw a penalty.';
+    if (c.type === 'steal') return 'Take any face-up card (points or a rule) from another player. They can Block it.';
+    return 'Only played when someone steals from you: it stops the steal. A Block can be blocked too.';
+  }
+
+  // ── Decks (same mix as the real box) ──
+  var deck, pens;
+  function newDeck(withRules) {
+    var d = [], i;
+    for (i = 0; i < 23; i++) d.push(card('point', { v: 10 }));
+    for (i = 0; i < 20; i++) d.push(card('point', { v: 20 }));
+    for (i = 0; i < 7; i++) d.push(card('point', { v: 30 }));
+    for (i = 0; i < 14; i++) d.push(card('steal', { art: STEAL_ART[i % STEAL_ART.length] }));
+    for (i = 0; i < 7; i++) d.push(card('block', { art: BLOCK_ART[i % BLOCK_ART.length] }));
+    if (withRules) Object.keys(RULES).forEach(function (r) { d.push(card('rule', { rule: r })); });
+    return shuffle(d);
+  }
+  function newPens() {
+    var d = [], i;
+    for (i = 0; i < 16; i++) d.push(5);
+    for (i = 0; i < 5; i++) d.push(10);
+    d.push(20);
+    return shuffle(d);
+  }
+  function draw() { if (!deck.length) deck = newDeck(false); return deck.pop(); }
+
+  // ── Players ──
+  var players, turn, rules, over, myDog;
+  function score(p) {
+    return p.up.reduce(function (s, c) { return s + (c.type === 'point' ? c.v : c.type === 'penalty' ? -c.v : 0); }, 0);
+  }
+  function exempt(p, ruleCard) {
+    if (ruleCard.owner === p) return true;
+    return rules.some(function (r) { return r.rule === 'queen-elizapup' && r.owner === p; });
+  }
+
+  // ── Drawing the table ──
+  var seats = [].slice.call(document.querySelectorAll('.seat'));
+  function seatOf(p) { return seats.filter(function (s) { return +s.dataset.p === p.i; })[0]; }
+  function buildSeat(p) {
+    var s = seatOf(p);
+    s.innerHTML =
+      '<div class="who" data-info="seat"><img class="av" alt="' + p.name + '" src="' + AV + 'av-' + p.av + '.webp">' +
+      '<div class="who-txt"><b>' + p.name + '</b><span class="score"><span class="n">0</span><small> / ' + GOAL + '</small></span>' +
+      '<div class="meter"><i></i></div>' + (p.human ? '' : '<div class="backs"></div>') + '</div></div>' +
+      '<div class="up" aria-label="' + p.name + '’s cards"></div>';
+    p.seat = s; p.upEl = s.querySelector('.up'); p.scoreEl = s.querySelector('.n'); p.meter = s.querySelector('.meter i');
+    p.backs = s.querySelector('.backs'); p.avEl = s.querySelector('.av'); p.shown = 0;
+  }
+  function el(c) {
+    if (c.el) return c.el;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'pc' + (c.type === 'rule' ? ' is-rule' : ''); b.tabIndex = -1;
+    b.setAttribute('aria-label', title(c) + '. ' + explain(c));
+    var im = document.createElement('img'); im.src = src(c); im.alt = ''; im.decoding = 'async';
+    b.appendChild(im); b._card = c; c.el = b;
+    if (isDog(c)) {
+      b.classList.add('is-dog');
+      var z = document.createElement('span'); z.className = 'zoom'; z.textContent = '🔍'; z.title = 'See the full card';
+      b.appendChild(z);
+    }
+    return b;
+  }
+  // Cards are grouped: rules first (always on top, so you can see a rule is in play), then points (low to high), then penalties
+  var UP_ORDER = { rule: -1, point: 0, penalty: 2, steal: 3, block: 3 }, HAND_ORDER = { point: 0, rule: 1, steal: 2, block: 3, penalty: 4 };
+  function byGroup(order) {
+    return function (a, b) { return (order[a.type] - order[b.type]) || ((a.v || 0) - (b.v || 0)) || (a.id - b.id); };
+  }
+  function arrange(p) {
+    var list = p.up.slice().sort(byGroup(UP_ORDER));
+    list.forEach(function (c, i) {
+      var n = el(c); n.style.order = i;
+      n.classList.toggle('gs', i > 0 && list[i - 1].type !== c.type);
+    });
+    fitUp(p, list);
+  }
+  // When a player has lots of face-up cards, squeeze them closer together so the row always fits their space
+  function fitUp(p, list) {
+    var ns = (list || p.up.slice().sort(byGroup(UP_ORDER))).map(el).filter(function (n) { return n.parentNode === p.upEl; });
+    ns.forEach(function (n) { n.style.removeProperty('margin-left'); });
+    if (ns.length < 2) return;
+    var w = ns[0].offsetWidth, bw = board.clientWidth; if (!w) return;
+    var maxW = phone.matches ? (p.human ? bw - 40 : Math.min(p.seat.clientWidth, bw / 3) - 10)
+      : (p.i === 1 || p.i === 3) ? Math.min(300, bw * 0.2) : Math.min(440, bw * 0.3);
+    var natural = ns.slice(1).reduce(function (t, n) { return t + w + parseFloat(getComputedStyle(n).marginLeft); }, w);
+    if (natural <= maxW) return;
+    var gaps = ns.filter(function (n) { return n.classList.contains('gs'); }).length;
+    var step = Math.max(phone.matches ? 4 : 10, (maxW - w - gaps * 8) / (ns.length - 1));
+    ns.forEach(function (n, i) {
+      if (i) n.style.setProperty('margin-left', (step - w + (n.classList.contains('gs') ? 8 : 0)) + 'px', 'important');
+    });
+  }
+  window.addEventListener('resize', function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); });
+  function refresh() {
+    players.forEach(function (p) {
+      arrange(p);
+      var sc = score(p);
+      countTo(p, sc);
+      p.meter.style.width = Math.max(0, Math.min(100, sc / GOAL * 100)) + '%';
+      if (p.backs) p.backs.innerHTML = p.hand.map(function () { return '<span></span>'; }).join('');
+      p.seat.classList.toggle('turn', p === players[turn] && !over);
+    });
+  }
+  function countTo(p, to) {
+    var from = p.shown; p.shown = to;
+    if (reduce || from === to) { p.scoreEl.textContent = to; return; }
+    var t0 = performance.now();
+    (function step(now) {
+      var k = Math.min(1, (now - t0) / 500);
+      p.scoreEl.textContent = Math.round(from + (to - from) * k);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  function fanHand() {
+    var sort = byGroup(HAND_ORDER);
+    var cs = [].slice.call(hand.children).sort(function (a, b) { return sort(a._card, b._card); }), n = cs.length;
+    cs.forEach(function (b, i) {
+      b.style.order = i;
+      var k = i - (n - 1) / 2;
+      b.style.setProperty('--r', (k * 6) + 'deg');
+      b.style.setProperty('--dy', (k * k * 7) + 'px');
+      b.tabIndex = 0;
+    });
+  }
+  // Move a card element somewhere new and animate it from where it was
+  function fly(node, from) {
+    var b = node.getBoundingClientRect();
+    if (reduce || !b.width || !from || !from.width) return Promise.resolve();
+    var end = getComputedStyle(node).transform; if (end === 'none') end = '';
+    var a = node.animate([
+      { transform: 'translate(' + (from.left - b.left) + 'px,' + (from.top - b.top) + 'px) scale(' + (from.width / b.width) + ') ' + end, transformOrigin: '0 0' },
+      { transform: end || 'none', transformOrigin: '0 0' }
+    ], { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    return guard(a.finished.catch(function () {}));
+  }
+  function moveTo(c, parent, fromRect) {
+    var node = el(c);
+    var a = fromRect || (node.isConnected ? node.getBoundingClientRect() : null);
+    node.classList.remove('glow', 'sel');
+    parent.appendChild(node);
+    if (parent === hand) fanHand();
+    players.forEach(function (p) { if (p.upEl === parent) arrange(p); });
+    return fly(node, a);
+  }
+  function fromRect(p) { return p.human ? null : p.avEl.getBoundingClientRect(); }
+  function discard(c) {
+    var n = c.el; if (!n || !n.parentNode) return;
+    if (reduce) { n.remove(); return; }
+    n.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.8)' }], { duration: 280 }).finished.then(function () { n.remove(); });
+  }
+  function say(html) { msgEl.innerHTML = html; }
+  function hint(t) { hintEl.textContent = t || ''; }
+  function shake(n) { n.classList.remove('shake'); void n.offsetWidth; n.classList.add('shake'); }
+  function waiting(on) { board.classList.toggle('wait', on); }
+
+  // ── Popups ──
+  var popTimer = null;
+  function popup(o) { return guard(popup_(o)); }
+  function popup_(o) {
+    // o: { av, img, title, text, buttons: [{label, value, gold}], timer: ms, timeoutValue }
+    return new Promise(function (resolve) {
+      var h = '';
+      if (o.av) h += '<img class="pop-av" alt="" src="' + AV + 'av-' + o.av + '.webp">';
+      if (o.img) h += '<img class="pop-rule" alt="" src="' + o.img + '">';
+      h += '<h3>' + o.title + '</h3>';
+      if (o.text) h += '<p>' + o.text + '</p>';
+      if (o.timer) h += '<div class="timer"><i></i></div>';
+      h += '<div class="opts">' + o.buttons.map(function (b, i) {
+        return '<button type="button" class="pg-btn' + (b.gold ? ' gold' : '') + '" data-i="' + i + '">' + b.label + '</button>';
+      }).join('') + '</div>';
+      // during play it sits in the middle of the board; at the end of a game it's the big popup
+      var box = o.end ? $('endPop') : pop, cardEl = o.end ? $('endCard') : popCard;
+      cardEl.innerHTML = h;
+      box.hidden = false; if (!o.end) centerEl.classList.add('popping');
+      showOnScreen([cardEl.getBoundingClientRect()]);
+      var done = false;
+      function finish(v) {
+        if (done) return; done = true; clearTimeout(popTimer); box.hidden = true; centerEl.classList.remove('popping'); resolve(v);
+      }
+      [].forEach.call(cardEl.querySelectorAll('[data-i]'), function (b) {
+        b.addEventListener('click', function () { finish(o.buttons[+b.dataset.i].value); });
+      });
+      var first = cardEl.querySelector('[data-i]'); if (first) first.focus({ preventScroll: true });
+      if (o.timer) {
+        var bar = cardEl.querySelector('.timer i');
+        var T = timeFor(o.timer);
+        if (!reduce) bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: T, easing: 'linear', fill: 'forwards' });
+        popTimer = setTimeout(function () { finish(o.timeoutValue); }, T);
+      }
+    });
+  }
+
+  // ── Things that happen beside a player: steals, and "Caught you!" ──
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function besideSeat(p, w, h) {
+    // A spot next to a player that's away from the middle (the messages and the two piles live there):
+    // under the side players, and to the right of the top player and you.
+    var br = board.getBoundingClientRect(), s = p.seat.getBoundingClientRect(), u = p.upEl.getBoundingClientRect();
+    var L = s.left - br.left, T = s.top - br.top, x, y;
+    if (phone.matches) { x = L + s.width / 2 - w / 2; y = p.human ? T - h - 10 : T + s.height + 8; }
+    else if (p.i === 1 || p.i === 3) { x = L + s.width / 2 - w / 2; y = T + s.height + 12; }
+    else { x = Math.max(L + s.width, u.right - br.left) + 16; y = T + s.height / 2 - h / 2; }
+    return { x: clamp(x, 10, br.width - w - 10), y: clamp(y, 10, br.height - h - 10) };
+  }
+  function slotOn(target) {
+    // the Steal lands on top of the card it's taking, a little to the side so you can still see that card
+    var br = board.getBoundingClientRect(), r = el(target).getBoundingClientRect();
+    var w = playSlot.offsetWidth || 70, h = w * 1.45;
+    var x = r.left - br.left + r.width * 0.4, y = r.top - br.top - h * 0.12;
+    playSlot.style.left = clamp(x, 6, br.width - w - 6) + 'px'; playSlot.style.top = clamp(y, 6, br.height - h - 6) + 'px';
+  }
+
+  function showOnScreen(rects) {
+    // Keep things in view without jumping around: if the whole board fits on screen, line it up under the
+    // top bar; otherwise scroll only as far as needed to show these rects.
+    var head = 72, vh = window.innerHeight, br = board.getBoundingClientRect();
+    var top = Math.min.apply(null, rects.map(function (r) { return r.top; }));
+    var bot = Math.max.apply(null, rects.map(function (r) { return r.bottom; }));
+    if (top >= head && bot <= vh - 8) return;
+    var dy;
+    if (br.height <= vh - head + 4 && !document.fullscreenElement) dy = br.top - head;
+    else if (bot - top > vh - head - 8) dy = top - head - 8;
+    else dy = top < head ? top - head - 8 : bot - (vh - 8);
+    window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  var seatPopEl = null;
+  function seatPop(p, o) { return guard(seatPop_(p, o)); }
+  function seatPop_(p, o) {
+    // o: { text, sub, label, timer } -> resolves true if you hit the button in time
+    return new Promise(function (resolve) {
+      var n = document.createElement('div'); n.className = 'seat-pop'; n.setAttribute('role', 'alertdialog');
+      n.innerHTML = '<div class="who-line"><img alt="" src="' + AV + 'av-' + p.av + '.webp"><p>' + o.text + '</p></div>' +
+        (o.sub ? '<p class="sub">' + o.sub + '</p>' : '') + '<div class="timer"><i></i></div>' +
+        '<button type="button" class="pg-btn">' + o.label + '</button>';
+      board.appendChild(n); seatPopEl = n;
+      var at = besideSeat(p, n.offsetWidth, n.offsetHeight);
+      n.style.left = at.x + 'px'; n.style.top = at.y + 'px';
+      showOnScreen([n.getBoundingClientRect(), p.avEl.getBoundingClientRect()]);
+      var T = timeFor(o.timer), done = false, tm;
+      function finish(v) { if (done) return; done = true; clearTimeout(tm); n.remove(); seatPopEl = null; resolve(v); }
+      if (!reduce) n.querySelector('.timer i').animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: T, easing: 'linear', fill: 'forwards' });
+      tm = setTimeout(function () { finish(false); }, T);
+      n.querySelector('button').addEventListener('click', function () { finish(true); });
+      n.querySelector('button').focus({ preventScroll: true });
+    });
+  }
+
+  // ── The full-size card viewer (dog cards) ──
+  function isDog(c) { return c.type === 'rule' || c.type === 'steal' || c.type === 'block'; }
+  var cardView = $('cardView');
+  function viewCard(c) {
+    hideTip();
+    $('cvImg').src = src(c); $('cvImg').alt = title(c);
+    $('cvTitle').textContent = title(c); $('cvText').textContent = explain(c);
+    $('cvParody').hidden = c.type !== 'rule';
+    // inside full screen, only the game is on screen, so the viewer has to live inside it
+    (isFS() ? board : document.body).appendChild(cardView);
+    cardView.hidden = false; $('cvClose').focus({ preventScroll: true });
+  }
+  function closeView() { cardView.hidden = true; }
+  cardView.addEventListener('click', function (e) { if (e.target === cardView || e.target.closest('#cvClose')) closeView(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !cardView.hidden) closeView(); });
+
+  // ── Card explanations: hover on desktop, tap on phones ──
+  var selected = null;
+  function showTip(n, withPlay) {
+    var c = n._card;
+    tip.innerHTML = '<b>' + title(c) + '</b>' + explain(c) +
+      (withPlay ? '<div class="act"><button type="button" class="pg-btn gold" id="tipPlay">Play this card</button>' +
+        (isDog(c) ? '<button type="button" class="pg-btn" id="tipView">See full card</button>' : '') +
+        '<button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
+    var br = board.getBoundingClientRect(), r = n.getBoundingClientRect();
+    tip.style.left = Math.max(10, Math.min(br.width - 280, r.left - br.left + r.width / 2 - 135)) + 'px';
+    tip.style.top = Math.max(10, r.top - br.top - 150) + 'px';
+    tip.classList.add('on');
+    if (withPlay) {
+      $('tipPlay').addEventListener('click', function () { var s = selected; clearSel(); if (s) onHandCard(s); });
+      $('tipClose').addEventListener('click', clearSel);
+      if ($('tipView')) $('tipView').addEventListener('click', function () { clearSel(); viewCard(c); });
+    }
+  }
+  function hideTip() { tip.classList.remove('on'); }
+  function clearSel() { if (selected) selected.classList.remove('sel'); selected = null; hideTip(); }
+  hand.addEventListener('mouseover', function (e) { var n = e.target.closest('.pc'); if (n && canHover) showTip(n, false); });
+  hand.addEventListener('mouseleave', function () { if (canHover) hideTip(); });
+  hand.addEventListener('focusin', function (e) { var n = e.target.closest('.pc'); if (n && canHover) showTip(n, false); });
+  hand.addEventListener('focusout', function () { if (canHover) hideTip(); });
+  hand.addEventListener('click', function (e) {
+    // a played card moves to the table during this click, so stop here or the table would treat it as a click on that card
+    e.stopPropagation();
+    var n = e.target.closest('.pc'); if (!n) return;
+    if (e.target.closest('.zoom')) { e.stopPropagation(); viewCard(n._card); return; }
+    if (canHover) { hideTip(); onHandCard(n); return; }
+    // phones: first tap explains the card, then "Play this card"
+    if (selected === n) { clearSel(); onHandCard(n); return; }
+    clearSel(); selected = n; n.classList.add('sel'); showTip(n, true);
+  });
+
+
+  // ── Help: a short first-time tour, one-time tips, and info on the table ──
+  var coachEl = $('coach'), ringEl = $('coachRing'), bubble = $('coachBubble');
+  var tipsOn = store('pg-tips') !== 'off';
+  function seen(k) { return store('pg-seen-' + k) === '1'; }
+  function markSeen(k) { store('pg-seen-' + k, '1'); }
+  var coachMid = false;
+  function place(target) {
+    var br = board.getBoundingClientRect(), r = target.getBoundingClientRect(), pad = 8;
+    var x = r.left - br.left - pad, y = r.top - br.top - pad, w = r.width + pad * 2, h = r.height + pad * 2;
+    ringEl.style.left = x + 'px'; ringEl.style.top = y + 'px'; ringEl.style.width = w + 'px'; ringEl.style.height = h + 'px';
+    var bw = bubble.offsetWidth || 310, bh = bubble.offsetHeight || 180;
+    if (coachMid) {
+      // tips during the game sit in the middle of the table, where the messages are
+      var c = $('center').getBoundingClientRect();
+      var my = clamp(c.top - br.top + c.height / 2 - bh / 2, 8, br.height - bh - 8);
+      // if the highlighted card is in the middle too, keep clear of it
+      if (my < y + h && my + bh > y && Math.abs((r.left + r.width / 2) - (c.left + c.width / 2)) < bw / 2 + r.width / 2) my = (y > br.height / 2) ? Math.max(8, y - bh - 12) : y + h + 12;
+      bubble.style.left = clamp(c.left - br.left + c.width / 2 - bw / 2, 10, br.width - bw - 10) + 'px'; bubble.style.top = my + 'px';
+      return;
+    }
+    var below = y + h + 12, above = y - bh - 12;
+    var top = (below + bh < br.height - 8) ? below : (above > 8 ? above : Math.max(8, Math.min(br.height - bh - 8, y + h / 2 - bh / 2)));
+    var left = Math.max(10, Math.min(br.width - bw - 10, x + w / 2 - bw / 2));
+    bubble.style.left = left + 'px'; bubble.style.top = top + 'px';
+  }
+  function fitView() {
+    // the highlight and its bubble both on screen, below the top bar
+    showOnScreen([ringEl.getBoundingClientRect(), bubble.getBoundingClientRect()]);
+  }
+  function coach(steps, tour, label) { return guard(coach_(steps, tour, label)); }
+  function coach_(steps, tour, label) {
+    // steps: [{ target, title, text }]. tour: Back/Next/Skip. label: a practice-round note (no "turn off tips").
+    // Resolves when finished, skipped, or dismissed.
+    return new Promise(function (resolve) {
+      var i = 0;
+      clearSel(); hideTip();
+      coachMid = !tour;
+      function render() {
+        var st = steps[i], last = i === steps.length - 1;
+        bubble.innerHTML =
+          '<span class="k">' + (tour ? 'Quick tour · ' + (i + 1) + ' of ' + steps.length : label || 'Tip') + '</span>' +
+          '<h3>' + st.title + '</h3><p>' + st.text + '</p>' +
+          '<div class="row">' +
+          (tour ? '<button type="button" class="link" data-a="skip">Skip tour</button><span class="sp"></span>' +
+                  '<span class="dots" aria-hidden="true">' + steps.map(function (_, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('') + '</span>' +
+                  (i ? '<button type="button" class="pg-btn" data-a="back">Back</button>' : '') +
+                  '<button type="button" class="pg-btn gold" data-a="next">' + (last ? 'Let’s play' : 'Next') + '</button>'
+                : (label ? '<span class="sp"></span>' : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>') +
+                  '<button type="button" class="pg-btn gold" data-a="next">' + (st.btn || 'Got it') + '</button>') +
+          '</div>';
+        coachEl.hidden = false;
+        place(st.target); fitView();
+        setTimeout(function () { if (!coachEl.hidden) place(st.target); }, 450);
+        var go = bubble.querySelector('[data-a="next"]'); if (go) go.focus({ preventScroll: true });
+      }
+      function finish() {
+        coachEl.hidden = true;
+        window.removeEventListener('resize', onMove); window.removeEventListener('scroll', onMove);
+        resolve();
+      }
+      function onMove() { if (!coachEl.hidden) place(steps[i].target); }
+      window.addEventListener('resize', onMove);
+      window.addEventListener('scroll', onMove, { passive: true });
+      bubble.onclick = function (e) {
+        var a = e.target.closest('[data-a]'); if (!a) return;
+        a = a.dataset.a;
+        if (a === 'next') { if (i < steps.length - 1) { i++; render(); } else finish(); }
+        else if (a === 'back') { i = Math.max(0, i - 1); render(); }
+        else if (a === 'skip') finish();
+        else if (a === 'off') { setTips(false); finish(); }
+      };
+      render();
+    });
+  }
+  // A one-time tip, shown the first time something happens (unless tips are off)
+  async function tipOnce(key, target, title, text) {
+    if (!tipsOn || seen(key)) return;
+    markSeen(key);
+    await coach([{ target: target, title: title, text: text }], false);
+  }
+  function tour() {
+    var me = players[0];
+    return coach([
+      { target: hand, title: 'Your hand',
+        text: 'These are your 4 cards. ' + (canHover ? 'Hover over one' : 'Tap one') + ' to see what it does, then play it. You play one card each turn.' },
+      { target: me.seat, title: 'Your score',
+        text: 'Everyone starts at 0. Point cards add up here, penalties take points away. First to 100 wins.' },
+      { target: $('mainDeck').parentNode, title: 'The middle of the table',
+        text: 'The deck is on the left: after every turn you draw back up to 4 cards. Penalties are on the right: break a rule and get caught, and you draw one. What’s happening shows in between.' },
+      { target: $('customBtn'), title: 'Make it yours',
+        text: 'Change the board colour, pick your dog, or slow the game down. You can replay this tour from here too.' }
+    ], true).then(function () { markSeen('tour'); });
+  }
+  function setTips(on) {
+    tipsOn = on; store('pg-tips', on ? 'on' : 'off');
+    var b = $('tipsBtn'); b.textContent = 'Tips: ' + (on ? 'on' : 'off'); b.setAttribute('aria-pressed', String(on));
+  }
+
+  // Info on the table: hover on desktop, tap on phones
+  var INFO = {
+    deck: ['Deck', 'You draw from here to get back to 4 cards after every turn.'],
+    pens: ['Penalty pile', 'Break a rule and get caught, and you draw one of these: −5, −10 or −20 points off your score.']
+  };
+  function infoFor(n) {
+    if (n._card) {
+      var c = n._card;
+      return [title(c) + (c.owner && c.type !== 'penalty' ? ' · ' + (c.owner.human ? 'yours' : c.owner.name + '’s') : ''), explain(c)];
+    }
+    var k = n.dataset.info;
+    if (k === 'seat') {
+      var p = players[+n.closest('.seat').dataset.p];
+      return p.human ? ['You', 'Your score: ' + score(p) + ' of ' + GOAL + '. Your face-up cards sit beside it.']
+        : [p.name, 'Playing against you. ' + score(p) + ' of ' + GOAL + ' points, ' + p.hand.length + ' cards in hand. Their face-up points and rules can be stolen.'];
+    }
+    return INFO[k];
+  }
+  function showInfo(n, closeBtn) {
+    var t = infoFor(n); if (!t) return;
+    var dog = n._card && isDog(n._card);
+    tip.innerHTML = '<b>' + t[0] + '</b>' + t[1] + (closeBtn ? '<div class="act">' +
+      (dog ? '<button type="button" class="pg-btn gold" id="tipView">See full card</button>' : '') +
+      '<button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
+    var br = board.getBoundingClientRect(), r = n.getBoundingClientRect();
+    tip.style.left = Math.max(10, Math.min(br.width - 280, r.left - br.left + r.width / 2 - 135)) + 'px';
+    var top = r.bottom - br.top + 10;
+    tip.style.top = (top + 130 > br.height ? Math.max(10, r.top - br.top - 130) : top) + 'px';
+    tip.classList.add('on');
+    if (closeBtn) {
+      $('tipClose').addEventListener('click', hideTip);
+      if (dog) $('tipView').addEventListener('click', function () { viewCard(n._card); });
+    }
+  }
+  board.addEventListener('mouseover', function (e) {
+    if (!canHover || !coachEl.hidden || e.target.closest('#hand')) return;
+    var n = e.target.closest('.pc') || e.target.closest('[data-info]');
+    if (n && !e.target.closest('.pc.pick')) showInfo(n, false);
+  });
+  board.addEventListener('mouseout', function (e) {
+    if (!canHover) return;
+    if (e.target.closest('#hand')) return;
+    var n = e.target.closest('.pc') || e.target.closest('[data-info]');
+    if (n && !n.contains(e.relatedTarget)) hideTip();
+  });
+  board.addEventListener('click', function (e) {
+    if (canHover && coachEl.hidden && !e.target.closest('#hand')) {
+      var d = e.target.closest('.up .pc.is-dog');
+      if (d && !d.classList.contains('pick')) { viewCard(d._card); return; }
+    }
+    if (canHover || !coachEl.hidden) return;
+    if (e.target.closest('#hand') || e.target.closest('.pc.pick') || e.target.closest('.pg-tip')) return;
+    var n = e.target.closest('.pc') || e.target.closest('[data-info]');
+    if (n) { clearSel(); showInfo(n, true); }
+  });
+
+  // ── Practice rounds: a first game starts with 3 guided rounds, then it's a normal game ──
+  var firstGame = false, round = 0, guideSteal = false, guideSlip = false, forcedTarget = null;
+  function guided() { return firstGame && round > 0 && round <= 3; }
+  var GUIDE = {
+    rule: { title: 'Play your Rule card',
+      text: 'Rules are the fun part. Play it and the three dogs have to follow it. If one slips up, you catch them and they draw a penalty.' },
+    point: { title: 'Play a Point card',
+      text: 'Point cards go face up in front of you and add to your score. The first to reach the goal wins. Careful: anything face up can be stolen.' },
+    steal: { title: 'Steal some points',
+      text: 'Play your Steal, then pick any face-up card from a dog: points or a rule. It becomes yours. They could Block it, so watch out!' }
+  };
+  function suggestion() {
+    var me = players[0];
+    var want = round === 1 ? ['rule', 'point', 'steal'] : round === 2 ? ['point', 'rule', 'steal'] : ['steal', 'point', 'rule'];
+    for (var i = 0; i < want.length; i++) {
+      var list = me.hand.filter(function (c) { return c.type === want[i] && c.rule !== 'queen-elizapup'; });
+      if (want[i] === 'steal' && !targets(me).length) continue;
+      if (want[i] === 'point') list.sort(function (a, b) { return b.v - a.v; });
+      if (list.length) return list[0];
+    }
+    return null;
+  }
+  function liveFor(p) { return rules.filter(function (r) { return !exempt(p, r) && r.rule !== 'queen-elizapup'; }); }
+
+  // ── Your turn ──
+  var mode = 'wait', pickResolve = null;
+  async function myTurn() {
+    var me = players[0];
+    if (firstGame) {
+      round++;
+      if (round === 4) {
+        firstGame = false; markSeen('guided');
+        say('Practice rounds done. <b>Now anything goes!</b>');
+        await coach([{ target: me.seat, title: 'You’ve got the basics!', btn: 'Let’s go',
+          text: 'From now on it’s a normal game. The dogs will steal, set rules and block you. Keep an eye out for rule-breakers. First to ' + GOAL + ' wins!' }], false, 'Practice done');
+      }
+    }
+    mode = 'mine'; waiting(false); refresh();
+    var playable = me.hand.some(function (c) { return c.type === 'point' || c.type === 'rule' || (c.type === 'steal' && targets(me).length); });
+    if (!playable) {
+      say('No card you can play right now. You <b>discard a card</b> and draw a new one.');
+      hint('');
+      mode = 'wait';
+      return wait(1200).then(function () {
+        var c = me.hand.filter(function (x) { return x.type === 'block' || x.type === 'steal'; })[0] || me.hand[0];
+        me.hand.splice(me.hand.indexOf(c), 1); discard(c);
+        return refill(me);
+      }).then(next);
+    }
+    say('Your turn. You’re on <b>' + score(me) + '</b>. Pick a card to play.');
+    hint(canHover ? 'Hover a card to see what it does. Click to play it.' : 'Tap a card to see what it does.');
+    if (guided()) {
+      var c = suggestion();
+      if (c) {
+        var g = GUIDE[c.type];
+        mode = 'guide';
+        await coach([{ target: el(c), title: g.title, text: g.text }], false, 'Practice round ' + round + ' of 3');
+        mode = 'mine';
+        if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
+        say('<b>Round ' + round + ' of 3:</b> ' + g.title.charAt(0).toLowerCase() + g.title.slice(1) + '. Or pick any card you like.');
+      }
+    }
+  }
+  function onHandCard(n) {
+    var c = n._card, me = players[0];
+    if (mode === 'blockPrompt') {
+      if (c.type === 'block' && pickResolve) { var r = pickResolve; pickResolve = null; r(c); }
+      else { shake(n); say('Play your <b>Block</b> to stop the steal, or let it go.'); }
+      return;
+    }
+    if (mode !== 'mine') return;
+    if (c.type === 'block') { shake(n); say('Keep it! A <b>Block</b> is only played when someone steals from you.'); return; }
+    if (c.type === 'steal' && !targets(me).length) { shake(n); say('Nobody has a face-up card to steal yet.'); return; }
+    [].forEach.call(hand.children, function (x) { x.classList.remove('glow'); });
+    mode = 'busy'; waiting(true); hint('');
+    takeTurn(me, c).then(next);
+  }
+  function targets(p) {
+    var t = [];
+    players.forEach(function (o) { if (o !== p) o.up.forEach(function (c) { if (c.type === 'point' || c.type === 'rule') t.push(c); }); });
+    return t;
+  }
+  function choose(list) { return guard(choose_(list)); }
+  function choose_(list) {
+    // you pick which card to steal
+    return new Promise(function (resolve) {
+      board.classList.add('picking');
+      list.forEach(function (c) { var n = el(c); n.classList.add('pick'); n.tabIndex = 0; });
+      function done(c) {
+        board.classList.remove('picking');
+        list.forEach(function (x) { var n = el(x); n.classList.remove('pick'); n.tabIndex = -1; n.removeEventListener('click', n._pick); });
+        resolve(c);
+      }
+      list.forEach(function (c) { var n = el(c); n._pick = function (e) { if (e) e.stopPropagation(); done(c); }; n.addEventListener('click', n._pick); });
+    });
+  }
+
+  // ── Playing a card (you or a dog) ──
+  async function takeTurn(p, c) {
+    p.hand.splice(p.hand.indexOf(c), 1);
+    var from = fromRect(p);
+    if (c.type === 'point') {
+      c.owner = p; p.up.push(c);
+      await moveTo(c, p.upEl, from);
+      refresh();
+      say('<b>' + p.name + '</b> played ' + c.v + ' points.');
+    } else if (c.type === 'rule') {
+      c.owner = p;
+      if (rules.length >= MAX_RULES) {
+        var old = rules.shift(); old.owner.up.splice(old.owner.up.indexOf(old), 1); discard(old);
+      }
+      rules.push(c); p.up.push(c);
+      await moveTo(c, p.upEl, from);
+      refresh();
+      say('<b>' + p.name + '</b> set a rule: ' + RULES[c.rule].text + (c.rule === 'queen-elizapup' ? '' : ' Everyone else must follow it.'));
+      await wait(900);
+      if (c.rule === 'queen-elizapup') {
+        await tipOnce('queen', el(c), 'Safe from all rules',
+          'Queen Elizapup’s Rule doesn’t make anyone do anything. Whoever owns it can’t be caught breaking any rule.');
+      } else if (!p.human) {
+        await tipOnce('rule', el(c), 'A rule is in play!',
+          '<b style="color:var(--text)">' + p.name + '</b> set a rule: “' + RULES[c.rule].text + '”<ul>' +
+          '<li><b>What to do:</b> follow it. Everyone except ' + p.name + ' has to.</li>' +
+          '<li><b>If you break it:</b> you get caught and draw a penalty (−5, −10 or −20).</li>' +
+          '<li><b>Watch every dog,</b> even when it’s not their turn: if one breaks it, hit Caught you! next to them. Nobody catches them, no penalty.</li>' +
+          '<li><b>Rules can be stolen:</b> play a Steal on it and it’s yours, so you don’t have to follow it anymore.</li></ul>');
+      } else {
+        await tipOnce('myrule', el(c), 'You set a rule!',
+          'Your rule sits in front of you.<ul>' +
+          '<li><b>The three dogs</b> have to follow it. You don’t.</li>' +
+          '<li><b>Watch all three,</b> not just whose turn it is. A dog can slip up any time: a bubble pops up next to them. Hit Caught you! fast and they draw a penalty. Miss it and they get away with it.</li>' +
+          '<li><b>Guard it:</b> a dog can steal your rule with a Steal card. Block it if you can.</li></ul>');
+      }
+    } else if (c.type === 'steal') {
+      var target;
+      if (p.human) {
+        if (c.el) c.el.classList.add('glow');
+        say('<b>Steal!</b> Pick a glowing card to take.');
+        hint('Points or a rule, from any dog.');
+        target = await choose(targets(p));
+        hint('');
+      } else {
+        target = botTarget(p);
+      }
+      var victim = target.owner;
+      slotOn(target);
+      await moveTo(c, playSlot, from);
+      el(target).classList.add('target');
+      say('<b>' + p.name + '</b> ' + (p.human ? 'are' : 'is') + ' stealing ' + poss(victim) + ' ' + (target.type === 'rule' ? 'rule' : target.v) + '!');
+      await wait(700);
+      var ok = await blockFight(p, victim, target);
+      el(target).classList.remove('target');
+      if (ok) {
+        victim.up.splice(victim.up.indexOf(target), 1);
+        target.owner = p; p.up.push(target);
+        await moveTo(target, p.upEl);
+        say(target.type === 'rule'
+          ? '<b>' + p.name + '</b> took ' + poss(victim) + ' rule. Now it’s ' + (p.human ? 'yours' : 'theirs') + '!'
+          : '<b>' + p.name + '</b> stole ' + poss(victim) + ' ' + target.v + '!');
+        refresh();
+      }
+      await wait(400);
+      discard(c);
+    }
+    await wait(500);
+    await refill(p);
+    if (p.human) { await ruleTest(p, c); await otherSlip(p); }
+    else await growlSlip(p);
+    refresh();
+  }
+
+  // Steal ↔ Block back and forth. Returns true if the steal goes through.
+  async function blockFight(thief, victim, target) {
+    var defender = victim, attacker = thief, blocks = 0, used = [];
+    if (victim.human) {
+      var myBlock = victim.hand.filter(function (x) { return x.type === 'block'; })[0];
+      var stolenText = thief.name + ' played a Steal to take ' + (target.type === 'rule' ? 'your rule' : 'your ' + target.v + ' points') + '. ' +
+        (myBlock ? 'You have a Block card: play it now to stop the steal, or let it go.'
+                 : 'If you had a Block card, you could play it now to stop the steal. Keep your Blocks for moments like this.');
+      if (guided() && myBlock && !seen('stolen')) {
+        markSeen('stolen');
+        await coach([{ target: el(myBlock), title: 'Block it!', text: stolenText }], false, 'Practice round ' + round + ' of 3');
+      } else {
+        await tipOnce('stolen', myBlock ? el(myBlock) : victim.seat, 'Someone’s stealing from you!', stolenText);
+      }
+    }
+    while (true) {
+      var b = defender.hand.filter(function (x) { return x.type === 'block'; })[0];
+      if (!b) break;
+      var use;
+      if (defender.human) {
+        use = await askBlock(attacker, target, blocks > 0);
+      } else if (guided()) {
+        use = null; // the dogs go easy on you in the practice rounds
+      } else {
+        var worth = target.type === 'rule' || target.v >= 20 || score(defender) >= 60;
+        use = Math.random() < (worth ? 0.85 : 0.5) ? b : null;
+      }
+      if (!use) break;
+      defender.hand.splice(defender.hand.indexOf(use), 1);
+      // the Block lands on top of the Steal, right next to the player, so the table always shows what was just played
+      await moveTo(use, playSlot, fromRect(defender));
+      used.push(use);
+      blocks++;
+      say(blocks > 1
+        ? '<b>' + defender.name + '</b> blocked ' + (attacker.human ? 'your' : attacker.name + '’s') + ' Block! <b>NOPE!</b>'
+        : '<b>' + defender.name + '</b> blocked the Steal! <b>NOPE!</b>');
+      await wait(1100);
+      await refill(defender);
+      var t = defender; defender = attacker; attacker = t;
+    }
+    var ok = blocks % 2 === 0;
+    if (!ok) say('The steal was <b>blocked</b>.');
+    else if (blocks) say('The Block was blocked, so the <b>steal went through</b>!');
+    if (blocks) await wait(1100);
+    used.forEach(discard); // clear the Blocks off the table together
+    return ok;
+  }
+  function askBlock(attacker, target, counter) { return guard(askBlock_(attacker, target, counter)); }
+  function askBlock_(attacker, target, counter) {
+    return new Promise(function (resolve) {
+      mode = 'blockPrompt'; waiting(false);
+      var me = players[0], b = me.hand.filter(function (x) { return x.type === 'block'; })[0];
+      el(b).classList.add('glow');
+      say((counter ? '<b>' + attacker.name + '</b> blocked you! Block back?' : '<b>' + attacker.name + '</b> is stealing your ' + (target.type === 'rule' ? 'rule' : target.v) + '! Play your Block?'));
+      hint('Click your glowing Block card, or');
+      var letGo = document.createElement('button');
+      letGo.type = 'button'; letGo.className = 'pg-btn'; letGo.textContent = 'Let it go';
+      hintEl.appendChild(letGo);
+      function done(v) { el(b).classList.remove('glow'); mode = 'busy'; waiting(true); hint(''); pickResolve = null; resolve(v); }
+      pickResolve = done;
+      letGo.addEventListener('click', function () { done(null); });
+    });
+  }
+  async function refill(p) {
+    while (p.hand.length < 4) {
+      var c = draw(); p.hand.push(c);
+      if (p.human) { var a = mainDeck.querySelector('img').getBoundingClientRect(); hand.appendChild(el(c)); fanHand(); await fly(el(c), a); }
+    }
+    refresh();
+  }
+
+  // ── Rules in action ──
+  async function penalty(p, why) {
+    var v = (pens.length ? pens : (pens = newPens())).pop();
+    var c = card('penalty', { v: v, owner: p });
+    p.up.push(c);
+    await moveTo(c, p.upEl, penDeck.querySelector('img').getBoundingClientRect());
+    refresh();
+    say('<b>' + p.name + '</b> drew a <b>−' + v + '</b> penalty' + (why ? ' for ' + why : '') + '.');
+    el(c).classList.add('shake');
+    await wait(900);
+    return v;
+  }
+  // Tempts YOU to break an active rule
+  async function ruleTest(me, played) {
+    var live = liveFor(me);
+    if (!live.length) return;
+    var growl = live.filter(function (r) { return r.rule === 'lady-puppa'; })[0];
+    var r = growl && Math.random() < 0.85 ? growl : live[rnd(live.length)];
+    if (r.rule !== 'lady-puppa' && Math.random() < 0.45) return; // not every turn
+    var catcher = r.owner;
+    var broke;
+    if (r.rule === 'lady-puppa') {
+      broke = await popup({
+        img: src(r), title: 'Lady Puppa’s Rule is in play!',
+        text: 'You just played a card. Growl, quick!',
+        buttons: [{ label: '🐶 Grrrr!', value: false, gold: true }], timer: 3000, timeoutValue: true
+      });
+    } else {
+      var t = TESTS[r.rule];
+      var opts = shuffle([{ label: t.ok, value: false }, { label: t.bad, value: true }]);
+      broke = await popup({
+        img: src(r), title: t.q, text: RULES[r.rule].name + '’s Rule: ' + RULES[r.rule].text,
+        buttons: opts, timer: 7000, timeoutValue: false
+      });
+    }
+    if (broke) {
+      say('<b>' + catcher.name + '</b> caught you breaking the rule!');
+      var before = score(me);
+      var v = await penalty(me, 'breaking ' + RULES[r.rule].name + '’s Rule');
+      await popup({
+        img: C + 'penalty-' + v + '.webp',
+        title: 'Caught! −' + v + ' points',
+        text: '<b>' + catcher.name + '</b> caught you breaking their rule: “' + RULES[r.rule].text + '” ' +
+              'You drew a −' + v + ' penalty: ' + before + ' → ' + score(me) + ' points.',
+        buttons: [{ label: 'Got it', value: 1, gold: true }]
+      });
+    } else {
+      say('<b>Safe!</b> That followed ' + RULES[r.rule].name + '’s Rule, so no penalty.');
+      await wait(1200);
+    }
+  }
+  // Dogs slip up sometimes. A bubble pops up next to the dog who slipped: catch them!
+  async function slip(p, r, forced, current) {
+    var whose = r.owner.human ? 'your' : (r.owner === p ? 'their own' : r.owner.name + '’s');
+    var caught = await seatPop(p, {
+      text: '<b>' + p.name + '</b> ' + TESTS[r.rule].slip + '!',
+      sub: 'Breaks ' + whose + ' rule' + (forced ? '. Catch them before the bar runs out!' : ''),
+      label: '🫵 Caught you!', timer: 3500
+    });
+    if (caught) {
+      say('You caught <b>' + p.name + '</b> breaking the rule!');
+      await wait(400);
+      await penalty(p, r.owner.human ? 'breaking your rule' : 'breaking ' + RULES[r.rule].name + '’s Rule');
+    } else { say('Too slow! Nobody caught <b>' + p.name + '</b>, so no penalty.'); await wait(900); }
+    await tipOnce('slip', p.seat, 'Watch every dog, not just whose turn it is',
+      'Dogs can slip up at any time, even while someone else is playing. When one breaks a rule, a bubble pops up next to them. Hit <b style="color:var(--text)">Caught you!</b> in time and they draw a penalty. Nobody catches them, no penalty.');
+  }
+  // While one player has the turn, a DIFFERENT dog may break a rule
+  async function otherSlip(current) {
+    var dogs = players.filter(function (o) {
+      return !o.human && o !== current && liveFor(o).some(function (r) { return r.rule !== 'lady-puppa'; });
+    });
+    if (!dogs.length) return;
+    var forced = guided() && !guideSlip && dogs.some(function (d) { return liveFor(d).some(function (r) { return r.owner.human && r.rule !== 'lady-puppa'; }); });
+    if (!forced && Math.random() > 0.3) return;
+    if (forced) {
+      guideSlip = true;
+      dogs = dogs.filter(function (d) { return liveFor(d).some(function (r) { return r.owner.human && r.rule !== 'lady-puppa'; }); });
+    }
+    var p = dogs[rnd(dogs.length)];
+    var live = liveFor(p).filter(function (r) { return r.rule !== 'lady-puppa' && (!forced || r.owner.human); });
+    await slip(p, live[rnd(live.length)], forced, current);
+  }
+  // Lady Puppa's Rule (growl when playing a card) can only be broken by whoever just played
+  async function growlSlip(p) {
+    var r = liveFor(p).filter(function (x) { return x.rule === 'lady-puppa'; })[0];
+    if (!r || Math.random() > 0.3) return;
+    await wait(300);
+    await slip(p, r, false, null);
+  }
+
+  // ── How the dogs play ──
+  function botTarget(p) {
+    if (forcedTarget && forcedTarget.owner && forcedTarget.owner !== p) { var f = forcedTarget; forcedTarget = null; return f; }
+    var t = targets(p);
+    t.sort(function (a, b) {
+      var va = a.type === 'rule' ? 15 : a.v, vb = b.type === 'rule' ? 15 : b.v;
+      return (vb + score(b.owner) / 10) - (va + score(a.owner) / 10);
+    });
+    return Math.random() < 0.75 ? t[0] : t[rnd(t.length)];
+  }
+  function guidedPick(p) {
+    // practice rounds: the dogs play points, and in round 2 Frida tries to steal from you so you can Block her
+    var me = players[0], h = p.hand;
+    if (round === 2 && !guideSteal) {
+      var st = h.filter(function (c) { return c.type === 'steal'; })[0];
+      var mineUp = me.up.filter(function (c) { return c.type === 'point'; }).sort(function (a, b) { return b.v - a.v; })
+        .concat(me.up.filter(function (c) { return c.type === 'rule'; }));
+      if (st && mineUp.length) { guideSteal = true; forcedTarget = mineUp[0]; return st; }
+    }
+    var pts = h.filter(function (c) { return c.type === 'point' && score(p) + c.v < GOAL; });
+    return pts.length ? pts[rnd(pts.length)] : null;
+  }
+  function botPick(p) {
+    if (guided()) return guidedPick(p);
+    var me = score(p), h = p.hand;
+    var pts = h.filter(function (c) { return c.type === 'point'; }).sort(function (a, b) { return b.v - a.v; });
+    var steal = h.filter(function (c) { return c.type === 'steal'; })[0];
+    var rule = h.filter(function (c) { return c.type === 'rule'; })[0];
+    if (pts.length && me + pts[0].v >= GOAL) return pts[0];
+    var leader = Math.max.apply(null, players.filter(function (o) { return o !== p; }).map(score));
+    var t = targets(p);
+    if (steal && t.length && (leader >= 60 || Math.random() < 0.35)) return steal;
+    if (rule && (rules.length < MAX_RULES || Math.random() < 0.3) && Math.random() < 0.55) return rule;
+    if (pts.length) return Math.random() < 0.7 ? pts[0] : pts[rnd(pts.length)];
+    if (steal && t.length) return steal;
+    if (rule) return rule;
+    return null;
+  }
+  async function botTurn(p) {
+    mode = 'wait'; waiting(true);
+    say('<b>' + p.name + '</b> is thinking…');
+    // while a rule is in play, remind you to keep an eye on the dogs
+    var watch = players.some(function (o) { return !o.human && liveFor(o).length; });
+    hint(watch ? '👀 A rule is in play. Watch every dog, not just ' + p.name + '!' : '');
+    await wait(900);
+    await otherSlip(p); // another dog may slip up while this one is thinking
+    say('<b>' + p.name + '</b> is thinking…');
+    await wait(500);
+    var c = botPick(p);
+    if (!c) {
+      c = p.hand[0]; p.hand.shift();
+      say('<b>' + p.name + '</b> couldn’t play anything, so they swapped a card.');
+      await wait(700); await refill(p);
+    } else {
+      await takeTurn(p, c);
+    }
+    hint('');
+    await wait(1000); // time to read what the dog just did
+    next();
+  }
+
+  // ── Turn order and winning ──
+  async function next() {
+    if (restartQueued) { restartQueued = false; reset(); return play(false); }
+    refresh();
+    var w = players.filter(function (p) { return score(p) >= GOAL; }).sort(function (a, b) { return score(b) - score(a); })[0];
+    if (w) return win(w);
+    turn = (turn + 1) % players.length;
+    refresh();
+    await wait(600);
+    if (players[turn].human) myTurn(); else botTurn(players[turn]);
+  }
+  async function win(p) {
+    over = true; mode = 'over'; waiting(true); refresh(); hint('');
+    if (p.human) {
+      say('<b>' + score(p) + ' points. You win!</b>');
+      spawnSuperBoop();
+      var again = await popup({ av: p.av, title: 'You win! 🎉', text: score(p) + ' points. Now twerk your tail off!', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
+    } else {
+      say('<b>' + p.name + '</b> wins with ' + score(p) + ' points.');
+      dogConfetti(p);
+      var again = await popup({ av: p.av, title: p.name + ' wins!', text: score(p) + ' points. Want a rematch?', buttons: [{ label: 'Play again', value: 1, gold: true }, { label: 'Close', value: 0 }] });
+    }
+    if (again) start();
+  }
+
+  // ── Setting up: an empty table, then the dogs sit down and the cards are dealt ──
+  function reset() {
+    gen++;
+    applyGoal();
+    coachEl.hidden = true; cardView.hidden = true; pickResolve = null;
+    clearTimeout(popTimer); pop.hidden = true; $('endPop').hidden = true; centerEl.classList.remove('popping'); clearSel(); board.classList.remove('picking');
+    [hand, playSlot].forEach(function (n) { n.textContent = ''; });
+    if (seatPopEl) { seatPopEl.remove(); seatPopEl = null; }
+    firstGame = !seen('guided'); round = 0; guideSteal = false; guideSlip = false; forcedTarget = null;
+    deck = newDeck(true); pens = newPens(); rules = []; over = false; mode = 'intro';
+    var me = { i: 0, name: 'You', av: myDog, human: true };
+    players = [me].concat(BOTS.map(function (b, k) { return { i: k + 1, name: b.name, av: b.av }; }));
+    players.forEach(function (p) { p.hand = []; p.up = []; buildSeat(p); });
+    turn = 0; refresh(); say(''); hint('');
+  }
+  function flyBack(toRect) {
+    // a face-down card sliding from the deck to a dog
+    if (reduce) return Promise.resolve();
+    var a = mainDeck.querySelector('img').getBoundingClientRect(), br = board.getBoundingClientRect();
+    var n = document.createElement('img'); n.src = 'cards/dog-cards-face.webp'; n.alt = ''; n.className = 'deal-fly';
+    n.style.left = (a.left - br.left) + 'px'; n.style.top = (a.top - br.top) + 'px'; n.style.width = a.width + 'px';
+    board.appendChild(n);
+    var dx = toRect.left + toRect.width / 2 - (a.left + a.width / 2), dy = toRect.top + toRect.height / 2 - (a.top + a.height / 2);
+    var an = n.animate([{ transform: 'none', opacity: 1 }, { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (rnd(40) - 20) + 'deg) scale(.45)', opacity: .9 }],
+      { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
+    return guard(an.finished.catch(function () {}).then(function () { n.remove(); }));
+  }
+  function pull(test) {
+    for (var i = deck.length - 1; i >= 0; i--) if (test(deck[i])) return deck.splice(i, 1)[0];
+    return draw();
+  }
+  function riggedHands() {
+    // a first game: you get a point, a rule, a Steal and a Block; Frida gets a Steal; everyone else gets points
+    var teach = ['frida', 'kpup', 'pupquiao', 'pupstein', 'rupup'], rr = teach[rnd(teach.length)];
+    function pt() { return pull(function (c) { return c.type === 'point'; }); }
+    return [
+      [pull(function (c) { return c.type === 'point' && c.v === 20; }), pull(function (c) { return c.type === 'rule' && c.rule === rr; }),
+       pull(function (c) { return c.type === 'steal'; }), pull(function (c) { return c.type === 'block'; })],
+      [pt(), pull(function (c) { return c.type === 'steal'; }), pt(), pt()],
+      [pt(), pt(), pt(), pt()],
+      [pt(), pt(), pt(), pt()]
+    ];
+  }
+  async function deal() {
+    say('Dealing four cards to everyone…');
+    var rig = firstGame ? riggedHands() : null;
+    for (var k = 0; k < 4; k++) {
+      for (var i = 0; i < players.length; i++) {
+        var p = players[i], c = rig ? rig[i][k] : draw(); p.hand.push(c);
+        if (p.human) {
+          var a = mainDeck.querySelector('img').getBoundingClientRect();
+          hand.appendChild(el(c)); fanHand(); fly(el(c), a);
+        } else {
+          flyBack(p.avEl.getBoundingClientRect()).then(refresh);
+        }
+        await new Promise(function (r) { setTimeout(r, reduce ? 0 : 170); });
+      }
+    }
+    await new Promise(function (r) { setTimeout(r, reduce ? 0 : 600); });
+    refresh();
+  }
+  async function seatDogs() {
+    for (var i = 1; i < players.length; i++) {
+      players[i].seat.classList.remove('away');
+      await new Promise(function (r) { setTimeout(r, reduce ? 0 : 380); });
+    }
+    players[0].seat.classList.remove('away');
+    await new Promise(function (r) { setTimeout(r, reduce ? 0 : 450); });
+  }
+  var introEl = $('intro'), restartQueued = false;
+  function showIntro() {
+    reset();
+    players.forEach(function (p) { p.seat.classList.add('away'); });
+    introEl.hidden = false;
+  }
+  async function play(withSeating) {
+    introEl.hidden = true;
+    if (withSeating) await seatDogs();
+    await deal();
+    if (!seen('tour')) await tour();
+    myTurn();
+  }
+  async function start(goalChanged) {
+    // New game starts right away, even in the middle of a dog's move
+    if (mode === 'intro' && !introEl.hidden) return;
+    var before = GOAL;
+    reset();
+    if (goalChanged || GOAL !== before) {
+      // the points to win changed: say so on the board before dealing
+      var ok = await popup({ title: 'New game: first to ' + GOAL + ' points', text: 'You changed the points to win. Be the first to reach <b>' + GOAL + ' points</b> to win this game.',
+        buttons: [{ label: 'Got it', value: 1, gold: true }] });
+      if (!ok) return;
+    }
+    play(false);
+  }
+  // "Deal the cards" goes full screen, says how to win, then deals
+  $('dealBtn').addEventListener('click', async function () {
+    introEl.hidden = true;
+    await enterFS();
+    await popup({ title: 'How to win', text: 'Be the first to reach <b>' + GOAL + ' points</b>.',
+      buttons: [{ label: 'Okay, got it', value: 1, gold: true }] });
+    play(true);
+  });
+
+  // ── Customise: board colour and your dog ──
+  var feltI = +store('pg-felt') || 0; if (!FELTS[feltI]) feltI = 0;
+  myDog = store('pg-dog'); if (MY_DOGS.indexOf(myDog) < 0) myDog = MY_DOGS[0];
+  function setFelt(i) {
+    feltI = i; store('pg-felt', String(i));
+    board.style.setProperty('--felt', FELTS[i].a); board.style.setProperty('--felt-2', FELTS[i].b);
+    [].forEach.call($('swatches').children, function (s, k) { s.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
+  }
+  function setDog(d) {
+    myDog = d; store('pg-dog', d);
+    [].forEach.call($('dogs').children, function (b) { b.setAttribute('aria-pressed', b.dataset.dog === d ? 'true' : 'false'); });
+    if (players) { players[0].av = d; players[0].avEl.src = AV + 'av-' + d + '.webp'; }
+  }
+  $('swatches').innerHTML = FELTS.map(function (f, i) {
+    return '<button type="button" class="swatch" title="' + f.name + '" aria-label="' + f.name + '" style="background:' + f.a + '" data-i="' + i + '"></button>';
+  }).join('');
+  $('dogs').innerHTML = MY_DOGS.map(function (d) {
+    return '<button type="button" class="dog-pick" data-dog="' + d + '" aria-label="' + RULES[d].name + '"><img alt="" src="' + AV + 'av-' + d + '.webp"></button>';
+  }).join('');
+  $('swatches').addEventListener('click', function (e) { var s = e.target.closest('.swatch'); if (s) setFelt(+s.dataset.i); });
+  $('dogs').addEventListener('click', function (e) { var s = e.target.closest('.dog-pick'); if (s) setDog(s.dataset.dog); });
+  // Points to win: a change applies from the next game, not the one you're playing
+  var goalNext = +store('pg-goal') || 100;
+  if (goalNext < 50 || goalNext > 200) goalNext = 100;
+  function applyGoal() {
+    GOAL = goalNext;
+    [].forEach.call(document.querySelectorAll('.goal-n'), function (n) { n.textContent = GOAL; });
+    if (players) players.forEach(function (p) { var sm = p.seat && p.seat.querySelector('.score small'); if (sm) sm.textContent = ' / ' + GOAL; });
+    if ($('goalNote')) $('goalNote').hidden = true;
+  }
+  $('goalRange').value = goalNext; $('goalOut').textContent = goalNext;
+  $('goalRange').addEventListener('input', function () {
+    goalNext = +this.value; store('pg-goal', String(goalNext)); $('goalOut').textContent = goalNext;
+    var playing = players && mode !== 'intro';
+    $('goalNote').hidden = !playing || goalNext === GOAL;
+    $('goalNoteText').innerHTML = 'This game is still to <b>' + GOAL + '</b>. Start a new game to play to <b>' + goalNext + '</b> points.';
+    if (!playing) applyGoal();
+  });
+  $('goalNew').addEventListener('click', function () { panel.hidden = true; cBtn.setAttribute('aria-expanded', 'false'); start(true); });
+  var panel = $('customPanel'), cBtn = $('customBtn');
+  cBtn.addEventListener('click', function () { panel.hidden = !panel.hidden; cBtn.setAttribute('aria-expanded', String(!panel.hidden)); });
+  document.addEventListener('click', function (e) { if (!panel.hidden && !panel.contains(e.target) && !cBtn.contains(e.target)) { panel.hidden = true; cBtn.setAttribute('aria-expanded', 'false'); } });
+
+  // ── Full screen (eased in and out) ──
+  var fsOK = board.requestFullscreen || board.webkitRequestFullscreen;
+  var veil = $('fsVeil');
+  function isFS() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function animate(cls, ms) {
+    board.classList.remove('fs-in', 'fs-out'); void board.offsetWidth; board.classList.add(cls);
+    return new Promise(function (r) { setTimeout(function () { if (cls === 'fs-in') board.classList.remove('fs-in'); r(); }, reduce ? 0 : ms); });
+  }
+  // Must be called from a click or tap. Resolves once the game is in full screen (or couldn't be).
+  function enterFS() {
+    return new Promise(function (resolve) {
+      if (isFS()) return resolve(true);
+      if (!fsOK) { $('try').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); return resolve(false); }
+      veil.classList.add('on');
+      setTimeout(function () {
+        $('try').scrollIntoView({ behavior: 'auto', block: 'start' });
+        function done(ok) {
+          veil.classList.remove('on');
+          if (ok) animate('fs-in', 900).then(function () { resolve(true); }); else resolve(false);
+        }
+        try {
+          var r = fsOK.call(board);
+          if (r && r.then) r.then(function () { done(true); }, function () { done(false); });
+          else setTimeout(function () { done(isFS()); }, 120);
+        } catch (err) { done(false); }
+      }, reduce ? 0 : 450);
+    });
+  }
+  function exitFS() {
+    if (!isFS()) return;
+    animate('fs-out', 450).then(function () {
+      try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
+    });
+  }
+  var wasFS = false;
+  function fsChange() {
+    var on = isFS();
+    board.classList.toggle('fs', on);
+    board.classList.remove('fs-out');
+    if (!on && wasFS) { $('try').scrollIntoView({ behavior: 'auto', block: 'start' }); animate('fs-in', 700); }
+    wasFS = on;
+    setTimeout(function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); }, 60);
+  }
+  $('fsExit').addEventListener('click', exitFS);
+  // outside full screen, a button to go (back) into it; hidden where full screen isn't available (iPhone)
+  if (fsOK) { $('fullBtn').hidden = false; $('fullBtn').addEventListener('click', function () { enterFS(); }); }
+
+  // ── Share: the top bar shares this page; the one in the game shares a link straight to the game ──
+  var toastEl = $('shareToast'), toastT;
+  function toast(t) {
+    (isFS() ? board : document.body).appendChild(toastEl);
+    toastEl.textContent = t; toastEl.classList.add('on');
+    clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('on'); }, 2200);
+  }
+  var shareMenu = $('shareMenu'), shareData = null;
+  function copyLink(url) {
+    var done = function () { toast('Link copied'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { toast(url); });
+    else toast(url);
+  }
+  function closeShare() { shareMenu.hidden = true; }
+  function openShareMenu(btn, d) {
+    shareData = d;
+    var u = encodeURIComponent(d.url), t = encodeURIComponent(d.text);
+    var links = {
+      facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + u,
+      x: 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u,
+      whatsapp: 'https://wa.me/?text=' + t + '%20' + u,
+      email: 'mailto:?subject=' + encodeURIComponent(d.title) + '&body=' + t + '%0A%0A' + u
+    };
+    [].forEach.call(shareMenu.querySelectorAll('a[data-net]'), function (a) { a.href = links[a.dataset.net]; });
+    // inside full screen only the game shows, so the menu has to live inside it
+    (isFS() ? board : document.body).appendChild(shareMenu);
+    shareMenu.hidden = false;
+    var r = btn.getBoundingClientRect(), w = shareMenu.offsetWidth;
+    shareMenu.style.top = (r.bottom + 8) + 'px';
+    shareMenu.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w)) + 'px';
+    shareMenu.querySelector('a').focus({ preventScroll: true });
+  }
+  shareMenu.addEventListener('click', function (e) {
+    var it = e.target.closest('[data-net]'); if (!it) return;
+    if (it.dataset.net === 'copy') copyLink(shareData.url);
+    closeShare();
+  });
+  document.addEventListener('click', function (e) { if (!shareMenu.hidden && !e.target.closest('#shareMenu, .share-btn')) closeShare(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeShare(); });
+  window.addEventListener('scroll', closeShare, { passive: true });
+  [].forEach.call(document.querySelectorAll('.share-btn'), function (b) {
+    b.addEventListener('click', function () {
+      if (!shareMenu.hidden) return closeShare();
+      var game = b.dataset.share === 'game';
+      var url = location.href.split('#')[0] + (game ? '#try' : '');
+      var data = { title: game ? 'Pupcup practice game' : 'Pupcup',
+        text: game ? 'Play a quick practice game of Pupcup: you against three dogs.' : 'Pupcup: the party card game where dogs rule the world.', url: url };
+      // Phones and tablets (on the live site) get their own share sheet. Computers get our menu: Chrome on
+      // Windows can crash on its built-in share window.
+      var phoneLike = window.matchMedia('(pointer: coarse)').matches;
+      if (navigator.share && phoneLike && /^https?:$/.test(location.protocol)) {
+        try { navigator.share(data).catch(function () {}); return; } catch (e) {}
+      }
+      openShareMenu(b, data);
+    });
+  });
+  // Both "How to Play" buttons (top bar) and "Learn How to Play" (under the box) open the game in full screen.
+  // (A click is allowed to do that; scrolling isn't.) The page also moves to the game, so leaving full
+  // screen puts you right at it.
+  [].forEach.call(document.querySelectorAll('.explore[href="#try"], .howto[href="#try"]'), function (btn) {
+    btn.addEventListener('click', function (e) { e.preventDefault(); enterFS(); });
+  });
+  document.addEventListener('fullscreenchange', fsChange);
+  document.addEventListener('webkitfullscreenchange', fsChange);
+  $('restartBtn').addEventListener('click', function () { start(); });
+
+  // ── Super Boop confetti (same as the homepage) ──
+  function spawnSuperBoop() {
+    if (reduce) return;
+    var flash = $('superBoopFlash');
+    flash.classList.add('active'); setTimeout(function () { flash.classList.remove('active'); }, 600);
+    var cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    spawnPawBurst(cx, cy);
+    setTimeout(function () { spawnBoneRain(); }, 100);
+    setTimeout(function () { spawnTailWagRipple(cx, cy); }, 200);
+  }
+  // A dog won: a smaller burst of confetti right where that dog sits
+  function dogConfetti(p) {
+    if (reduce) return;
+    var r = p.avEl.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    spawnPawBurst(x, y, 0.38, 22);
+    setTimeout(function () { spawnPawBurst(x, y, 0.3, 14); }, 450);
+  }
+  function host() { return document.fullscreenElement ? board : $('superBoopFx'); }
+  function spawnPawBurst(x, y, spread, count) {
+    var box = host(), em = ['🐾', '🦴', '✨', '💛', '🐾', '🐶'], n = count || 36, k = spread || 1;
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement('span'); s.className = 'paw-particle';
+      s.textContent = em[rnd(em.length)];
+      var ang = Math.PI * 2 * i / n + (Math.random() - .5) * .5, d = (60 + Math.random() * 100) * 2.5 * k;
+      var dur = 1 + Math.random() * .4;
+      s.style.setProperty('--tx', Math.cos(ang) * d + 'px'); s.style.setProperty('--ty', Math.sin(ang) * d + 'px');
+      s.style.setProperty('--rot', Math.random() * 360 + 'deg'); s.style.setProperty('--dur', dur + 's');
+      s.style.fontSize = (22 * (k < 1 ? 1.2 : 1.8)) + 'px'; s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.position = 'fixed';
+      s.style.animationDelay = Math.random() * .3 + 's'; s.style.zIndex = 9998;
+      box.appendChild(s); (function (s) { setTimeout(function () { s.remove(); }, (dur + .4) * 1000); })(s);
+    }
+  }
+  function spawnBoneRain() {
+    var box = host(), em = ['🦴', '🐾', '🐶', '⭐', '💛', '🎾'], n = 40;
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement('span'); s.className = 'bone-particle';
+      s.textContent = em[rnd(em.length)];
+      var dur = 1.4 + Math.random() * .6;
+      s.style.left = Math.random() * window.innerWidth + 'px'; s.style.position = 'fixed';
+      s.style.fontSize = (20 * 1.8) + 'px';
+      s.style.setProperty('--fall', (300 + Math.random() * 200) * 3 + 'px');
+      s.style.setProperty('--rot', (-180 + Math.random() * 360) + 'deg'); s.style.setProperty('--dur', dur + 's');
+      s.style.animationDelay = Math.random() * .8 + 's'; s.style.zIndex = 9998;
+      box.appendChild(s); (function (s) { setTimeout(function () { s.remove(); }, (dur + 1) * 1000); })(s);
+    }
+  }
+  function spawnTailWagRipple(x, y) {
+    var box = host(), i;
+    for (i = 0; i < 6; i++) {
+      var ring = document.createElement('div'); ring.className = 'ripple-ring';
+      var dur = (.6 + i * .25) * 1.5;
+      ring.style.setProperty('--scale', (3 + i * 2.5) * 2.5); ring.style.setProperty('--dur', dur + 's');
+      ring.style.animationDelay = i * .12 + 's'; ring.style.left = x + 'px'; ring.style.top = y + 'px'; ring.style.position = 'fixed';
+      ring.style.borderWidth = '4px'; ring.style.zIndex = 9998;
+      box.appendChild(ring); (function (r, d) { setTimeout(function () { r.remove(); }, (d + .3) * 1000); })(ring, dur);
+    }
+    var em = ['🐾', '💛', '✨', '🐶'];
+    for (i = 0; i < 20; i++) {
+      var s = document.createElement('span'); s.className = 'ripple-paw';
+      s.textContent = em[rnd(em.length)];
+      var ang = Math.PI * 2 * i / 20, d = (50 + Math.random() * 80) * 3, du = 1.2 + Math.random() * .3;
+      s.style.setProperty('--tx', Math.cos(ang) * d + 'px'); s.style.setProperty('--ty', Math.sin(ang) * d + 'px');
+      s.style.setProperty('--dur', du + 's'); s.style.fontSize = (16 * 2.2) + 'px';
+      s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.position = 'fixed'; s.style.zIndex = 9998;
+      box.appendChild(s); (function (s, d) { setTimeout(function () { s.remove(); }, (d + .3) * 1000); })(s, du);
+    }
+  }
+
+  function setSpeed(k) {
+    if (!SPEEDS[k]) k = 'relaxed';
+    pace = SPEEDS[k]; store('pg-speed', k);
+    [].forEach.call($('speeds').children, function (b) { b.setAttribute('aria-pressed', b.dataset.s === k ? 'true' : 'false'); });
+  }
+  $('speeds').addEventListener('click', function (e) { var b = e.target.closest('[data-s]'); if (b) setSpeed(b.dataset.s); });
+  setSpeed(store('pg-speed') || 'relaxed');
+  $('tipsBtn').addEventListener('click', function () { setTips(!tipsOn); });
+  $('tourBtn').addEventListener('click', function () {
+    panel.hidden = true; cBtn.setAttribute('aria-expanded', 'false');
+    if (mode !== 'mine') { say('You can replay the tour on your turn.'); return; }
+    var m = mode; mode = 'busy'; waiting(true);
+    tour().then(function () { mode = m; waiting(false); });
+  });
+  setFelt(feltI); setDog(myDog); setTips(tipsOn);
+  showIntro();
+  window.__pg = { players: function () { return players; }, rules: function () { return rules; }, boop: spawnSuperBoop };
+})();
+</script>
+
+</body>
+</html>
