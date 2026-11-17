@@ -6,9 +6,18 @@
 <title>Pupcup Box Reveal (Draft)</title>
 <meta name="description" content="Draft landing page: the Pupcup box opens as you scroll.">
 <meta name="robots" content="noindex, nofollow">
-<meta property="og:title" content="Pupcup">
-<meta property="og:description" content="Open the box and meet the dogs.">
+<!-- What shows when the link is shared (Facebook, Messenger, X, WhatsApp…). Image and URL must be full web addresses. -->
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Pupcup">
+<meta property="og:title" content="Pupcup">
+<meta property="og:description" content="Open the box, meet the dogs, and play a quick practice game.">
+<meta property="og:url" content="https://playpupcup.com/landing/">
+<meta property="og:image" content="https://playpupcup.com/landing/share-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Friends and their dogs playing Pupcup outdoors, with the Play Pupcup logo.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://playpupcup.com/landing/share-cover.jpg">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -71,12 +80,33 @@
     color: var(--text); font: inherit; font-size: 15px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
   }
   .share-menu a:hover, .share-menu button:hover, .share-menu :focus-visible { background: rgba(255, 255, 255, .08); outline: none; }
-  .share-menu .ic { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 800; color: #fff; flex: none; }
-  .share-menu .fb { background: #1877f2; font-family: Arial, sans-serif; font-size: 16px; }
+  .share-menu .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex: none; line-height: 1; }
+  .share-menu .ic .lt { font-family: Arial, Helvetica, sans-serif; font-weight: 700; font-size: 15px; }
+  /* official logos: the full round icons fill the circle; glyphs sit on the background their brand uses */
+  .share-menu .ic.logo { background: none; box-shadow: none; overflow: hidden; }
+  .share-menu .ic.logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .share-menu .ic.wa, .share-menu .ic.ig { background: #fff; }
+  .share-menu .ic.wa img, .share-menu .ic.ig img { width: 19px; height: 19px; }
+  .share-menu .ic.x { background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
+  .share-menu .ic.x img { width: 15px; height: 15px; }
+  .share-menu .fb { background: #1877f2; }
+  .share-menu .fb .lt { font-size: 18px; transform: translateY(1px); }
   .share-menu .x { background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
   .share-menu .wa { background: #25d366; }
+  .share-menu .ms { background: linear-gradient(135deg, #00b2ff, #a033ff); }
+  .share-menu .ig { background: linear-gradient(45deg, #f9a825, #e91e63 55%, #7b1fa2); }
+  .share-menu .tt { background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
   .share-menu .em { background: #6b7280; }
-  .share-menu .cp { background: #3a3d48; font-size: 13px; }
+  .share-menu .cp { background: #3a3d48; }
+  .howto-menu { min-width: 280px; }
+  .howto-menu a > span:last-child { display: grid; gap: 1px; }
+  .howto-menu small { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+  .howto-menu .ic { width: 34px; height: 34px; font-size: 15px; }
+  .howto-menu .demo { background: var(--accent); color: var(--buy-text); }
+  .howto-menu .vid { background: #3a3d48; }
+  .howto-menu .read { background: #3a3d48; }
+  button.howto { border: 0; font-family: inherit; cursor: pointer; }
+  .howto .caret { font-size: 11px; margin-left: 2px; opacity: .8; }
   /* going into and out of full screen is eased: the page dims, then the game fades and grows in */
   .fs-veil { position: fixed; inset: 0; z-index: 2147482000; background: #0b0c10; opacity: 0; pointer-events: none; transition: opacity .45s ease; }
   .fs-veil.on { opacity: 1; }
@@ -225,11 +255,14 @@
     .hero-copy { top: 80px; }
     .draft-tag { display: none; }
   }
-  @media (max-width: 380px) {
-    .top { padding: 14px 12px; }
-    .top img { height: 22px; }
-    .top-actions .howto { padding: 8px 10px; font-size: 13px; }
-    .top-actions .buy { padding: 8px 12px; font-size: 13px; }
+  @media (max-width: 400px) {
+    .top { padding: 14px 10px; gap: 8px; }
+    .top img { height: 20px; }
+    .top-actions { gap: 5px; }
+    .top-actions .howto { padding: 7px 9px; font-size: 12.5px; }
+    .top-actions .howto .caret { display: none; }
+    .top-actions .share-btn { padding: 7px 8px; }
+    .top-actions .buy { padding: 7px 11px; font-size: 12.5px; }
   }
   @media (prefers-reduced-motion: reduce) { .hint i::after { animation: none; } }
 
@@ -299,7 +332,7 @@
   .pc img { width: 100%; display: block; pointer-events: none; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .35)); }
   .up .pc { margin-left: -34px; transition: transform .2s; }
   .up .pc.gs { margin-left: 6px !important; }
-  .up .pc.is-rule { z-index: 3; }
+
   .pc.pick { cursor: pointer; z-index: 2; }
   .pc.pick img { filter: drop-shadow(0 0 10px rgba(245, 197, 66, .95)); }
   .pc.pick:hover { transform: translateY(-8px); }
@@ -347,14 +380,28 @@
     .pg-board.fs .seat[data-p="2"] .up, .pg-board.fs .seat[data-p="0"] .up { min-width: 220px; }
   }
   /* middle */
+  /* Tablets (iPad mini, iPad, Android tablets): narrower than a laptop, so the side players put their name under
+     their photo, and seats no longer insist on a minimum width. Nothing runs off the edges. */
+  @media (min-width: 761px) and (max-width: 1279px) {
+    .pg-table { grid-template-columns: minmax(150px, 1fr) minmax(0, 2fr) minmax(150px, 1fr); padding: 6px 10px; gap: 6px 10px; }
+    .pg-board .seat, .pg-board.fs .seat { min-width: 0; max-width: 100%; padding: 10px 12px; }
+    .pg-board .seat .who-txt, .pg-board.fs .seat .who-txt { min-width: 0; }
+    .pg-board .seat[data-p="1"] .who, .pg-board .seat[data-p="3"] .who { flex-direction: column; text-align: center; gap: 8px; }
+    .pg-board .seat[data-p="1"] .who-txt, .pg-board .seat[data-p="3"] .who-txt { justify-items: center; }
+    .pg-board .seat[data-p="1"] .meter, .pg-board .seat[data-p="3"] .meter { width: 110px; }
+    .pg-board.fs .seat .av { width: clamp(60px, 8.5vh, 104px); height: clamp(60px, 8.5vh, 104px); }
+    .pg-mid { gap: 10px; padding: 0; }
+    .pg-center .pg-msg { max-width: 30ch; font-size: 17px; padding: 12px 18px; }
+    .pgdeck img { width: clamp(52px, 7vh, 70px); }
+  }
   /* middle: draw pile on the left, penalties on the right, what's happening in between */
   .pg-mid { grid-area: mid; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 0 3%; position: relative; z-index: 3; }
   .pg-center { display: grid; gap: 8px; justify-items: center; align-content: center; min-height: 120px; }
   .pg-center .pg-hint { text-align: center; max-width: 42ch; text-wrap: balance; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
   .pg-msg:empty { visibility: hidden; }
   .pg-msg {
-    font-size: 18px; font-weight: 500; line-height: 1.35; text-align: center; text-wrap: balance; max-width: 36ch;
-    min-height: 2.7em; display: block; padding: 7px 18px; border-radius: 14px;
+    font-size: 20px; font-weight: 500; line-height: 1.35; text-align: center; text-wrap: balance; max-width: 38ch;
+    width: fit-content; min-height: 2.7em; display: block; padding: 16px 28px; border-radius: 18px;
     background: rgba(0, 0, 0, .32); position: relative; z-index: 4;
   }
   .pg-msg b { color: var(--accent); }
@@ -447,8 +494,7 @@
   .up .pc.is-dog:not(.pick) { cursor: zoom-in; }
   .card-view {
     position: fixed; inset: 0; z-index: 2147481000; display: grid; place-items: center; align-content: center; gap: 16px;
-    padding: 20px; background: rgba(6, 8, 10, .82); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
-    animation: popIn .22s ease-out;
+    padding: 20px; background: rgba(6, 8, 10, .82);
   }
   .card-view[hidden] { display: none; }
   .card-view figure { margin: 0; display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 520px; }
@@ -503,27 +549,27 @@
 
   /* messages that need an answer sit in the middle of the table, in place of the usual message */
   .pg-center { position: relative; }
-  .pg-pop { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 12; width: min(460px, 100%); }
+  .pg-pop { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 12; width: min(540px, 100%); }
   .pg-pop[hidden] { display: none; }
   .pg-center.popping .pg-msg, .pg-center.popping .pg-hint { visibility: hidden; }
   .pg-pop-card {
-    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; align-items: center; text-align: left;
-    padding: 14px 16px; border-radius: 18px; background: rgba(12, 14, 18, .9);
+    display: grid; justify-items: center; gap: 10px; text-align: center;
+    padding: 44px 46px; border-radius: 22px; background: rgba(12, 14, 18, .92);
     box-shadow: 0 0 0 2px var(--accent), 0 18px 40px rgba(0, 0, 0, .45);
     animation: popIn .25s cubic-bezier(.2, .9, .3, 1.2);
   }
   @keyframes popIn { from { transform: scale(.9); opacity: 0 } }
-  .pg-pop-card > * { grid-column: 1 / -1; }
-  .pg-pop-card .pop-av, .pg-pop-card .pop-rule { grid-column: 1; grid-row: 1 / span 2; }
-  .pg-pop-card .pop-av + h3, .pg-pop-card .pop-rule + h3 { grid-column: 2; align-self: end; }
-  .pg-pop-card .pop-av ~ p, .pg-pop-card .pop-rule ~ p { grid-column: 2; align-self: start; }
+  .pg-pop-card p { text-wrap: balance; }
+  .pg-pop-card .timer { width: 100%; }
   .pg-pop-card .pop-av { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #fff; }
   .pg-pop-card .pop-rule { width: 58px; border-radius: 6px; }
-  .pg-pop-card h3 { font-size: 19px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
-  .pg-pop-card p { color: #c9c7c2; font-size: 14.5px; line-height: 1.4; }
+  .pg-pop-card h3 { font-size: 25px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
+  .pg-pop-card p { color: #c9c7c2; font-size: 18px; line-height: 1.45; }
   .pg-pop-card p b { color: var(--text); }
-  .pg-pop-card .opts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 4px; }
-  .pg-pop-card .opts .pg-btn { font-size: 15px; padding: 10px 16px; background: rgba(255, 255, 255, .1); }
+  .pg-pop-card .opts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+  .pg-pop-card .opts .pg-btn { font-size: 18px; padding: 13px 24px; background: rgba(255, 255, 255, .1); }
+  .pg-pop-card .pop-av { width: 64px; height: 64px; }
+  .pg-pop-card .pop-rule { width: 72px; }
   .pg-pop-card .opts .pg-btn:hover { background: rgba(255, 255, 255, .2); }
   .pg-pop-card .opts .pg-btn.gold { background: var(--accent); color: var(--buy-text); }
   /* the game is over: the original big popup over the board */
@@ -622,17 +668,21 @@
     .pc, .rules .pc, .pgdeck img, .play-slot { width: 40px; }
     .pg-mid { gap: 8px; padding: 0; }
     .pg-pop { width: min(calc(100vw - 36px), 420px); }
+    .pg-pop-card { padding: 28px 24px; }
+    .pg-pop-card h3 { font-size: 21px; }
+    .pg-pop-card p { font-size: 16px; }
+    .pg-pop-card .opts .pg-btn { font-size: 16px; padding: 12px 20px; }
     .pg-center { min-height: 96px; }
     .up .pc { margin-left: -24px; }
     .seat[data-p="0"] .who { flex-direction: row; }
     .seat[data-p="0"] .up .pc { width: 48px; }
     .rules { min-height: 60px; }
     .rules:empty::after { width: 110px; }
-    .pg-msg { font-size: 16px; }
+    .pg-msg { font-size: 17px; padding: 12px 20px; }
     .lbl { font-size: 9px; letter-spacing: .04em; }
     .pg-row { gap: 12px; }
     .pg-hand { min-height: 150px; padding-top: 18px; }
-    .pg-hand .pc { width: 25vw; max-width: 112px; margin: 0 -7px; }
+    .pg-hand .pc { width: 23vw; max-width: 112px; margin: 0 -7px; }
     .pg-tip { width: auto; left: 10px !important; right: 10px; top: auto !important; bottom: 205px; }
     .pg-tip.on { pointer-events: auto; }
     .pg-custom { right: 10px; left: 10px; width: auto; }
@@ -660,17 +710,25 @@
 
 <div class="fs-veil" id="fsVeil" aria-hidden="true"></div>
 <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
+<div class="share-menu howto-menu" id="howtoMenu" role="menu" hidden>
+  <a role="menuitem" href="#try" data-howto="demo"><span class="ic demo">▶</span><span><b>Play the demo</b><small>A practice game against three dogs</small></span></a>
+  <a role="menuitem" href="../howtoplay/" data-howto="video"><span class="ic vid">🎬</span><span><b>Watch the video</b><small>How to play, in a few minutes</small></span></a>
+  <a role="menuitem" href="../instructions/PlayPupcup-Original-Nov16.pdf" target="_blank" rel="noopener" data-howto="read"><span class="ic read">📖</span><span><b>Read the instructions</b><small>The full rules</small></span></a>
+</div>
 <div class="share-menu" id="shareMenu" role="menu" hidden>
-  <a role="menuitem" data-net="facebook" target="_blank" rel="noopener"><span class="ic fb">f</span>Facebook</a>
-  <a role="menuitem" data-net="x" target="_blank" rel="noopener"><span class="ic x">𝕏</span>X</a>
-  <a role="menuitem" data-net="whatsapp" target="_blank" rel="noopener"><span class="ic wa">✆</span>WhatsApp</a>
-  <a role="menuitem" data-net="email"><span class="ic em">✉</span>Email</a>
-  <button type="button" role="menuitem" data-net="copy"><span class="ic cp">🔗</span>Copy link</button>
+  <a role="menuitem" data-net="facebook" target="_blank" rel="noopener"><span class="ic fb logo"><img src="share-icons/facebook.png" alt="" width="28" height="28"></span>Facebook</a>
+  <a role="menuitem" data-net="x" target="_blank" rel="noopener"><span class="ic x logo"><img src="share-icons/x.png" alt="" width="28" height="28"></span>X</a>
+  <a role="menuitem" data-net="messenger" target="_blank" rel="noopener"><span class="ic ms logo"><img src="share-icons/messenger.png" alt="" width="28" height="28"></span>Messenger</a>
+  <a role="menuitem" data-net="whatsapp" target="_blank" rel="noopener"><span class="ic wa logo"><img src="share-icons/whatsapp.png" alt="" width="28" height="28"></span>WhatsApp</a>
+  <a role="menuitem" data-net="instagram" target="_blank" rel="noopener"><span class="ic ig logo"><img src="share-icons/instagram.png" alt="" width="28" height="28"></span>Instagram</a>
+  <a role="menuitem" data-net="tiktok" target="_blank" rel="noopener"><span class="ic tt logo"><img src="share-icons/tiktok.png" alt="" width="28" height="28"></span>TikTok</a>
+  <a role="menuitem" data-net="email"><span class="ic em"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6.5 9 6 9-6"/></svg></span>Email</a>
+  <button type="button" role="menuitem" data-net="copy"><span class="ic cp"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13.5a4.5 4.5 0 0 0 6.8.5l2.9-2.9a4.5 4.5 0 0 0-6.4-6.4l-1.6 1.6"/><path d="M14 10.5a4.5 4.5 0 0 0-6.8-.5l-2.9 2.9a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg></span>Copy link</button>
 </div>
 <header class="top">
   <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
   <div class="top-actions">
-    <a class="howto" href="#try">How to Play</a>
+    <button type="button" class="howto" id="howtoBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="howtoMenu">How to Play <span class="caret" aria-hidden="true">▾</span></button>
     <button type="button" class="howto share-btn" data-share="page" aria-label="Share this page"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/></svg><span class="t">Share</span></button>
     <a class="buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
   </div>
@@ -1433,8 +1491,8 @@
     }
     return b;
   }
-  // Cards are grouped: rules first (always on top, so you can see a rule is in play), then points (low to high), then penalties
-  var UP_ORDER = { rule: -1, point: 0, penalty: 2, steal: 3, block: 3 }, HAND_ORDER = { point: 0, rule: 1, steal: 2, block: 3, penalty: 4 };
+  // Cards are grouped: points (low to high), then penalties, then rules last, so a rule always sits on top and fully in view
+  var UP_ORDER = { point: 0, penalty: 1, rule: 2, steal: 3, block: 3 }, HAND_ORDER = { point: 0, rule: 1, steal: 2, block: 3, penalty: 4 };
   function byGroup(order) {
     return function (a, b) { return (order[a.type] - order[b.type]) || ((a.v || 0) - (b.v || 0)) || (a.id - b.id); };
   }
@@ -1520,7 +1578,20 @@
     if (reduce) { n.remove(); return; }
     n.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.8)' }], { duration: 280 }).finished.then(function () { n.remove(); });
   }
-  function say(html) { msgEl.innerHTML = html; }
+  function say(html) { msgEl.innerHTML = html; fitMsg(); }
+  // When a message wraps onto two lines, shrink the box to the longest line so there's no big empty space on the sides
+  function fitMsg() {
+    msgEl.style.width = '';
+    if (!msgEl.firstChild) return;
+    var r = document.createRange(); r.selectNodeContents(msgEl);
+    var widest = 0;
+    [].forEach.call(r.getClientRects(), function (q) { widest = Math.max(widest, q.right); });
+    var left = Math.min.apply(null, [].map.call(r.getClientRects(), function (q) { return q.left; }));
+    var cs = getComputedStyle(msgEl), pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    var w = Math.ceil(widest - left + pad + 2);
+    if (w > 0 && w < msgEl.offsetWidth) msgEl.style.width = w + 'px';
+  }
+  window.addEventListener('resize', fitMsg);
   function hint(t) { hintEl.textContent = t || ''; }
   function shake(n) { n.classList.remove('shake'); void n.offsetWidth; n.classList.add('shake'); }
   function waiting(on) { board.classList.toggle('wait', on); }
@@ -1620,16 +1691,62 @@
   // ── The full-size card viewer (dog cards) ──
   function isDog(c) { return c.type === 'rule' || c.type === 'steal' || c.type === 'block'; }
   var cardView = $('cardView');
+  // The card zooms out of its spot on the table to the middle of the screen, and back again when closed.
+  var viewing = null, ZOOM = 'cubic-bezier(.2, .8, .2, 1)';
+  function cardRect(c) {
+    var n = c && c.el;
+    if (!n || !n.isConnected) return null;
+    var r = n.getBoundingClientRect();
+    return r.width ? r : null;
+  }
+  function zoomFrame(from, to) {
+    // a transform that makes the big card sit exactly where the small one is
+    var sx = from.width / to.width, sy = from.height / to.height;
+    var dx = (from.left + from.width / 2) - (to.left + to.width / 2), dy = (from.top + from.height / 2) - (to.top + to.height / 2);
+    return 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')';
+  }
+  function extras() { return [cardView.querySelector('figcaption'), $('cvParody'), $('cvClose')]; }
   function viewCard(c) {
     hideTip();
-    $('cvImg').src = src(c); $('cvImg').alt = title(c);
+    var img = $('cvImg'), from = cardRect(c);
+    img.src = src(c); img.alt = title(c);
     $('cvTitle').textContent = title(c); $('cvText').textContent = explain(c);
     $('cvParody').hidden = c.type !== 'rule';
     // inside full screen, only the game is on screen, so the viewer has to live inside it
     (isFS() ? board : document.body).appendChild(cardView);
-    cardView.hidden = false; $('cvClose').focus({ preventScroll: true });
+    cardView.hidden = false; viewing = c;
+    $('cvClose').focus({ preventScroll: true });
+    if (reduce || !from) return;
+    var go = function () {
+      if (viewing !== c) return;
+      var to = img.getBoundingClientRect(); if (!to.width) return;
+      c.el.style.visibility = 'hidden'; // the card "lifts off" the table
+      img.animate([{ transform: zoomFrame(from, to) }, { transform: 'none' }], { duration: 650, easing: 'cubic-bezier(.35, .6, .2, 1)' });
+      cardView.animate([{ backgroundColor: 'rgba(6, 8, 10, 0)' }, { backgroundColor: 'rgba(6, 8, 10, .82)' }], { duration: 420, easing: 'ease-out' });
+      extras().forEach(function (n) { n.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 300, delay: 300, easing: 'ease-out', fill: 'backwards' }); });
+    };
+    if (img.decode) img.decode().then(go, go); else go();
   }
-  function closeView() { cardView.hidden = true; }
+  function closeView() {
+    if (cardView.hidden) return;
+    var c = viewing, img = $('cvImg'), to = cardRect(c);
+    viewing = null;
+    var done = function () { cardView.hidden = true; if (c && c.el) c.el.style.visibility = ''; };
+    if (reduce || !to) return done();
+    // back down to the card's spot on the table
+    if (c.el) c.el.style.visibility = '';
+    to = cardRect(c); if (c.el) c.el.style.visibility = 'hidden';
+    var from = img.getBoundingClientRect();
+    extras().forEach(function (n) { n.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, fill: 'forwards' }); });
+    cardView.animate([{ backgroundColor: 'rgba(6, 8, 10, .82)' }, { backgroundColor: 'rgba(6, 8, 10, 0)' }], { duration: 420, easing: 'ease-in', fill: 'forwards' });
+    var a = img.animate([{ transform: 'none' }, { transform: zoomFrame(to, from) }], { duration: 440, easing: 'cubic-bezier(.5, 0, .75, .3)', fill: 'forwards' });
+    a.finished.then(function () {
+      done();
+      img.getAnimations().forEach(function (x) { x.cancel(); });
+      cardView.getAnimations().forEach(function (x) { x.cancel(); });
+      extras().forEach(function (n) { n.getAnimations().forEach(function (x) { x.cancel(); }); });
+    }, done);
+  }
   cardView.addEventListener('click', function (e) { if (e.target === cardView || e.target.closest('#cvClose')) closeView(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !cardView.hidden) closeView(); });
 
@@ -2246,7 +2363,7 @@
   function reset() {
     gen++;
     applyGoal();
-    coachEl.hidden = true; cardView.hidden = true; pickResolve = null;
+    coachEl.hidden = true; if (!cardView.hidden) { cardView.hidden = true; if (viewing && viewing.el) viewing.el.style.visibility = ''; viewing = null; } pickResolve = null;
     clearTimeout(popTimer); pop.hidden = true; $('endPop').hidden = true; centerEl.classList.remove('popping'); clearSel(); board.classList.remove('picking');
     [hand, playSlot].forEach(function (n) { n.textContent = ''; });
     if (seatPopEl) { seatPopEl.remove(); seatPopEl = null; }
@@ -2457,6 +2574,10 @@
       facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + u,
       x: 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u,
       whatsapp: 'https://wa.me/?text=' + t + '%20' + u,
+      // these three don't let a website fill in a post, so the link is copied and the app's site opens to paste it
+      messenger: 'https://www.messenger.com/',
+      instagram: 'https://www.instagram.com/direct/inbox/',
+      tiktok: 'https://www.tiktok.com/messages',
       email: 'mailto:?subject=' + encodeURIComponent(d.title) + '&body=' + t + '%0A%0A' + u
     };
     [].forEach.call(shareMenu.querySelectorAll('a[data-net]'), function (a) { a.href = links[a.dataset.net]; });
@@ -2471,6 +2592,10 @@
   shareMenu.addEventListener('click', function (e) {
     var it = e.target.closest('[data-net]'); if (!it) return;
     if (it.dataset.net === 'copy') copyLink(shareData.url);
+    var app = { messenger: 'Messenger', instagram: 'Instagram', tiktok: 'TikTok' }[it.dataset.net];
+    if (app && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareData.url).then(function () { toast('Link copied. Paste it in ' + app + '.'); }, function () {});
+    }
     closeShare();
   });
   document.addEventListener('click', function (e) { if (!shareMenu.hidden && !e.target.closest('#shareMenu, .share-btn')) closeShare(); });
@@ -2479,6 +2604,7 @@
   [].forEach.call(document.querySelectorAll('.share-btn'), function (b) {
     b.addEventListener('click', function () {
       if (!shareMenu.hidden) return closeShare();
+      closeHowto();
       var game = b.dataset.share === 'game';
       var url = location.href.split('#')[0] + (game ? '#try' : '');
       var data = { title: game ? 'Pupcup practice game' : 'Pupcup',
@@ -2495,7 +2621,24 @@
   // Both "How to Play" buttons (top bar) and "Learn How to Play" (under the box) open the game in full screen.
   // (A click is allowed to do that; scrolling isn't.) The page also moves to the game, so leaving full
   // screen puts you right at it.
-  [].forEach.call(document.querySelectorAll('.explore[href="#try"], .howto[href="#try"]'), function (btn) {
+  // The top bar's How to Play opens a small menu: play the demo, watch the video, or read the instructions
+  var howtoMenu = $('howtoMenu'), howtoBtn = $('howtoBtn');
+  function closeHowto() { howtoMenu.hidden = true; howtoBtn.setAttribute('aria-expanded', 'false'); }
+  howtoBtn.addEventListener('click', function () {
+    if (!howtoMenu.hidden) return closeHowto();
+    closeShare();
+    howtoMenu.hidden = false; howtoBtn.setAttribute('aria-expanded', 'true');
+    var r = howtoBtn.getBoundingClientRect(), w = howtoMenu.offsetWidth;
+    howtoMenu.style.top = (r.bottom + 8) + 'px';
+    howtoMenu.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
+    howtoMenu.querySelector('a').focus({ preventScroll: true });
+  });
+  howtoMenu.querySelector('[data-howto="demo"]').addEventListener('click', function (e) { e.preventDefault(); closeHowto(); enterFS(); });
+  howtoMenu.addEventListener('click', function (e) { if (e.target.closest('[data-howto="video"], [data-howto="read"]')) closeHowto(); });
+  document.addEventListener('click', function (e) { if (!howtoMenu.hidden && !e.target.closest('#howtoMenu, #howtoBtn')) closeHowto(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !howtoMenu.hidden) { closeHowto(); howtoBtn.focus(); } });
+  window.addEventListener('scroll', function () { if (!howtoMenu.hidden) closeHowto(); }, { passive: true });
+  [].forEach.call(document.querySelectorAll('.explore[href="#try"]'), function (btn) {
     btn.addEventListener('click', function (e) { e.preventDefault(); enterFS(); });
   });
   document.addEventListener('fullscreenchange', fsChange);
