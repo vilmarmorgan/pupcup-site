@@ -731,7 +731,8 @@
     #board.touch .pg-hand-wrap { grid-area: hand; padding: 0 0 18px; align-self: end; }
     #board.touch .seat[data-p="0"] { align-self: end; justify-self: start; grid-auto-flow: row; justify-items: start; gap: 8px; margin-bottom: 6px; }
     #board.touch .seat[data-p="0"] .up { min-width: 0; }
-    #board.touch .seat[data-p="1"], #board.touch .seat[data-p="3"] { align-self: end; } /* room above them for their speech bubbles */
+    /* a little above centre: room below them (for their speech bubbles) before your corner */
+    #board.touch .seat[data-p="1"], #board.touch .seat[data-p="3"] { align-self: center; margin-bottom: 13vh; }
   }
   /* Sideways phones (very short screens): the whole table fits on one screen with no scrolling.
      Side players sit left and right, you sit bottom-left beside your hand, the game's buttons bottom-right. */
@@ -826,9 +827,6 @@
   .pg-rotate, .pg-back { position: absolute; inset: 0; z-index: 45; display: none; place-items: center; padding: 20px; background: rgba(8, 10, 12, .82); }
   .pg-back:not([hidden]) { display: grid; }
   .pg-btn[hidden] { display: none; }
-  .pg-rotate-card .rot-tip { font-size: 13.5px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 197, 66, .12); }
-  .pg-rotate-card .rot-tip[hidden] { display: none; }
-  .pg-rotate-card .rot-tip b { color: var(--text); }
   @media (orientation: portrait) { .pg-board.touch .pg-rotate { display: grid; } .pg-board.touch .pg-back { display: none; } }
   .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
   .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
@@ -983,7 +981,6 @@
           <h3 id="rotateTitle">Turn your phone sideways to play</h3>
           <p>The practice game is played sideways, so the whole table fits on your screen.</p>
           <button class="pg-btn gold big" id="rotateGo" type="button" hidden>Play sideways</button>
-          <p class="rot-tip" id="rotateTip" hidden>Want it full screen? Tap <b>Share</b>, then <b>Add to Home Screen</b>, and open Pupcup from there.</p>
         </div>
       </div>
       <div class="pg-back" id="fsBack" hidden>
@@ -1897,9 +1894,17 @@
     var br = board.getBoundingClientRect(), s = p.seat.getBoundingClientRect(), u = p.upEl.getBoundingClientRect();
     var L = s.left - br.left, T = s.top - br.top, x, y;
     if (phone.matches) { x = L + s.width / 2 - w / 2; y = p.human ? T - h - 10 : T + s.height + 8; }
-    else if ((shortLand.matches || (board.classList.contains('touch') && innerWidth > innerHeight)) && (p.i === 1 || p.i === 3)) { x = L + s.width / 2 - w / 2; y = T - h - 6; }
+    else if (shortLand.matches && (p.i === 1 || p.i === 3)) { x = L + s.width / 2 - w / 2; y = T - h - 6; }
     else if (p.i === 1 || p.i === 3) { x = L + s.width / 2 - w / 2; y = T + s.height + 12; }
     else { x = Math.max(L + s.width, u.right - br.left) + 16; y = T + s.height / 2 - h / 2; }
+    // sideways tablets: the side players' bubbles go in the gap under them, never over your corner or the game buttons
+    if (!phone.matches && !shortLand.matches && board.classList.contains('touch') && (p.i === 1 || p.i === 3)) {
+      var below = (p.i === 1 ? players[0].seat : board.querySelector('.pg-bar')).getBoundingClientRect().top - br.top - 10;
+      if (y + h > below) {
+        if (below - h >= T + s.height - 40) y = below - h;
+        else { x = p.i === 1 ? L + s.width + 12 : L - w - 12; y = T + s.height / 2 - h / 2; } // no room: beside them instead
+      }
+    }
     return { x: clamp(x, 10, br.width - w - 10), y: clamp(y, 10, br.height - h - 10) };
   }
   function slotOn(target) {
@@ -2825,8 +2830,6 @@
     var small = Math.min(screen.width, screen.height) < 600;
     $('rotateTitle').textContent = small ? 'Turn your phone sideways to play' : 'Turn your tablet sideways to play';
     if (fsOK && canLock) $('rotateGo').hidden = false;
-    // iPhone Safari can't go full screen; opened from the Home Screen it has no browser bars at all
-    if (apple && !fsOK && !navigator.standalone) $('rotateTip').hidden = false;
   }
   function lockSideways() {
     if (!touchDev || !canLock || !isFS()) return;
