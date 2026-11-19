@@ -768,8 +768,8 @@
     #board .seat { min-width: 0; max-width: 100%; padding: 4px 6px; gap: 3px; border-radius: 12px; }
     #board .seat[data-p="1"], #board .seat[data-p="3"] { align-self: end; }
     #board .seat[data-p="2"] { align-self: start; }
-    #board .seat[data-p="0"] { align-self: end; justify-self: start; }
-    #board .seat[data-p="2"], #board .seat[data-p="0"] { gap: 10px; }
+    #board .seat[data-p="0"] { align-self: end; justify-self: start; grid-auto-flow: row; justify-items: start; gap: 4px; }
+    #board .seat[data-p="2"] { gap: 10px; }
     #board .seat .who { gap: 6px; }
     #board .seat[data-p="1"] .who, #board .seat[data-p="3"] .who { gap: 3px; }
     #board .seat .av { width: clamp(28px, 10vh, 46px); height: clamp(28px, 10vh, 46px); box-shadow: 0 0 0 2px rgba(255, 255, 255, .85), 0 4px 10px rgba(0, 0, 0, .35); }
@@ -811,8 +811,13 @@
     #board .pg-intro-card h3 { font-size: 20px; } #board .pg-intro-card p { font-size: 13.5px; }
     #board .intro-dogs img { width: 36px; height: 36px; }
     #board .pg-btn.big { font-size: 15px; padding: 9px 20px; margin-top: 2px; }
-    #board .seat-pop { width: 180px; padding: 6px 8px; }
-    #board .seat-pop p { font-size: 12px; }
+    /* slip-ups: one compact, solid line (dog + what they did + Caught you!) so it fits the short screen */
+    #board .seat-pop { width: 230px; padding: 6px 8px; gap: 5px 8px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; background: rgba(12, 14, 18, .9); }
+    #board .seat-pop p.sub { display: none; }
+    #board .seat-pop .who-line img { width: 22px; height: 22px; }
+    #board .seat-pop .timer { grid-column: 1 / -1; grid-row: 2; }
+    #board .seat-pop .pg-btn { padding: 5px 10px; font-size: 12px; white-space: nowrap; background: rgba(255, 255, 255, .16); }
+    #board .seat-pop p { font-size: 11.5px; line-height: 1.25; }
     #board .coach-bubble { width: min(460px, calc(100% - 20px)); max-height: calc(100% - 12px); overflow: auto; padding: 10px 14px; gap: 5px; }
     #board .coach-bubble h3 { font-size: 15px; } #board .coach-bubble p, #board .coach-bubble ul { font-size: 12.5px; }
     #board .pg-tip { width: 240px; font-size: 12.5px; padding: 10px 12px; }
@@ -1756,23 +1761,47 @@
     fitUp(p, list);
   }
   // When a player has lots of face-up cards, squeeze them closer together so the row always fits their space
+  // Face-up cards are laid out by hand so every card always shows its number and corner: a row overlapping a third
+  // of each card; squeezed if space is short (never past half a card); and if that's still too wide, a second row
+  // that covers only the bottom half of the first. That way a card you want to steal is never hidden.
   function fitUp(p, list) {
-    var ns = (list || p.up.slice().sort(byGroup(UP_ORDER))).map(el).filter(function (n) { return n.parentNode === p.upEl; });
-    ns.forEach(function (n) { n.style.removeProperty('margin-left'); });
-    if (ns.length < 2) return;
-    var w = ns[0].offsetWidth, bw = board.clientWidth; if (!w) return;
+    var box = p.upEl;
+    var ns = (list || p.up.slice().sort(byGroup(UP_ORDER))).map(el).filter(function (n) { return n.parentNode === box; });
+    UP_BOX.forEach(function (k) { box.style.removeProperty(k); });
+    if (!ns.length) return;
+    ns.forEach(unplace);
+    var w = ns[0].offsetWidth, h = ns[0].offsetHeight, bw = board.clientWidth; if (!w) return;
+    var sideways = shortLand.matches || (board.classList.contains('touch') && innerWidth > innerHeight);
     var maxW = phone.matches ? (p.human ? bw - 40 : Math.min(p.seat.clientWidth, bw / 3) - 10)
       : (p.i === 1 || p.i === 3) ? Math.min(300, bw * 0.2)
-      : (p.human && (shortLand.matches || (board.classList.contains('touch') && innerWidth > innerHeight))) ? bw * 0.2 // you sit in the bottom-left corner
+      : (p.human && sideways) ? bw * 0.2 // you sit in the bottom-left corner
       : Math.min(440, bw * 0.3);
-    var natural = ns.slice(1).reduce(function (t, n) { return t + w + parseFloat(getComputedStyle(n).marginLeft); }, w);
-    if (natural <= maxW) return;
-    var gaps = ns.filter(function (n) { return n.classList.contains('gs'); }).length;
-    var step = Math.max(phone.matches ? 4 : 10, (maxW - w - gaps * 8) / (ns.length - 1));
-    ns.forEach(function (n, i) {
-      if (i) n.style.setProperty('margin-left', (step - w + (n.classList.contains('gs') ? 8 : 0)) + 'px', 'important');
+    maxW = Math.max(maxW, w * 1.6);
+    var n = ns.length, ideal = w * 0.66, least = w * 0.5, gap = 8;
+    var gs = ns.map(function (x, i) { return i > 0 && x.classList.contains('gs'); });
+    var gaps = gs.filter(Boolean).length;
+    var pos = [], W, H;
+    var step = n > 1 ? Math.min(ideal, (maxW - w - gaps * gap) / (n - 1)) : 0;
+    if (n === 1 || step >= least) {
+      var x = 0;
+      ns.forEach(function (c, i) { if (i) x += step + (gs[i] ? gap : 0); pos.push([x, 0]); });
+      W = x + w; H = h;
+    } else {
+      var cols = Math.max(2, Math.floor((maxW - w) / least) + 1), rows = Math.ceil(n / cols);
+      step = Math.min(ideal, (maxW - w) / (cols - 1));
+      var rowStep = h * 0.5;
+      ns.forEach(function (c, i) { pos.push([(i % cols) * step, Math.floor(i / cols) * rowStep]); });
+      W = w + (Math.min(n, cols) - 1) * step; H = h + (rows - 1) * rowStep;
+    }
+    box.style.position = 'relative'; box.style.padding = '0'; box.style.minHeight = '0'; box.style.flex = 'none';
+    box.style.width = Math.ceil(W) + 'px'; box.style.height = Math.ceil(H) + 'px';
+    ns.forEach(function (c, i) {
+      c.style.position = 'absolute'; c.style.setProperty('margin', '0', 'important');
+      c.style.left = pos[i][0].toFixed(1) + 'px'; c.style.top = pos[i][1].toFixed(1) + 'px'; c.style.zIndex = i + 1;
     });
   }
+  var UP_BOX = ['position', 'padding', 'min-height', 'flex', 'width', 'height'];
+  function unplace(n) { ['position', 'margin', 'margin-left', 'margin-top', 'left', 'top', 'z-index'].forEach(function (k) { n.style.removeProperty(k); }); }
   window.addEventListener('resize', function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); });
   function refresh() {
     players.forEach(function (p) {
@@ -1820,6 +1849,7 @@
     var node = el(c);
     var a = fromRect || (node.isConnected ? node.getBoundingClientRect() : null);
     node.classList.remove('glow', 'sel');
+    if (!parent.classList.contains('up')) unplace(node);
     parent.appendChild(node);
     if (parent === hand) fanHand();
     players.forEach(function (p) { if (p.upEl === parent) arrange(p); });
@@ -1855,6 +1885,7 @@
   function popup_(o) {
     // o: { av, img, title, text, buttons: [{label, value, gold}], timer: ms, timeoutValue }
     return new Promise(function (resolve) {
+      if (typeof clearSel === 'function') clearSel(); // a card's explanation never sits on top of a question
       var h = '';
       if (o.av) h += '<img class="pop-av" alt="" src="' + AV + 'av-' + o.av + '.webp">';
       if (o.img) h += '<img class="pop-rule" alt="" src="' + o.img + '">';
@@ -1897,13 +1928,28 @@
     else if (shortLand.matches && (p.i === 1 || p.i === 3)) { x = L + s.width / 2 - w / 2; y = T - h - 6; }
     else if (p.i === 1 || p.i === 3) { x = L + s.width / 2 - w / 2; y = T + s.height + 12; }
     else { x = Math.max(L + s.width, u.right - br.left) + 16; y = T + s.height / 2 - h / 2; }
-    // sideways tablets: the side players' bubbles go in the gap under them, never over your corner or the game buttons
-    if (!phone.matches && !shortLand.matches && board.classList.contains('touch') && (p.i === 1 || p.i === 3)) {
-      var below = (p.i === 1 ? players[0].seat : board.querySelector('.pg-bar')).getBoundingClientRect().top - br.top - 10;
-      if (y + h > below) {
-        if (below - h >= T + s.height - 40) y = below - h;
-        else { x = p.i === 1 ? L + s.width + 12 : L - w - 12; y = T + s.height / 2 - h / 2; } // no room: beside them instead
+    // Sideways phones and tablets: the table is packed, so try a few spots around the player and take the one
+    // that covers the least (other players, the piles, the message, your hand and corner, the game buttons).
+    if (!phone.matches && (shortLand.matches || board.classList.contains('touch'))) {
+      var avoid = [].slice.call(board.querySelectorAll('.seat, .pgdeck, #msg, .pg-pop:not([hidden]), .pg-bar .pg-tools, .pg-bar .pg-goal, .pg-hand .pc, .fs-head > a, .fs-actions'))
+        .filter(function (n) { return n !== p.seat && n.offsetParent; })
+        .map(function (n) { var r = n.getBoundingClientRect(); return { l: r.left - br.left, t: r.top - br.top, r: r.right - br.left, b: r.bottom - br.top, k: n.classList.contains('pgdeck') ? 0.3 : 1 }; });
+      // own seat counts a little (better to cover your own name than someone else's cards), and closer to the dog is better
+      var own = { l: L, t: T, r: L + s.width, b: T + s.height, k: 0.7 };
+      var av = p.avEl.getBoundingClientRect(), ax = av.left - br.left + av.width / 2, ay = av.top - br.top + av.height / 2;
+      var best = null;
+      for (var sy = 8; sy <= br.height - h - 8; sy += 8) {
+        for (var sx = 8; sx <= br.width - w - 8; sx += 10) {
+          var cost = Math.hypot(sx + w / 2 - ax, sy + h / 2 - ay) * 2;
+          if (best && cost >= best.c) continue;
+          avoid.concat([own]).forEach(function (a) {
+            var ox = Math.min(sx + w, a.r) - Math.max(sx, a.l), oy = Math.min(sy + h, a.b) - Math.max(sy, a.t);
+            if (ox > 0 && oy > 0) cost += ox * oy * (a.k || 1);
+          });
+          if (!best || cost < best.c) best = { x: sx, y: sy, c: cost };
+        }
       }
+      return { x: best.x, y: best.y };
     }
     return { x: clamp(x, 10, br.width - w - 10), y: clamp(y, 10, br.height - h - 10) };
   }
@@ -1919,6 +1965,9 @@
     // Keep things in view without jumping around: if the whole board fits on screen, line it up under the
     // top bar; otherwise scroll only as far as needed to show these rects.
     var head = 72, vh = window.innerHeight, br = board.getBoundingClientRect();
+    if (isFS()) return;
+    // sideways phones: the table is exactly one screen tall and the site header steps aside, so just line it up
+    if (shortLand.matches) { if (Math.abs(br.top) > 2) window.scrollBy({ top: br.top, behavior: 'auto' }); return; }
     var top = Math.min.apply(null, rects.map(function (r) { return r.top; }));
     var bot = Math.max.apply(null, rects.map(function (r) { return r.bottom; }));
     if (top >= head && bot <= vh - 8) return;
