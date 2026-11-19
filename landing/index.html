@@ -706,6 +706,27 @@
   }
 
 
+  /* Sideways tablets (iPad, Android tablets): same table, but you sit bottom-left beside your hand and the game's
+     buttons sit bottom-right, so your cards never cover your own photo. */
+  @media (orientation: landscape) and (min-height: 521px) {
+    #board.touch {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr) minmax(0, 1fr);
+      grid-template-rows: minmax(0, auto) minmax(0, 1fr) auto;
+      grid-template-areas: "left top right" "left mid right" "me hand bar";
+      column-gap: 10px; padding: 6px 14px 10px;
+    }
+    #board.touch.fs { grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "head head head" "left top right" "left mid right" "me hand bar"; }
+    #board.touch .pg-table { display: contents; }
+    #board.touch .fs-head { grid-area: head; }
+    #board.touch.fs.apple .fs-head { padding-left: 88px; } /* Safari puts its own ✕ in the top-left corner */
+    #board.touch .pg-bar { grid-area: bar; order: 0; display: grid; justify-items: center; align-content: end; gap: 10px; padding: 0 0 6px; }
+    #board.touch .pg-goal { font-size: 12px; text-align: center; line-height: 1.3; }
+    #board.touch .pg-tools { flex-wrap: wrap; justify-content: center; }
+    #board.touch .pg-hand-wrap { grid-area: hand; padding: 0 0 18px; align-self: end; }
+    #board.touch .seat[data-p="0"] { align-self: end; justify-self: start; grid-auto-flow: row; justify-items: start; gap: 8px; margin-bottom: 6px; }
+    #board.touch .seat[data-p="0"] .up { min-width: 0; }
+    #board.touch .seat[data-p="1"], #board.touch .seat[data-p="3"] { align-self: end; } /* room above them for their speech bubbles */
+  }
   /* Sideways phones (very short screens): the whole table fits on one screen with no scrolling.
      Side players sit left and right, you sit bottom-left beside your hand, the game's buttons bottom-right. */
   @media (max-height: 520px) and (orientation: landscape) {
@@ -1257,9 +1278,10 @@
       [[-395, 255, -6], [-548, 385, 9], [-560, 160, -12], [-385, 75, 15], [-240, 470, -10], [-470, 525, 7]],
       [[395, 260, 6], [550, 390, -9], [562, 160, 12], [395, 75, -15], [20, 475, 4], [275, 510, 11], [520, 520, -7]]
     ],
+    // phones and upright tablets: scattered evenly across the screen, like cards tossed on a table
     narrow: [
-      [[-78, 520, -7], [-194, 640, 10], [-205, 475, -13], [-86, 760, 8], [-200, 850, -9], [-65, 890, 5]],
-      [[78, 520, 7], [194, 640, -10], [205, 475, 13], [86, 760, -8], [200, 850, 9], [-5, 945, -4], [-140, 970, 6]]
+      [[-70, 505, -6], [-205, 488, 10], [-140, 645, -13], [-196, 792, 7], [118, 782, 10], [30, 935, 8]],
+      [[68, 500, 7], [205, 485, -9], [0, 630, 5], [142, 650, 12], [-48, 800, -9], [-130, 925, -11], [180, 920, -5]]
     ]
   };
 
@@ -1732,7 +1754,9 @@
     if (ns.length < 2) return;
     var w = ns[0].offsetWidth, bw = board.clientWidth; if (!w) return;
     var maxW = phone.matches ? (p.human ? bw - 40 : Math.min(p.seat.clientWidth, bw / 3) - 10)
-      : (p.i === 1 || p.i === 3) ? Math.min(300, bw * 0.2) : Math.min(440, bw * 0.3);
+      : (p.i === 1 || p.i === 3) ? Math.min(300, bw * 0.2)
+      : (p.human && (shortLand.matches || (board.classList.contains('touch') && innerWidth > innerHeight))) ? bw * 0.2 // you sit in the bottom-left corner
+      : Math.min(440, bw * 0.3);
     var natural = ns.slice(1).reduce(function (t, n) { return t + w + parseFloat(getComputedStyle(n).marginLeft); }, w);
     if (natural <= maxW) return;
     var gaps = ns.filter(function (n) { return n.classList.contains('gs'); }).length;
@@ -1862,7 +1886,7 @@
     var br = board.getBoundingClientRect(), s = p.seat.getBoundingClientRect(), u = p.upEl.getBoundingClientRect();
     var L = s.left - br.left, T = s.top - br.top, x, y;
     if (phone.matches) { x = L + s.width / 2 - w / 2; y = p.human ? T - h - 10 : T + s.height + 8; }
-    else if (shortLand.matches && (p.i === 1 || p.i === 3)) { x = L + s.width / 2 - w / 2; y = T - h - 6; }
+    else if ((shortLand.matches || (board.classList.contains('touch') && innerWidth > innerHeight)) && (p.i === 1 || p.i === 3)) { x = L + s.width / 2 - w / 2; y = T - h - 6; }
     else if (p.i === 1 || p.i === 3) { x = L + s.width / 2 - w / 2; y = T + s.height + 12; }
     else { x = Math.max(L + s.width, u.right - br.left) + 16; y = T + s.height / 2 - h / 2; }
     return { x: clamp(x, 10, br.width - w - 10), y: clamp(y, 10, br.height - h - 10) };
@@ -2784,6 +2808,7 @@
   var canLock = !apple && !!(screen.orientation && screen.orientation.lock); // Safari can't turn the screen for you
   if (touchDev) {
     board.classList.add('touch');
+    if (apple) board.classList.add('apple');
     var small = Math.min(screen.width, screen.height) < 600;
     $('rotateTitle').textContent = small ? 'Turn your phone sideways to play' : 'Turn your tablet sideways to play';
     if (fsOK && canLock) $('rotateGo').hidden = false;
