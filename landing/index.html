@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Pupcup">
 <title>Pupcup Box Reveal (Draft)</title>
 <meta name="description" content="Draft landing page: the Pupcup box opens as you scroll.">
 <meta name="robots" content="noindex, nofollow">
@@ -148,6 +152,7 @@
     object-fit: cover; pointer-events: none; opacity: 0; transition: opacity 1.2s ease;
   }
   .bg-video.ready { opacity: 1; }
+  .bg-video::-webkit-media-controls-start-playback-button, .bg-video::-webkit-media-controls { display: none !important; -webkit-appearance: none; }
   main { position: relative; z-index: 1; }
   .viewport { position: absolute; inset: 0; perspective: 1900px; perspective-origin: 50% 30%; }
   /* Each flying card gets its own wrapper with its own perspective, so cards stack in order
@@ -494,6 +499,7 @@
   .goal-note { display: grid; gap: 8px; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 197, 66, .12); font-size: 13.5px; line-height: 1.35; }
   .goal-note[hidden] { display: none; }
   .goal-note .pg-btn { justify-self: start; }
+  .pg-tip .tip-wait { flex-basis: 100%; font-size: 13px; color: var(--text-muted); }
   .pg-tip .act { pointer-events: auto; margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
   /* dog cards (rules, steals, blocks) can be opened full size to see the art */
   .pc .zoom {
@@ -750,6 +756,7 @@
     #board .pg-bar .pg-btn { padding: 6px 9px; font-size: 13px; }
     #board .pg-bar .pg-btn .t { display: none; }
     #board .pg-hand-wrap { grid-area: hand; padding: 0 0 20px; align-self: end; }
+    #board.apple .pg-hand-wrap { padding-bottom: 26px; } /* clear of the iPhone's home bar */
     #board .pg-hand { min-height: 0; padding-top: 10px; }
     #board .pg-hand .pc { width: clamp(44px, 16.5vh, 80px); margin: 0 -4px; }
     #board .pg-hand .pc:hover, #board .pg-hand .pc.sel { transform: translateY(-12px) rotate(0) scale(1.05); }
@@ -819,6 +826,9 @@
   .pg-rotate, .pg-back { position: absolute; inset: 0; z-index: 45; display: none; place-items: center; padding: 20px; background: rgba(8, 10, 12, .82); }
   .pg-back:not([hidden]) { display: grid; }
   .pg-btn[hidden] { display: none; }
+  .pg-rotate-card .rot-tip { font-size: 13.5px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 197, 66, .12); }
+  .pg-rotate-card .rot-tip[hidden] { display: none; }
+  .pg-rotate-card .rot-tip b { color: var(--text); }
   @media (orientation: portrait) { .pg-board.touch .pg-rotate { display: grid; } .pg-board.touch .pg-back { display: none; } }
   .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
   .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
@@ -836,7 +846,6 @@
     .pg-hand .pc img, .seat .pc img { box-shadow: 0 3px 6px rgba(0, 0, 0, .3); border-radius: 6px; }
     .pc.pick img { filter: none; box-shadow: 0 0 0 3px rgba(245, 197, 66, .95); border-radius: 6px; }
     .pc.target img { filter: none; box-shadow: 0 0 0 3px rgba(255, 70, 70, .95); border-radius: 6px; }
-    .pg-board.wait .pg-hand .pc:not(.glow) { filter: none; opacity: .8; }
   }
   body.gaming .bg-video { visibility: hidden; }
 
@@ -893,7 +902,8 @@
     v.removeAttribute('autoplay'); v.addEventListener('loadeddata', ready); v.pause();
   } else {
     v.addEventListener('playing', ready);
-    var p = v.play(); if (p && p.catch) p.catch(function () { v.addEventListener('loadeddata', ready); });
+    // if the phone blocks autoplay (iPhone Low Power Mode), leave the video hidden: iOS would draw a play button on it
+    var p = v.play(); if (p && p.catch) p.catch(function () { v.remove(); });
   }
 })();
 </script>
@@ -973,6 +983,7 @@
           <h3 id="rotateTitle">Turn your phone sideways to play</h3>
           <p>The practice game is played sideways, so the whole table fits on your screen.</p>
           <button class="pg-btn gold big" id="rotateGo" type="button" hidden>Play sideways</button>
+          <p class="rot-tip" id="rotateTip" hidden>Want it full screen? Tap <b>Share</b>, then <b>Add to Home Screen</b>, and open Pupcup from there.</p>
         </div>
       </div>
       <div class="pg-back" id="fsBack" hidden>
@@ -1529,7 +1540,7 @@
       var host = exploreEl.offsetParent ? exploreEl.offsetParent.getBoundingClientRect().top : 0;
       // the buttons shrink along with the scene when it has to fit a short or small screen
       var k = mode === 'wide' ? Math.max(0.6, Math.min(1, scale)) : 1;
-      var gap = narrow ? 14 : mode === 'tall' ? Math.round(stageSize().h * 0.05) : Math.round(stageSize().h * 0.11 * k);
+      var gap = narrow ? 30 : mode === 'tall' ? Math.round(stageSize().h * 0.05) : Math.round(stageSize().h * 0.11 * k);
       css(exploreEl, 'top', Math.round(top - host - exploreEl.offsetHeight * (1 + k) / 2 - gap) + 'px');
       css(exploreEl, 'transform', 'translateX(-50%) translateY(' + Math.round((1 - eo) * 14) + 'px) scale(' + k.toFixed(3) + ')');
     }
@@ -1998,10 +2009,11 @@
 
   // ── Card explanations: hover on desktop, tap on phones ──
   var selected = null;
-  function showTip(n, withPlay) {
+  function showTip(n, withPlay, canPlay) {
+    // phones and tablets get buttons; "Play this card" only when it's actually your turn to play it
     var c = n._card;
     tip.innerHTML = '<b>' + title(c) + '</b>' + explain(c) +
-      (withPlay ? '<div class="act"><button type="button" class="pg-btn gold" id="tipPlay">Play this card</button>' +
+      (withPlay ? '<div class="act">' + (canPlay ? '<button type="button" class="pg-btn gold" id="tipPlay">Play this card</button>' : '<span class="tip-wait">You can play it on your turn.</span>') +
         (isDog(c) ? '<button type="button" class="pg-btn" id="tipView">See full card</button>' : '') +
         '<button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
     var br = board.getBoundingClientRect(), r = n.getBoundingClientRect();
@@ -2009,7 +2021,7 @@
     tip.style.top = Math.max(10, r.top - br.top - 150) + 'px';
     tip.classList.add('on');
     if (withPlay) {
-      $('tipPlay').addEventListener('click', function () { var s = selected; clearSel(); if (s) onHandCard(s); });
+      if ($('tipPlay')) $('tipPlay').addEventListener('click', function () { var s = selected; clearSel(); if (s) onHandCard(s); });
       $('tipClose').addEventListener('click', clearSel);
       if ($('tipView')) $('tipView').addEventListener('click', function () { clearSel(); viewCard(c); });
     }
@@ -2027,8 +2039,9 @@
     if (e.target.closest('.zoom')) { e.stopPropagation(); viewCard(n._card); return; }
     if (canHover) { hideTip(); onHandCard(n); return; }
     // phones: first tap explains the card, then "Play this card"
-    if (selected === n) { clearSel(); onHandCard(n); return; }
-    clearSel(); selected = n; n.classList.add('sel'); showTip(n, true);
+    if (selected === n) { clearSel(); if (mode === 'mine' || mode === 'blockPrompt') onHandCard(n); return; }
+    var c = n._card, canPlay = mode === 'mine' || (mode === 'blockPrompt' && c.type === 'block');
+    clearSel(); selected = n; n.classList.add('sel'); showTip(n, true, canPlay);
   });
 
 
@@ -2812,6 +2825,8 @@
     var small = Math.min(screen.width, screen.height) < 600;
     $('rotateTitle').textContent = small ? 'Turn your phone sideways to play' : 'Turn your tablet sideways to play';
     if (fsOK && canLock) $('rotateGo').hidden = false;
+    // iPhone Safari can't go full screen; opened from the Home Screen it has no browser bars at all
+    if (apple && !fsOK && !navigator.standalone) $('rotateTip').hidden = false;
   }
   function lockSideways() {
     if (!touchDev || !canLock || !isFS()) return;
