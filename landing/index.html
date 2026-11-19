@@ -762,7 +762,7 @@
       grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr) minmax(0, 1fr);
       grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-areas: "left top right" "left mid right" "me hand bar";
-      column-gap: 6px; padding: 4px max(8px, env(safe-area-inset-right)) 4px max(8px, env(safe-area-inset-left));
+      column-gap: 12px; padding: 4px max(8px, env(safe-area-inset-right)) 4px max(8px, env(safe-area-inset-left));
     }
     #board.fs { grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "head head head" "left top right" "left mid right" "me hand bar"; }
     #board .pg-table { display: contents; }
@@ -1794,6 +1794,18 @@
       : (p.i === 1 || p.i === 3) ? Math.min(300, bw * 0.2)
       : (p.human && sideways) ? bw * 0.2 // you sit in the bottom-left corner
       : Math.min(440, bw * 0.3);
+    if (sideways) {
+      // sideways phones and tablets: the cards must fit inside the player's own box (the yellow outline when it's
+      // their turn), which must fit inside their column of the table, clear of the Deck and Penalties
+      var cols = getComputedStyle(board).gridTemplateColumns.split(' ').map(parseFloat).filter(function (v) { return v > 0; });
+      if (cols.length === 3) {
+        var cs = getComputedStyle(p.seat), padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + 4;
+        if (p.i === 2) {
+          var who = p.seat.querySelector('.who');
+          maxW = cols[1] - padX - (who ? who.offsetWidth + (parseFloat(cs.columnGap) || 0) : 0);
+        } else maxW = cols[0] - padX;
+      }
+    }
     maxW = Math.max(maxW, w * 1.6);
     var n = ns.length, ideal = w * 0.66, least = w * 0.5, gap = 8;
     var gs = ns.map(function (x, i) { return i > 0 && x.classList.contains('gs'); });
@@ -2092,6 +2104,7 @@
   // ── Card explanations: hover on desktop, tap on phones ──
   var selected = null;
   function showTip(n, withPlay, canPlay) {
+    if (!$('pop').hidden || !$('endPop').hidden) return; // a question is open: it stays on top
     // phones and tablets get buttons; "Play this card" only when it's actually your turn to play it
     var c = n._card;
     tip.innerHTML = '<b>' + title(c) + '</b>' + explain(c) +
@@ -2123,6 +2136,8 @@
     // phones: first tap explains the card, then "Play this card"
     if (selected === n) { clearSel(); if (mode === 'mine' || mode === 'blockPrompt') onHandCard(n); return; }
     var c = n._card, canPlay = mode === 'mine' || (mode === 'blockPrompt' && c.type === 'block');
+    // a question is open in the middle: answer it first (a Block can still be played straight from the hand)
+    if (!$('pop').hidden || !$('endPop').hidden) { clearSel(); if (canPlay && mode === 'blockPrompt') onHandCard(n); return; }
     clearSel(); selected = n; n.classList.add('sel'); showTip(n, true, canPlay);
   });
 
