@@ -342,7 +342,7 @@
   .backs { display: flex; }
   .backs span { width: 16px; height: 22px; border-radius: 3px; background: #fff url("cards/dog-cards-face.webp") center/cover; box-shadow: 0 2px 4px rgba(0, 0, 0, .3); }
   .backs span + span { margin-left: -8px; }
-  .up { display: flex; justify-content: center; min-height: clamp(62px, 9.4vh, 84px); padding-left: 34px; }
+  .up { isolation: isolate; display: flex; justify-content: center; min-height: clamp(62px, 9.4vh, 84px); padding-left: 34px; }
   .pc {
     appearance: none; border: 0; padding: 0; background: none; display: block; position: relative; flex: none;
     width: clamp(44px, 6.6vh, 60px); border-radius: 6px; cursor: default; font: inherit;
@@ -731,8 +731,27 @@
     #board.touch .pg-hand-wrap { grid-area: hand; padding: 0 0 18px; align-self: end; }
     #board.touch .seat[data-p="0"] { align-self: end; justify-self: start; grid-auto-flow: row; justify-items: start; gap: 8px; margin-bottom: 6px; }
     #board.touch .seat[data-p="0"] .up { min-width: 0; }
-    /* a little above centre: room below them (for their speech bubbles) before your corner */
-    #board.touch .seat[data-p="1"], #board.touch .seat[data-p="3"] { align-self: center; margin-bottom: 13vh; }
+    /* the side players line up with the top player; their cards (and speech bubbles) go below them */
+    #board.touch .seat[data-p="1"], #board.touch .seat[data-p="3"] { align-self: start; }
+    /* iPads are held close: smaller face-up cards and photos than on a computer, so everyone stays in place */
+    #board.touch .seat .pc { width: clamp(40px, 6.2vh, 62px); }
+    #board.touch .seat .up { min-height: calc(clamp(40px, 6.2vh, 62px) * 1.42); }
+    #board.touch .seat .av { width: clamp(52px, 7.6vh, 80px); height: clamp(52px, 7.6vh, 80px); }
+    #board.touch .seat .who-txt b { font-size: clamp(15px, 2vh, 20px); }
+    #board.touch .seat .score { font-size: clamp(20px, 2.9vh, 30px); }
+    #board.touch .seat .score small { font-size: clamp(13px, 1.6vh, 17px); }
+    #board.touch .seat .backs span { width: 18px; height: 26px; }
+    #board.touch .seat .backs span + span { margin-left: -9px; }
+    #board.touch .seat { gap: 6px; padding: 8px 10px; }
+    /* questions in the middle: smaller, so they sit inside the middle of the table */
+    #board.touch .pg-pop { width: min(400px, 100%); }
+    #board.touch .pg-pop-card { padding: 20px 26px; gap: 8px; border-radius: 18px; }
+    #board.touch .pg-pop-card h3 { font-size: 20px; }
+    #board.touch .pg-pop-card p { font-size: 15px; line-height: 1.4; }
+    #board.touch .pg-pop-card .pop-av { width: 44px; height: 44px; }
+    #board.touch .pg-pop-card .pop-rule { width: 46px; }
+    #board.touch .pg-pop-card .opts { gap: 8px; margin-top: 4px; }
+    #board.touch .pg-pop-card .opts .pg-btn { font-size: 15px; padding: 10px 18px; }
   }
   /* Sideways phones (very short screens): the whole table fits on one screen with no scrolling.
      Side players sit left and right, you sit bottom-left beside your hand, the game's buttons bottom-right. */
@@ -794,12 +813,11 @@
     #board .rules { min-height: 44px; } #board .rules .pc { width: 32px; }
     #board .play-slot { width: clamp(34px, 11vh, 52px); }
 
-    #board .pg-pop { width: min(440px, 100%); }
+    #board .pg-pop { width: min(420px, 54vw); }
     #board .pg-pop-card { padding: 10px 16px; gap: 5px; border-radius: 16px; }
     #board .pg-pop-card h3 { font-size: 15px; }
     #board .pg-pop-card p { font-size: 12.5px; line-height: 1.35; }
-    #board .pg-pop-card .pop-av { width: 30px; height: 30px; }
-    #board .pg-pop-card .pop-rule { width: 34px; }
+    #board .pg-pop-card .pop-rule, #board .pg-pop-card .pop-av { display: none; } /* the title names the card or dog; no room for the picture */
     #board .pg-pop-card .opts { gap: 6px; margin-top: 2px; }
     #board .pg-pop-card .opts .pg-btn { font-size: 13px; padding: 7px 14px; }
     #board .pg-end-card { padding: 14px 18px; gap: 8px; width: min(420px, 100%); }
@@ -1930,6 +1948,16 @@
     else { x = Math.max(L + s.width, u.right - br.left) + 16; y = T + s.height / 2 - h / 2; }
     // Sideways phones and tablets: the table is packed, so try a few spots around the player and take the one
     // that covers the least (other players, the piles, the message, your hand and corner, the game buttons).
+    // Sideways tablets: the side players' bubbles sit right under their cards, inside their own side of the table
+    // (never out over the piles), and above your corner / the game buttons
+    if (!phone.matches && !shortLand.matches && board.classList.contains('touch') && (p.i === 1 || p.i === 3)) {
+      var pile = (p.i === 1 ? $('mainDeck') : $('penDeck')).getBoundingClientRect();
+      var lo = p.i === 1 ? 8 : pile.right - br.left + 10, hi = p.i === 1 ? pile.left - br.left - w - 10 : br.width - w - 8;
+      x = clamp(L + s.width / 2 - w / 2, lo, Math.max(lo, hi));
+      var floor = (p.i === 1 ? players[0].seat : board.querySelector('.pg-bar .pg-goal')).getBoundingClientRect().top - br.top - 8;
+      y = Math.min(T + s.height + 8, floor - h);
+      return { x: x, y: clamp(y, 10, br.height - h - 10) };
+    }
     if (!phone.matches && (shortLand.matches || board.classList.contains('touch'))) {
       var avoid = [].slice.call(board.querySelectorAll('.seat, .pgdeck, #msg, .pg-pop:not([hidden]), .pg-bar .pg-tools, .pg-bar .pg-goal, .pg-hand .pc, .fs-head > a, .fs-actions'))
         .filter(function (n) { return n !== p.seat && n.offsetParent; })
