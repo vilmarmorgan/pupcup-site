@@ -2304,13 +2304,14 @@
     rule: { title: 'Play your Rule card',
       text: 'Rules are the fun part. Play it and the three dogs have to follow it. If one slips up, you catch them and they draw a penalty.' },
     point: { title: 'Play a Point card',
-      text: 'Point cards go face up in front of you and add to your score. The first to reach the goal wins. Careful: anything face up can be stolen.' },
+      text: function () { return 'Point cards go face up in front of you and add to your score. <b>First to ' + GOAL + ' points wins.</b> Careful: anything face up can be stolen.'; } },
     steal: { title: 'Steal some points',
       text: 'Play your Steal, then pick any face-up card from a dog: points or a rule. It becomes yours. They could Block it, so watch out!' }
   };
   function suggestion() {
     var me = players[0];
-    var want = round === 1 ? ['rule', 'point', 'steal'] : round === 2 ? ['point', 'rule', 'steal'] : ['steal', 'point', 'rule'];
+    // practice order: Points first (that's how you win), then your Rule, then a Steal (and a dog's steal teaches Block)
+    var want = round === 1 ? ['point', 'rule', 'steal'] : round === 2 ? ['rule', 'point', 'steal'] : ['steal', 'rule', 'point'];
     for (var i = 0; i < want.length; i++) {
       var list = me.hand.filter(function (c) { return c.type === want[i] && c.rule !== 'queen-elizapup'; });
       if (want[i] === 'steal' && !targets(me).length) continue;
@@ -2353,7 +2354,7 @@
       if (c) {
         var g = GUIDE[c.type];
         mode = 'guide';
-        await coach([{ target: el(c), title: g.title, text: g.text }], false, 'Practice round ' + round + ' of 3');
+        await coach([{ target: el(c), title: g.title, text: typeof g.text === 'function' ? g.text() : g.text }], false, 'Practice round ' + round + ' of 3');
         mode = 'mine';
         if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
         say('<b>Round ' + round + ' of 3:</b> ' + g.title.charAt(0).toLowerCase() + g.title.slice(1) + '. Or pick any card you like.');
