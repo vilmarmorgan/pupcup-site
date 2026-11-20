@@ -66,5 +66,7 @@ the Open Graph tags.
 
 ## Related Projects
 
-- **pupcup-vip** (github.com/vilmarmorgan/pupcup-vip) — VIP portal at vip.playpupcup.com (separate repo)
+- The sibling repos and the surfaces they serve are listed in the vault, not
+  here. This file is published at the domain, so a repo name or a hostname
+  written here is a public one. Audit, 20 Nov 2026.
 - **TGC-API-REFERENCE.md** — The Game Crafter API reference kept in this repo for context

@@ -9,3 +9,9 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Local tooling, not site content. This repo publishes its root, so anything
+# tracked here is downloadable at the domain. The canonical copies live in
+# vault/99-Meta and are installed by vault/99-Meta/install-hooks.sh.
+tools/scan-secrets.py
+.githooks/

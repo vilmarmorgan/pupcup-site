@@ -19,7 +19,7 @@
   Corrected 28 Oct 2026. This said `Space Grotesk`, which no page on the site
   uses: `index.html`, `howtoplay/index.html` and `kickstarter/index.html` all
   load `family=Jost` and set `font-family: 'Jost'`. The line came over from
-  Pupcup-home with the rest of these files and was never rechecked. Anyone
+  the older repo with the rest of these files and was never rechecked. Anyone
   following it would have built a page in the wrong typeface.
 
 ## Key Sizes

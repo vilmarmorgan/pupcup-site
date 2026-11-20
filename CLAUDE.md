@@ -1,20 +1,24 @@
 # pupcup-site
 
+> **This file is published at playpupcup.com/CLAUDE.md.** GitHub Pages serves
+> `main` from the repo root, so every tracked file here is downloadable at the
+> domain. Confirmed live on 20 Nov 2026. Keep infrastructure detail - other
+> repo names, domain bindings, local paths, what gates `main` - in the vault,
+> not here. Audit:
+> `03-Projects/vilmartian/specs/security-audit-2026-11-20.md`.
+
 The live **playpupcup.com**. Static, deployed by GitHub Pages from `main` at
 the repo root. The `CNAME` file is what binds the domain; do not remove it.
 
 ## What this repo is, and what it is not
 
-This repo was forked out of `vilmarmorgan/Pupcup-home` in July 2026 and is the
-one that kept going. Pupcup-home is **not** serving anything — its GitHub
-Pages is off because the repo is private — but it still contains a `CNAME`
-reading `playpupcup.com`, and an older 28-card PNG set. If you find yourself
-reading Pupcup-home, you are in the wrong repo.
+This repo was forked out of an older one in July 2026 and is the one that kept
+going. If you find yourself reading a repo with a 28-card PNG set and no
+`bone-lick.js`, you are in the wrong one.
 
-Verified 26 Oct 2026: Pages reports "Your site is live at
-http://playpupcup.com/" for this repo, and every asset the live page loads
-(`bone-lick.js`, `nav.js`, `og-image`, `apple-touch-icon`, `favicon.svg`,
-`kickstarter/`) exists here and in neither case in Pupcup-home.
+The history behind that split, and the domain binding it left behind, is in
+the vault record for this site. It is deliberately not written here: this file
+is published at the domain, so anything in it is public.
 
 ## Work in progress: the /about/ page
 
@@ -24,25 +28,21 @@ Joel is building `about/` ("What is Pupcup?") on the `about-page` branch.
   Pages serves `main` from the repo root, so a merge is a publish.
 - `about/CLAUDE.md` is the brief. It loads by itself once anything in that
   folder is touched; read it before building there.
-- `main` requires a pull request and one approval. Branch, push, open a PR.
+- Branch, push, open a PR. The protection rules are in the repo settings.
 - The menu link for a new page is a one-line change to `nav.js` and is
   Vilmar's, separately, after the page is real.
 
 ## Where the records live
 
-Code here; everything else in the vault at `~/vilmartian/vault`:
-
-- `03-Projects/pupcup-site/` — this site's record, backlog and specs
-- `03-Projects/pupcup/` — the game itself, and its decision log
-- `03-Projects/pupcup-vip/` — the VIP customiser, a separate repo
-- `06-Knowledge/gamecrafter-api-reference.md` — The Game Crafter API
-
-Do not duplicate that material here. It was already harvested once out of
-Pupcup-home's `notion-docs/`, and a second copy is how the two drift.
+Code here; everything else in the vault, under this site's own record. The
+vault index lists the related records - the game, the customiser, the Game
+Crafter reference. Do not duplicate that material here. It was already
+harvested once out of the old repo's docs, and a second copy is how the two
+drift.
 
 ## Rules
 
-`.claude/rules/` carries the conventions, moved here from Pupcup-home on
+`.claude/rules/` carries the conventions, moved here from the older repo on
 26 Oct 2026 because this repo had none:
 
 - `design-system.md` — the CSS variables. Verified still accurate:
@@ -60,7 +60,7 @@ was changed.
 **Name the version to expect, and where it shows on screen.** Every push,
 every "reload and look at it". Without it there is no way to tell a stale
 browser from a real bug, and that has cost a whole round trip more than once.
-The rule is in `~/vilmartian/AGENTS.md` and applies to every app, not only
+The rule is in the HQ AGENTS.md and applies to every app, not only
 the ones that happen to have a build number already.
 
 **This site has no version on screen.** There is no build number anywhere
