@@ -4,3 +4,8 @@
 # Editor / OS cruft
 Thumbs.db
 *~
+
+# Secrets never live in the repo. Added 20 Nov 2026 after the audit.
+.env
+.env.*
+!.env.example
