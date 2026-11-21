@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Pupcup">
 <title>Pupcup Box Reveal (Draft)</title>
 <meta name="description" content="Draft landing page: the Pupcup box opens as you scroll.">
 <meta name="robots" content="noindex, nofollow">
@@ -148,6 +152,7 @@
     object-fit: cover; pointer-events: none; opacity: 0; transition: opacity 1.2s ease;
   }
   .bg-video.ready { opacity: 1; }
+  .bg-video::-webkit-media-controls-start-playback-button, .bg-video::-webkit-media-controls { display: none !important; -webkit-appearance: none; }
   main { position: relative; z-index: 1; }
   .viewport { position: absolute; inset: 0; perspective: 1900px; perspective-origin: 50% 30%; }
   /* Each flying card gets its own wrapper with its own perspective, so cards stack in order
@@ -226,9 +231,16 @@
   .explore span { transition: transform .2s; }
   .explore:hover span { transform: translateX(4px); }
   .explore[href="#try"]:hover span { transform: translateY(3px); }
+  @media (max-width: 1100px) {
+    .explore { font-size: 17px; padding: 14px 26px; }
+  }
   @media (max-width: 600px) {
-    .cta-row { flex-direction: column; gap: 10px; }
-    .explore { font-size: 16px; padding: 13px 24px; min-width: 230px; justify-content: center; }
+    .cta-row { gap: 8px; }
+    .explore { font-size: 14px; padding: 10px 15px; gap: 6px; box-shadow: 0 6px 18px rgba(245, 197, 66, .3); }
+  }
+  @media (max-width: 359px) {
+    .cta-row { gap: 6px; }
+    .explore { font-size: 12.5px; padding: 9px 11px; gap: 4px; }
   }
   .hint {
     position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 5;
@@ -254,6 +266,12 @@
     .howto { padding: 8px 12px; font-size: 14px; }
     .hero-copy { top: 80px; }
     .draft-tag { display: none; }
+  }
+  @media (max-height: 500px) and (orientation: landscape) {
+    .top { padding: 8px 16px; }
+    .top img { height: 22px; }
+    .top-actions .howto, .top-actions .buy { padding: 6px 12px; font-size: 13px; }
+    .share-btn .t { display: none; }
   }
   @media (max-width: 400px) {
     .top { padding: 14px 10px; gap: 8px; }
@@ -324,7 +342,7 @@
   .backs { display: flex; }
   .backs span { width: 16px; height: 22px; border-radius: 3px; background: #fff url("cards/dog-cards-face.webp") center/cover; box-shadow: 0 2px 4px rgba(0, 0, 0, .3); }
   .backs span + span { margin-left: -8px; }
-  .up { display: flex; justify-content: center; min-height: clamp(62px, 9.4vh, 84px); padding-left: 34px; }
+  .up { isolation: isolate; display: flex; justify-content: center; min-height: clamp(62px, 9.4vh, 84px); padding-left: 34px; }
   .pc {
     appearance: none; border: 0; padding: 0; background: none; display: block; position: relative; flex: none;
     width: clamp(44px, 6.6vh, 60px); border-radius: 6px; cursor: default; font: inherit;
@@ -341,7 +359,7 @@
   .pc.target img { filter: drop-shadow(0 0 12px rgba(255, 70, 70, .95)); }
 
   /* every player (you included) is bigger: there's room around them on wider screens */
-  @media (min-width: 761px) {
+  @media (min-width: 761px), (max-height: 520px) and (orientation: landscape) {
     .seat .av { width: clamp(60px, 9vh, 84px); height: clamp(60px, 9vh, 84px); box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 8px 18px rgba(0, 0, 0, .35); }
     .seat.turn .av { box-shadow: 0 0 0 4px var(--accent), 0 0 24px rgba(245, 197, 66, .65); }
     .seat .who { gap: 14px; }
@@ -361,7 +379,7 @@
     .seat[data-p="2"] .up, .seat[data-p="0"] .up { min-width: 150px; }
   }
   /* full screen has room to spare, so every player grows again */
-  @media (min-width: 761px) {
+  @media (min-width: 761px), (max-height: 520px) and (orientation: landscape) {
     .pg-board.fs .seat .av { width: clamp(62px, 10.5vh, 140px); height: clamp(62px, 10.5vh, 140px); box-shadow: 0 0 0 5px rgba(255, 255, 255, .85), 0 10px 22px rgba(0, 0, 0, .35); }
     .pg-board.fs .seat.turn .av { box-shadow: 0 0 0 5px var(--accent), 0 0 30px rgba(245, 197, 66, .65); }
     .pg-board.fs .seat .who { gap: 20px; }
@@ -382,7 +400,7 @@
   /* middle */
   /* Tablets (iPad mini, iPad, Android tablets): narrower than a laptop, so the side players put their name under
      their photo, and seats no longer insist on a minimum width. Nothing runs off the edges. */
-  @media (min-width: 761px) and (max-width: 1279px) {
+  @media (min-width: 761px) and (max-width: 1279px), (max-height: 520px) and (orientation: landscape) {
     .pg-table { grid-template-columns: minmax(150px, 1fr) minmax(0, 2fr) minmax(150px, 1fr); padding: 6px 10px; gap: 6px 10px; }
     .pg-board .seat, .pg-board.fs .seat { min-width: 0; max-width: 100%; padding: 10px 12px; }
     .pg-board .seat .who-txt, .pg-board.fs .seat .who-txt { min-width: 0; }
@@ -481,6 +499,7 @@
   .goal-note { display: grid; gap: 8px; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 197, 66, .12); font-size: 13.5px; line-height: 1.35; }
   .goal-note[hidden] { display: none; }
   .goal-note .pg-btn { justify-self: start; }
+  .pg-tip .tip-wait { flex-basis: 100%; font-size: 13px; color: var(--text-muted); }
   .pg-tip .act { pointer-events: auto; margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
   /* dog cards (rules, steals, blocks) can be opened full size to see the art */
   .pc .zoom {
@@ -544,7 +563,7 @@
   .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .25); }
   .dots i.on { background: var(--accent); }
   [data-info] { cursor: help; }
-  @media (max-width: 760px) { .coach-bubble { width: auto; left: 10px !important; right: 10px; } }
+  @media (max-width: 760px) and (min-height: 521px) { .coach-bubble { width: auto; left: 10px !important; right: 10px; } }
   @media (prefers-reduced-motion: reduce) { .coach-ring, .coach-bubble { transition: none; } }
 
   /* messages that need an answer sit in the middle of the table, in place of the usual message */
@@ -644,7 +663,7 @@
   @keyframes superFlash { 0% { opacity: 1 } 100% { opacity: 0 } }
 
   /* phones: opponents in a row on top, smaller cards, tap to see what a card does */
-  @media (max-width: 760px) {
+  @media (max-width: 760px) and (min-height: 521px) {
     .pg { padding: 6px 6px 30px; scroll-margin-top: 58px; }
     .pg-board { border-radius: 20px; height: auto; min-height: calc(100svh - 66px); }
     .pg-bar { padding: 10px 10px 0; }
@@ -691,6 +710,165 @@
     .pg-hand .pc, .pg-tip, .meter i { transition: none; }
     .pg-hand .pc.glow, .pg-pop-card { animation: none; }
   }
+
+
+  /* Sideways tablets (iPad, Android tablets): same table, but you sit bottom-left beside your hand and the game's
+     buttons sit bottom-right, so your cards never cover your own photo. */
+  @media (orientation: landscape) and (min-height: 521px) {
+    #board.touch {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr) minmax(0, 1fr);
+      grid-template-rows: minmax(0, auto) minmax(0, 1fr) auto;
+      grid-template-areas: "left top right" "left mid right" "me hand bar";
+      column-gap: 10px; padding: 6px 14px 10px;
+    }
+    #board.touch.fs { grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "head head head" "left top right" "left mid right" "me hand bar"; }
+    #board.touch .pg-table { display: contents; }
+    #board.touch .fs-head { grid-area: head; }
+    #board.touch.fs.apple .fs-head { padding-left: 88px; } /* Safari puts its own ✕ in the top-left corner */
+    #board.touch .pg-bar { grid-area: bar; order: 0; display: grid; justify-items: center; align-content: end; gap: 10px; padding: 0 0 6px; }
+    #board.touch .pg-goal { font-size: 12px; text-align: center; line-height: 1.3; }
+    #board.touch .pg-tools { flex-wrap: wrap; justify-content: center; }
+    #board.touch .pg-hand-wrap { grid-area: hand; padding: 0 0 18px; align-self: end; }
+    #board.touch .seat[data-p="0"] { align-self: end; justify-self: start; grid-auto-flow: row; justify-items: start; gap: 8px; margin-bottom: 6px; }
+    #board.touch .seat[data-p="0"] .up { min-width: 0; }
+    /* the side players line up with the top player; their cards (and speech bubbles) go below them */
+    #board.touch .seat[data-p="1"], #board.touch .seat[data-p="3"] { align-self: start; }
+    /* iPads are held close: smaller face-up cards and photos than on a computer, so everyone stays in place */
+    #board.touch .seat .pc { width: clamp(40px, 6.2vh, 62px); }
+    #board.touch .seat .up { min-height: calc(clamp(40px, 6.2vh, 62px) * 1.42); }
+    #board.touch .seat .av { width: clamp(52px, 7.6vh, 80px); height: clamp(52px, 7.6vh, 80px); }
+    #board.touch .seat .who-txt b { font-size: clamp(15px, 2vh, 20px); }
+    #board.touch .seat .score { font-size: clamp(20px, 2.9vh, 30px); }
+    #board.touch .seat .score small { font-size: clamp(13px, 1.6vh, 17px); }
+    #board.touch .seat .backs span { width: 18px; height: 26px; }
+    #board.touch .seat .backs span + span { margin-left: -9px; }
+    #board.touch .seat { gap: 6px; padding: 8px 10px; }
+    /* questions in the middle: smaller, so they sit inside the middle of the table */
+    #board.touch .pg-pop { width: min(400px, 100%); }
+    #board.touch .pg-pop-card { padding: 20px 26px; gap: 8px; border-radius: 18px; }
+    #board.touch .pg-pop-card h3 { font-size: 20px; }
+    #board.touch .pg-pop-card p { font-size: 15px; line-height: 1.4; }
+    #board.touch .pg-pop-card .pop-av { width: 44px; height: 44px; }
+    #board.touch .pg-pop-card .pop-rule { width: 46px; }
+    #board.touch .pg-pop-card .opts { gap: 8px; margin-top: 4px; }
+    #board.touch .pg-pop-card .opts .pg-btn { font-size: 15px; padding: 10px 18px; }
+  }
+  /* Sideways phones (very short screens): the whole table fits on one screen with no scrolling.
+     Side players sit left and right, you sit bottom-left beside your hand, the game's buttons bottom-right. */
+  @media (max-height: 520px) and (orientation: landscape) {
+    .pg { padding: 0; scroll-margin-top: 0; }
+    #board {
+      max-width: none; border-radius: 0; min-height: 0; height: 100vh; height: 100dvh;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr) minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-areas: "left top right" "left mid right" "me hand bar";
+      column-gap: 12px; padding: 4px max(8px, env(safe-area-inset-right)) 4px max(8px, env(safe-area-inset-left));
+    }
+    #board.fs { grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "head head head" "left top right" "left mid right" "me hand bar"; }
+    #board .pg-table { display: contents; }
+    #board .fs-head { grid-area: head; padding: 2px 6px 0; }
+    #board .fs-head img { height: 20px; }
+    #board .fs-head .howto, #board .fs-head .buy { padding: 5px 10px; font-size: 12px; }
+    #board .fs-head #fsExit .t { display: none; }
+    #board .pg-bar { grid-area: bar; order: 0; display: grid; justify-items: center; align-content: center; gap: 6px; padding: 0; }
+    #board .pg-goal { font-size: 10px; letter-spacing: .05em; text-align: center; line-height: 1.25; }
+    #board .pg-tools { gap: 5px; }
+    #board .pg-bar .pg-btn { padding: 6px 9px; font-size: 13px; }
+    #board .pg-bar .pg-btn .t { display: none; }
+    #board .pg-hand-wrap { grid-area: hand; padding: 0 0 20px; align-self: end; }
+    #board.apple .pg-hand-wrap { padding-bottom: 26px; } /* clear of the iPhone's home bar */
+    #board .pg-hand { min-height: 0; padding-top: 10px; }
+    #board .pg-hand .pc { width: clamp(44px, 16.5vh, 80px); margin: 0 -4px; }
+    #board .pg-hand .pc:hover, #board .pg-hand .pc.sel { transform: translateY(-12px) rotate(0) scale(1.05); }
+    @keyframes glowS { 0%, 100% { transform: translateY(-6px) scale(1.02) } 50% { transform: translateY(-12px) scale(1.05) } }
+    #board .pg-hand .pc.glow { animation-name: glowS; }
+    #board .pg-hint { font-size: 11px; min-height: 0; }
+
+    #board .seat { min-width: 0; max-width: 100%; padding: 4px 6px; gap: 3px; border-radius: 12px; }
+    #board .seat[data-p="1"], #board .seat[data-p="3"] { align-self: end; }
+    #board .seat[data-p="2"] { align-self: start; }
+    #board .seat[data-p="0"] { align-self: end; justify-self: start; grid-auto-flow: row; justify-items: start; gap: 4px; }
+    #board .seat[data-p="2"] { gap: 10px; }
+    #board .seat .who { gap: 6px; }
+    #board .seat[data-p="1"] .who, #board .seat[data-p="3"] .who { gap: 3px; }
+    #board .seat .av { width: clamp(28px, 10vh, 46px); height: clamp(28px, 10vh, 46px); box-shadow: 0 0 0 2px rgba(255, 255, 255, .85), 0 4px 10px rgba(0, 0, 0, .35); }
+    #board .seat.turn .av { box-shadow: 0 0 0 3px var(--accent), 0 0 14px rgba(245, 197, 66, .65); }
+    #board .seat .who-txt { min-width: 0; gap: 2px; }
+    #board .seat .who-txt b { font-size: 12px; }
+    #board .seat .score { font-size: 15px; }
+    #board .seat .score small { font-size: 10px; }
+    #board .seat .meter { height: 4px; width: 64px; }
+    #board .seat .backs span { width: 11px; height: 15px; }
+    #board .seat .backs span + span { margin-left: -6px; }
+    #board .seat .pc { width: clamp(24px, 8.6vh, 40px); }
+    #board .seat .up { min-height: clamp(34px, 12.4vh, 58px); padding-left: 18px; }
+    #board .seat .up .pc { margin-left: -18px; }
+    #board .seat[data-p="2"] .up, #board .seat[data-p="0"] .up { min-width: 70px; }
+
+    #board .pg-mid { gap: 8px; padding: 0; }
+    #board .pgdeck img { width: clamp(30px, 10.5vh, 50px); box-shadow: 2px 2px 0 #d9d2c4, 4px 4px 0 #c9c1b2, 0 6px 12px rgba(0, 0, 0, .4); }
+    #board .lbl { font-size: 8px; letter-spacing: .04em; }
+    #board .pg-center { min-height: 0; gap: 4px; }
+    #board .pg-center .pg-msg { font-size: 13px; padding: 7px 12px; border-radius: 12px; max-width: 34ch; min-height: 0; }
+    #board .rules { min-height: 44px; } #board .rules .pc { width: 32px; }
+    #board .play-slot { width: clamp(34px, 11vh, 52px); }
+
+    #board .pg-pop { width: min(420px, 54vw); }
+    #board .pg-pop-card { padding: 10px 16px; gap: 5px; border-radius: 16px; }
+    #board .pg-pop-card h3 { font-size: 15px; }
+    #board .pg-pop-card p { font-size: 12.5px; line-height: 1.35; }
+    #board .pg-pop-card .pop-rule, #board .pg-pop-card .pop-av { display: none; } /* the title names the card or dog; no room for the picture */
+    #board .pg-pop-card .opts { gap: 6px; margin-top: 2px; }
+    #board .pg-pop-card .opts .pg-btn { font-size: 13px; padding: 7px 14px; }
+    #board .pg-end-card { padding: 14px 18px; gap: 8px; width: min(420px, 100%); }
+    #board .pg-end-card .pop-av { width: 40px; height: 40px; }
+    #board .pg-end-card h3 { font-size: 18px; } #board .pg-end-card p { font-size: 13.5px; }
+    #board .pg-end-card .opts .pg-btn { font-size: 14px; padding: 8px 14px; }
+    #board .pg-intro { padding: 8px; }
+    #board .pg-intro-card { padding: 14px 20px; gap: 6px; width: min(460px, 100%); }
+    #board .pg-intro-card h3 { font-size: 20px; } #board .pg-intro-card p { font-size: 13.5px; }
+    #board .intro-dogs img { width: 36px; height: 36px; }
+    #board .pg-btn.big { font-size: 15px; padding: 9px 20px; margin-top: 2px; }
+    /* slip-ups: one compact, solid line (dog + what they did + Caught you!) so it fits the short screen */
+    #board .seat-pop { width: 230px; padding: 6px 8px; gap: 5px 8px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; background: rgba(12, 14, 18, .9); }
+    #board .seat-pop p.sub { display: none; }
+    #board .seat-pop .who-line img { width: 22px; height: 22px; }
+    #board .seat-pop .timer { grid-column: 1 / -1; grid-row: 2; }
+    #board .seat-pop .pg-btn { padding: 5px 10px; font-size: 12px; white-space: nowrap; background: rgba(255, 255, 255, .16); }
+    #board .seat-pop p { font-size: 11.5px; line-height: 1.25; }
+    #board .coach-bubble { width: min(460px, calc(100% - 20px)); max-height: calc(100% - 12px); overflow: auto; padding: 10px 14px; gap: 5px; }
+    #board .coach-bubble h3 { font-size: 15px; } #board .coach-bubble p, #board .coach-bubble ul { font-size: 12.5px; }
+    #board .pg-tip { width: 240px; font-size: 12.5px; padding: 10px 12px; }
+    #board .pg-custom { top: 8px; bottom: auto; right: 8px; max-height: calc(100% - 16px); overflow: auto; }
+    /* the site's header steps aside while you're playing */
+    body.game-on .top { transform: translateY(-110%); }
+    .top { transition: transform .25s; }
+  }
+
+
+  /* phones and tablets: the game is played sideways. Upright, a note asks you to turn the screen. */
+  .pg-rotate, .pg-back { position: absolute; inset: 0; z-index: 45; display: none; place-items: center; padding: 20px; background: rgba(8, 10, 12, .82); }
+  .pg-back:not([hidden]) { display: grid; }
+  .pg-btn[hidden] { display: none; }
+  @media (orientation: portrait) { .pg-board.touch .pg-rotate { display: grid; } .pg-board.touch .pg-back { display: none; } }
+  .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
+  .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
+  .pg-rotate-card p { color: var(--text-muted); font-size: 15px; line-height: 1.45; text-wrap: balance; }
+  .rot-ico { color: var(--accent); animation: rotHint 2.4s ease-in-out infinite; }
+  @keyframes rotHint { 0%, 30% { transform: rotate(0) } 55%, 85% { transform: rotate(-90deg) } 100% { transform: rotate(0) } }
+  @media (prefers-reduced-motion: reduce) { .rot-ico { animation: none; } }
+  .pg-link { appearance: none; border: 0; background: none; font: inherit; font-size: 14px; color: var(--text-muted); text-decoration: underline; cursor: pointer; padding: 6px; }
+  /* phones and tablets: lighter drawing, so Safari keeps up (no frosted glass, simpler shadows) */
+  @media (pointer: coarse) {
+    .top .howto, .explore.ghost { -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .top .howto { background: rgba(14, 15, 20, .82); }
+    .explore.ghost { background: rgba(20, 21, 27, .8); }
+    .pc img { filter: none; }
+    .pg-hand .pc img, .seat .pc img { box-shadow: 0 3px 6px rgba(0, 0, 0, .3); border-radius: 6px; }
+    .pc.pick img { filter: none; box-shadow: 0 0 0 3px rgba(245, 197, 66, .95); border-radius: 6px; }
+    .pc.target img { filter: none; box-shadow: 0 0 0 3px rgba(255, 70, 70, .95); border-radius: 6px; }
+  }
+  body.gaming .bg-video { visibility: hidden; }
 
   /* After the reveal */
   .after { padding: 96px 24px 96px; }
@@ -745,7 +923,8 @@
     v.removeAttribute('autoplay'); v.addEventListener('loadeddata', ready); v.pause();
   } else {
     v.addEventListener('playing', ready);
-    var p = v.play(); if (p && p.catch) p.catch(function () { v.addEventListener('loadeddata', ready); });
+    // if the phone blocks autoplay (iPhone Low Power Mode), leave the video hidden: iOS would draw a play button on it
+    var p = v.play(); if (p && p.catch) p.catch(function () { v.remove(); });
   }
 })();
 </script>
@@ -817,6 +996,21 @@
           <h3>Ready to learn how to play?</h3>
           <p>You against three dogs. Everyone starts at 0, and the first to <span class="goal-n">100</span> points wins. Hover or tap any card to see what it does.</p>
           <button class="pg-btn gold big" id="dealBtn" type="button">🃏 Deal the cards</button>
+        </div>
+      </div>
+      <div class="pg-rotate" id="rotateNote" aria-live="polite">
+        <div class="pg-rotate-card">
+          <svg class="rot-ico" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><rect x="20" y="6" width="24" height="44" rx="5"/><path d="M29 43h6" stroke-linecap="round"/><path d="M10 40a24 24 0 0 0 16 18" stroke-linecap="round"/><path d="M21 58l5 0 0-5" stroke-linecap="round"/></svg>
+          <h3 id="rotateTitle">Turn your phone sideways to play</h3>
+          <p>The practice game is played sideways, so the whole table fits on your screen.</p>
+          <button class="pg-btn gold big" id="rotateGo" type="button" hidden>Play sideways</button>
+        </div>
+      </div>
+      <div class="pg-back" id="fsBack" hidden>
+        <div class="pg-rotate-card">
+          <h3>Your game is waiting</h3>
+          <button class="pg-btn gold big" id="fsBackGo" type="button">↩ Return to the game</button>
+          <button class="pg-link" id="fsBackStay" type="button">Play without full screen</button>
         </div>
       </div>
       <div class="card-view" id="cardView" hidden role="dialog" aria-modal="true" aria-label="Full card">
@@ -1044,6 +1238,8 @@
   var leftStack = stack(-STACK_X, LEFT_STACK_TOP, 6);
   var rightStack = stack(STACK_X, RIGHT_STACK_TOP, 6);
   var leftTop = leftStack.z, rightTop = rightStack.z;
+  // for automated layout checks: where the box is on screen
+  window.__pupBox = function () { return [leftStack.face, rightStack.face, baseFront]; };
 
   // Each fan: which compartment, when it starts, and who leaves first
   var EXPLORE_URL = '../';
@@ -1113,9 +1309,10 @@
       [[-395, 255, -6], [-548, 385, 9], [-560, 160, -12], [-385, 75, 15], [-240, 470, -10], [-470, 525, 7]],
       [[395, 260, 6], [550, 390, -9], [562, 160, 12], [395, 75, -15], [20, 475, 4], [275, 510, 11], [520, 520, -7]]
     ],
+    // phones and upright tablets: scattered evenly across the screen, like cards tossed on a table
     narrow: [
-      [[-78, 520, -7], [-194, 640, 10], [-205, 475, -13], [-86, 760, 8], [-200, 850, -9], [-65, 890, 5]],
-      [[78, 520, 7], [194, 640, -10], [205, 475, 13], [86, 760, -8], [200, 850, 9], [-5, 945, -4], [-140, 970, 6]]
+      [[-70, 505, -6], [-205, 488, 10], [-140, 645, -13], [-196, 792, 7], [118, 782, 10], [30, 935, 8]],
+      [[68, 500, 7], [205, 485, -9], [0, 630, 5], [142, 650, 12], [-48, 800, -9], [-130, 925, -11], [180, 920, -5]]
     ]
   };
 
@@ -1136,14 +1333,69 @@
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
   function easeOutBack(t) { var c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
 
-  var scale = 1, narrow = false;
+  // Layout: 'wide' (computers, sideways tablets and phones), 'tall' (upright tablets), 'narrow' (upright phones).
+  // After choosing, the scene measures where everything ends up once the cards have landed, and scales and
+  // shifts the whole thing so all of it fits between the top bar and the bottom of the screen.
+  var scale = 1, narrow = false, mode = 'wide', fitShift = 0, lastW = 0, lastH = 0;
+  var touchy = window.matchMedia('(pointer: coarse)').matches;
+  function stageSize() { var st = fit.closest('.stage') || document.documentElement; return { w: st.clientWidth || window.innerWidth, h: st.clientHeight || window.innerHeight }; }
   function resize() {
-    narrow = window.innerWidth < 760;
-    scale = narrow ? Math.min(window.innerWidth / 640, window.innerHeight / 900)
-                   : Math.min(window.innerWidth / 1420, window.innerHeight / 820, 1.15);
+    var vw = window.innerWidth, vh = stageSize().h;
+    // On phones and tablets the address bar slides in and out while scrolling, which changes the height.
+    // Only lay out again when the width changes (turning the device) or the height changes a lot.
+    if (touchy && lastW && vw === lastW && Math.abs(vh - lastH) < 200) return;
+    lastW = vw; lastH = vh;
+    mode = vw / vh >= 1.1 ? 'wide' : (vw < 600 ? 'narrow' : 'tall');
+    narrow = mode === 'narrow';
+    scale = mode === 'narrow' ? Math.min(vw / 640, vh / 900)
+          : mode === 'tall' ? Math.min(vw / 940, vh / 1150)
+          : Math.min(vw / 1420, vh / 820, 1.15);
+    fitShift = 0;
+    autoFit();
+  }
+  window.__pupFit = function () { return { mode: mode, scale: scale, fitShift: fitShift, U: sceneBounds() }; };
+  function sceneBounds() {
+    var top0 = fit.closest('.stage') ? fit.closest('.stage').getBoundingClientRect().top : 0;
+    var U = { l: 1e9, t: 1e9, r: -1e9, b: -1e9 };
+    function add(n) { var r = n.getBoundingClientRect(); if (!r.width) return; U.l = Math.min(U.l, r.left); U.r = Math.max(U.r, r.right); U.t = Math.min(U.t, r.top - top0); U.b = Math.max(U.b, r.bottom - top0); }
+    groups.forEach(function (g) { g.list.forEach(function (c) { add(c.face); }); });
+    [leftStack.face, rightStack.face, baseFront].forEach(add);
+    return U;
+  }
+  function autoFit() {
+    if (typeof apply !== 'function') return;
+    var keep = revealP, vw = window.innerWidth, vh = stageSize().h;
+    var hdr = document.querySelector('header.top');
+    var top = (hdr ? hdr.offsetHeight : 64) + 8, bottom = vh - 12, left = 8, right = vw - 8;
+    for (var k = 0; k < 3; k++) {
+      apply(1, 0);
+      var U = sceneBounds();
+      var f = Math.min((right - left) / (U.r - U.l), (bottom - top) / (U.b - U.t));
+      // shrink to fit; on upright screens also grow to fill the space (never past 1.4x)
+      if (mode === 'wide') f = Math.min(f, 1);
+      f = Math.min(f, 1.6);
+      if (Math.abs(f - 1) > 0.01) scale *= f;
+      apply(1, 0);
+      U = sceneBounds();
+      // centre it between the top bar and the bottom of the screen
+      fitShift += ((top + bottom) / 2) - ((U.t + U.b) / 2);
+      if (Math.abs(f - 1) <= 0.01) break;
+    }
+    // final touch-ups: perspective makes the moves slightly non-linear, so settle the position and,
+    // if anything still pokes out, shrink a little more
+    for (var j = 0; j < 3; j++) {
+      apply(1, 0);
+      U = sceneBounds();
+      var over = Math.max(0, U.b - bottom) + Math.max(0, top - U.t);
+      if (over > 1 || U.r - U.l > right - left) scale *= Math.min((bottom - top) / (U.b - U.t + over), (right - left) / (U.r - U.l), 0.99);
+      apply(1, 0);
+      U = sceneBounds();
+      fitShift += ((top + bottom) / 2) - ((U.t + U.b) / 2);
+    }
+    apply(1, 0);
+    apply(keep, 0);
   }
   window.addEventListener('resize', resize);
-  resize();
 
   var target = 0, current = 0, revealP = 0;
   function readScroll() {
@@ -1176,7 +1428,7 @@
 
     var spin = lerp(-22, 0, intro) + Math.sin(t * 0.6) * 1.2 * (1 - intro);
     var bob = Math.sin(t * 1.4) * 6 * (1 - intro);
-    var shiftY = lerp(narrow ? 110 : 90, narrow ? 250 : 210, focus) + bob;
+    var shiftY = lerp(narrow ? 110 : 90, (narrow ? 250 : 210) + fitShift, focus) + bob;
 
     var fitT = 'translate(0px,' + shiftY + 'px) scale(' + scale + ')';
     var boxT = 'rotateX(' + TILT + 'deg) rotateZ(' + spin + 'deg)';
@@ -1212,8 +1464,8 @@
     }
 
     groups.forEach(function (g, gi) {
-      var slots = SLOTS[narrow ? 'narrow' : 'wide'][gi];
-      var fs = narrow ? 0.6 : 0.86; // landed card size (all cards land the same size)
+      var slots = SLOTS[mode === 'wide' ? 'wide' : 'narrow'][gi];
+      var fs = mode === 'wide' ? 0.86 : 0.6; // landed card size (all cards land the same size)
 
       g.list.forEach(function (c) {
         var slot = slots[c.r];
@@ -1306,8 +1558,11 @@
       groups.forEach(function (g) { if (g.shown) top = Math.min(top, g.topImgs[g.shown].getBoundingClientRect().top); });
       if (top === Infinity) top = baseFront.getBoundingClientRect().top;
       var host = exploreEl.offsetParent ? exploreEl.offsetParent.getBoundingClientRect().top : 0;
-      css(exploreEl, 'top', Math.round(top - host - exploreEl.offsetHeight - (narrow ? 14 : Math.round(innerHeight * 0.11))) + 'px');
-      css(exploreEl, 'transform', 'translateX(-50%) translateY(' + Math.round((1 - eo) * 14) + 'px)');
+      // the buttons shrink along with the scene when it has to fit a short or small screen
+      var k = mode === 'wide' ? Math.max(0.6, Math.min(1, scale)) : 1;
+      var gap = narrow ? 30 : mode === 'tall' ? Math.round(stageSize().h * 0.05) : Math.round(stageSize().h * 0.11 * k);
+      css(exploreEl, 'top', Math.round(top - host - exploreEl.offsetHeight * (1 + k) / 2 - gap) + 'px');
+      css(exploreEl, 'transform', 'translateX(-50%) translateY(' + Math.round((1 - eo) * 14) + 'px) scale(' + k.toFixed(3) + ')');
     }
   }
 
@@ -1331,6 +1586,7 @@
     }
     requestAnimationFrame(loop);
   }
+  resize();
   readScroll(); current = target;
   requestAnimationFrame(loop);
 })();
@@ -1347,7 +1603,25 @@
   var GOAL = 100, MAX_RULES = 2;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  var phone = window.matchMedia('(max-width: 760px)');
+  var phone = window.matchMedia('(max-width: 760px) and (min-height: 521px)');
+  var shortLand = window.matchMedia('(max-height: 520px) and (orientation: landscape)');
+  /* sideways phones: the game fills the screen, so the site header slides away while it's in view */
+  (function () {
+    var b = document.getElementById('board');
+    if (!('IntersectionObserver' in window) || !b) return;
+    var vid = document.getElementById('bgVideo');
+    new IntersectionObserver(function (es) {
+      var r = es[0].intersectionRatio;
+      document.body.classList.toggle('game-on', r > 0.55);
+      window.__pgSeen = r > 0.3;
+      // the moving background can't be seen behind the game, so it rests while you play (Safari runs smoother)
+      var on = r > 0.55 || !!(document.fullscreenElement || document.webkitFullscreenElement);
+      document.body.classList.toggle('gaming', on);
+      if (vid && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        if (on) vid.pause(); else { var pp = vid.play(); if (pp && pp.catch) pp.catch(function () {}); }
+      }
+    }, { threshold: [0, 0.3, 0.55, 0.8, 1] }).observe(b);
+  })();
   var $ = function (id) { return document.getElementById(id); };
   var board = $('board'), hand = $('hand'), msgEl = $('msg'), hintEl = $('hint'), tip = $('tip');
   var playSlot = $('playSlot'), mainDeck = $('mainDeck'), penDeck = $('penDeck');
@@ -1505,21 +1779,59 @@
     fitUp(p, list);
   }
   // When a player has lots of face-up cards, squeeze them closer together so the row always fits their space
+  // Face-up cards are laid out by hand so every card always shows its number and corner: a row overlapping a third
+  // of each card; squeezed if space is short (never past half a card); and if that's still too wide, a second row
+  // that covers only the bottom half of the first. That way a card you want to steal is never hidden.
   function fitUp(p, list) {
-    var ns = (list || p.up.slice().sort(byGroup(UP_ORDER))).map(el).filter(function (n) { return n.parentNode === p.upEl; });
-    ns.forEach(function (n) { n.style.removeProperty('margin-left'); });
-    if (ns.length < 2) return;
-    var w = ns[0].offsetWidth, bw = board.clientWidth; if (!w) return;
+    var box = p.upEl;
+    var ns = (list || p.up.slice().sort(byGroup(UP_ORDER))).map(el).filter(function (n) { return n.parentNode === box; });
+    UP_BOX.forEach(function (k) { box.style.removeProperty(k); });
+    if (!ns.length) return;
+    ns.forEach(unplace);
+    var w = ns[0].offsetWidth, h = ns[0].offsetHeight, bw = board.clientWidth; if (!w) return;
+    var sideways = shortLand.matches || (board.classList.contains('touch') && innerWidth > innerHeight);
     var maxW = phone.matches ? (p.human ? bw - 40 : Math.min(p.seat.clientWidth, bw / 3) - 10)
-      : (p.i === 1 || p.i === 3) ? Math.min(300, bw * 0.2) : Math.min(440, bw * 0.3);
-    var natural = ns.slice(1).reduce(function (t, n) { return t + w + parseFloat(getComputedStyle(n).marginLeft); }, w);
-    if (natural <= maxW) return;
-    var gaps = ns.filter(function (n) { return n.classList.contains('gs'); }).length;
-    var step = Math.max(phone.matches ? 4 : 10, (maxW - w - gaps * 8) / (ns.length - 1));
-    ns.forEach(function (n, i) {
-      if (i) n.style.setProperty('margin-left', (step - w + (n.classList.contains('gs') ? 8 : 0)) + 'px', 'important');
+      : (p.i === 1 || p.i === 3) ? Math.min(300, bw * 0.2)
+      : (p.human && sideways) ? bw * 0.2 // you sit in the bottom-left corner
+      : Math.min(440, bw * 0.3);
+    if (sideways) {
+      // sideways phones and tablets: the cards must fit inside the player's own box (the yellow outline when it's
+      // their turn), which must fit inside their column of the table, clear of the Deck and Penalties
+      var cols = getComputedStyle(board).gridTemplateColumns.split(' ').map(parseFloat).filter(function (v) { return v > 0; });
+      if (cols.length === 3) {
+        var cs = getComputedStyle(p.seat), padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + 4;
+        if (p.i === 2) {
+          var who = p.seat.querySelector('.who');
+          maxW = cols[1] - padX - (who ? who.offsetWidth + (parseFloat(cs.columnGap) || 0) : 0);
+        } else maxW = cols[0] - padX;
+      }
+    }
+    maxW = Math.max(maxW, w * 1.6);
+    var n = ns.length, ideal = w * 0.66, least = w * 0.5, gap = 8;
+    var gs = ns.map(function (x, i) { return i > 0 && x.classList.contains('gs'); });
+    var gaps = gs.filter(Boolean).length;
+    var pos = [], W, H;
+    var step = n > 1 ? Math.min(ideal, (maxW - w - gaps * gap) / (n - 1)) : 0;
+    if (n === 1 || step >= least) {
+      var x = 0;
+      ns.forEach(function (c, i) { if (i) x += step + (gs[i] ? gap : 0); pos.push([x, 0]); });
+      W = x + w; H = h;
+    } else {
+      var cols = Math.max(2, Math.floor((maxW - w) / least) + 1), rows = Math.ceil(n / cols);
+      step = Math.min(ideal, (maxW - w) / (cols - 1));
+      var rowStep = h * 0.5;
+      ns.forEach(function (c, i) { pos.push([(i % cols) * step, Math.floor(i / cols) * rowStep]); });
+      W = w + (Math.min(n, cols) - 1) * step; H = h + (rows - 1) * rowStep;
+    }
+    box.style.position = 'relative'; box.style.padding = '0'; box.style.minHeight = '0'; box.style.flex = 'none';
+    box.style.width = Math.ceil(W) + 'px'; box.style.height = Math.ceil(H) + 'px';
+    ns.forEach(function (c, i) {
+      c.style.position = 'absolute'; c.style.setProperty('margin', '0', 'important');
+      c.style.left = pos[i][0].toFixed(1) + 'px'; c.style.top = pos[i][1].toFixed(1) + 'px'; c.style.zIndex = i + 1;
     });
   }
+  var UP_BOX = ['position', 'padding', 'min-height', 'flex', 'width', 'height'];
+  function unplace(n) { ['position', 'margin', 'margin-left', 'margin-top', 'left', 'top', 'z-index'].forEach(function (k) { n.style.removeProperty(k); }); }
   window.addEventListener('resize', function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); });
   function refresh() {
     players.forEach(function (p) {
@@ -1567,6 +1879,7 @@
     var node = el(c);
     var a = fromRect || (node.isConnected ? node.getBoundingClientRect() : null);
     node.classList.remove('glow', 'sel');
+    if (!parent.classList.contains('up')) unplace(node);
     parent.appendChild(node);
     if (parent === hand) fanHand();
     players.forEach(function (p) { if (p.upEl === parent) arrange(p); });
@@ -1602,6 +1915,7 @@
   function popup_(o) {
     // o: { av, img, title, text, buttons: [{label, value, gold}], timer: ms, timeoutValue }
     return new Promise(function (resolve) {
+      if (typeof clearSel === 'function') clearSel(); // a card's explanation never sits on top of a question
       var h = '';
       if (o.av) h += '<img class="pop-av" alt="" src="' + AV + 'av-' + o.av + '.webp">';
       if (o.img) h += '<img class="pop-rule" alt="" src="' + o.img + '">';
@@ -1641,8 +1955,42 @@
     var br = board.getBoundingClientRect(), s = p.seat.getBoundingClientRect(), u = p.upEl.getBoundingClientRect();
     var L = s.left - br.left, T = s.top - br.top, x, y;
     if (phone.matches) { x = L + s.width / 2 - w / 2; y = p.human ? T - h - 10 : T + s.height + 8; }
+    else if (shortLand.matches && (p.i === 1 || p.i === 3)) { x = L + s.width / 2 - w / 2; y = T - h - 6; }
     else if (p.i === 1 || p.i === 3) { x = L + s.width / 2 - w / 2; y = T + s.height + 12; }
     else { x = Math.max(L + s.width, u.right - br.left) + 16; y = T + s.height / 2 - h / 2; }
+    // Sideways phones and tablets: the table is packed, so try a few spots around the player and take the one
+    // that covers the least (other players, the piles, the message, your hand and corner, the game buttons).
+    // Sideways tablets: the side players' bubbles sit right under their cards, inside their own side of the table
+    // (never out over the piles), and above your corner / the game buttons
+    if (!phone.matches && !shortLand.matches && board.classList.contains('touch') && (p.i === 1 || p.i === 3)) {
+      var pile = (p.i === 1 ? $('mainDeck') : $('penDeck')).getBoundingClientRect();
+      var lo = p.i === 1 ? 8 : pile.right - br.left + 10, hi = p.i === 1 ? pile.left - br.left - w - 10 : br.width - w - 8;
+      x = clamp(L + s.width / 2 - w / 2, lo, Math.max(lo, hi));
+      var floor = (p.i === 1 ? players[0].seat : board.querySelector('.pg-bar .pg-goal')).getBoundingClientRect().top - br.top - 8;
+      y = Math.min(T + s.height + 8, floor - h);
+      return { x: x, y: clamp(y, 10, br.height - h - 10) };
+    }
+    if (!phone.matches && (shortLand.matches || board.classList.contains('touch'))) {
+      var avoid = [].slice.call(board.querySelectorAll('.seat, .pgdeck, #msg, .pg-pop:not([hidden]), .pg-bar .pg-tools, .pg-bar .pg-goal, .pg-hand .pc, .fs-head > a, .fs-actions'))
+        .filter(function (n) { return n !== p.seat && n.offsetParent; })
+        .map(function (n) { var r = n.getBoundingClientRect(); return { l: r.left - br.left, t: r.top - br.top, r: r.right - br.left, b: r.bottom - br.top, k: n.classList.contains('pgdeck') ? 0.3 : 1 }; });
+      // own seat counts a little (better to cover your own name than someone else's cards), and closer to the dog is better
+      var own = { l: L, t: T, r: L + s.width, b: T + s.height, k: 0.7 };
+      var av = p.avEl.getBoundingClientRect(), ax = av.left - br.left + av.width / 2, ay = av.top - br.top + av.height / 2;
+      var best = null;
+      for (var sy = 8; sy <= br.height - h - 8; sy += 8) {
+        for (var sx = 8; sx <= br.width - w - 8; sx += 10) {
+          var cost = Math.hypot(sx + w / 2 - ax, sy + h / 2 - ay) * 2;
+          if (best && cost >= best.c) continue;
+          avoid.concat([own]).forEach(function (a) {
+            var ox = Math.min(sx + w, a.r) - Math.max(sx, a.l), oy = Math.min(sy + h, a.b) - Math.max(sy, a.t);
+            if (ox > 0 && oy > 0) cost += ox * oy * (a.k || 1);
+          });
+          if (!best || cost < best.c) best = { x: sx, y: sy, c: cost };
+        }
+      }
+      return { x: best.x, y: best.y };
+    }
     return { x: clamp(x, 10, br.width - w - 10), y: clamp(y, 10, br.height - h - 10) };
   }
   function slotOn(target) {
@@ -1657,6 +2005,9 @@
     // Keep things in view without jumping around: if the whole board fits on screen, line it up under the
     // top bar; otherwise scroll only as far as needed to show these rects.
     var head = 72, vh = window.innerHeight, br = board.getBoundingClientRect();
+    if (isFS()) return;
+    // sideways phones: the table is exactly one screen tall and the site header steps aside, so just line it up
+    if (shortLand.matches) { if (Math.abs(br.top) > 2) window.scrollBy({ top: br.top, behavior: 'auto' }); return; }
     var top = Math.min.apply(null, rects.map(function (r) { return r.top; }));
     var bot = Math.max.apply(null, rects.map(function (r) { return r.bottom; }));
     if (top >= head && bot <= vh - 8) return;
@@ -1752,10 +2103,12 @@
 
   // ── Card explanations: hover on desktop, tap on phones ──
   var selected = null;
-  function showTip(n, withPlay) {
+  function showTip(n, withPlay, canPlay) {
+    if (!$('pop').hidden || !$('endPop').hidden) return; // a question is open: it stays on top
+    // phones and tablets get buttons; "Play this card" only when it's actually your turn to play it
     var c = n._card;
     tip.innerHTML = '<b>' + title(c) + '</b>' + explain(c) +
-      (withPlay ? '<div class="act"><button type="button" class="pg-btn gold" id="tipPlay">Play this card</button>' +
+      (withPlay ? '<div class="act">' + (canPlay ? '<button type="button" class="pg-btn gold" id="tipPlay">Play this card</button>' : '<span class="tip-wait">You can play it on your turn.</span>') +
         (isDog(c) ? '<button type="button" class="pg-btn" id="tipView">See full card</button>' : '') +
         '<button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
     var br = board.getBoundingClientRect(), r = n.getBoundingClientRect();
@@ -1763,7 +2116,7 @@
     tip.style.top = Math.max(10, r.top - br.top - 150) + 'px';
     tip.classList.add('on');
     if (withPlay) {
-      $('tipPlay').addEventListener('click', function () { var s = selected; clearSel(); if (s) onHandCard(s); });
+      if ($('tipPlay')) $('tipPlay').addEventListener('click', function () { var s = selected; clearSel(); if (s) onHandCard(s); });
       $('tipClose').addEventListener('click', clearSel);
       if ($('tipView')) $('tipView').addEventListener('click', function () { clearSel(); viewCard(c); });
     }
@@ -1781,8 +2134,11 @@
     if (e.target.closest('.zoom')) { e.stopPropagation(); viewCard(n._card); return; }
     if (canHover) { hideTip(); onHandCard(n); return; }
     // phones: first tap explains the card, then "Play this card"
-    if (selected === n) { clearSel(); onHandCard(n); return; }
-    clearSel(); selected = n; n.classList.add('sel'); showTip(n, true);
+    if (selected === n) { clearSel(); if (mode === 'mine' || mode === 'blockPrompt') onHandCard(n); return; }
+    var c = n._card, canPlay = mode === 'mine' || (mode === 'blockPrompt' && c.type === 'block');
+    // a question is open in the middle: answer it first (a Block can still be played straight from the hand)
+    if (!$('pop').hidden || !$('endPop').hidden) { clearSel(); if (canPlay && mode === 'blockPrompt') onHandCard(n); return; }
+    clearSel(); selected = n; n.classList.add('sel'); showTip(n, true, canPlay);
   });
 
 
@@ -1803,6 +2159,7 @@
       var my = clamp(c.top - br.top + c.height / 2 - bh / 2, 8, br.height - bh - 8);
       // if the highlighted card is in the middle too, keep clear of it
       if (my < y + h && my + bh > y && Math.abs((r.left + r.width / 2) - (c.left + c.width / 2)) < bw / 2 + r.width / 2) my = (y > br.height / 2) ? Math.max(8, y - bh - 12) : y + h + 12;
+      my = clamp(my, 8, Math.max(8, br.height - bh - 8));
       bubble.style.left = clamp(c.left - br.left + c.width / 2 - bw / 2, 10, br.width - bw - 10) + 'px'; bubble.style.top = my + 'px';
       return;
     }
@@ -1947,13 +2304,14 @@
     rule: { title: 'Play your Rule card',
       text: 'Rules are the fun part. Play it and the three dogs have to follow it. If one slips up, you catch them and they draw a penalty.' },
     point: { title: 'Play a Point card',
-      text: 'Point cards go face up in front of you and add to your score. The first to reach the goal wins. Careful: anything face up can be stolen.' },
+      text: function () { return 'Point cards go face up in front of you and add to your score. <b>First to ' + GOAL + ' points wins.</b> Careful: anything face up can be stolen.'; } },
     steal: { title: 'Steal some points',
       text: 'Play your Steal, then pick any face-up card from a dog: points or a rule. It becomes yours. They could Block it, so watch out!' }
   };
   function suggestion() {
     var me = players[0];
-    var want = round === 1 ? ['rule', 'point', 'steal'] : round === 2 ? ['point', 'rule', 'steal'] : ['steal', 'point', 'rule'];
+    // practice order: Points first (that's how you win), then your Rule, then a Steal (and a dog's steal teaches Block)
+    var want = round === 1 ? ['point', 'rule', 'steal'] : round === 2 ? ['rule', 'point', 'steal'] : ['steal', 'rule', 'point'];
     for (var i = 0; i < want.length; i++) {
       var list = me.hand.filter(function (c) { return c.type === want[i] && c.rule !== 'queen-elizapup'; });
       if (want[i] === 'steal' && !targets(me).length) continue;
@@ -1996,7 +2354,7 @@
       if (c) {
         var g = GUIDE[c.type];
         mode = 'guide';
-        await coach([{ target: el(c), title: g.title, text: g.text }], false, 'Practice round ' + round + ' of 3');
+        await coach([{ target: el(c), title: g.title, text: typeof g.text === 'function' ? g.text() : g.text }], false, 'Practice round ' + round + ' of 3');
         mode = 'mine';
         if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
         say('<b>Round ' + round + ' of 3:</b> ' + g.title.charAt(0).toLowerCase() + g.title.slice(1) + '. Or pick any card you like.');
@@ -2552,6 +2910,44 @@
   $('fsExit').addEventListener('click', exitFS);
   // outside full screen, a button to go (back) into it; hidden where full screen isn't available (iPhone)
   if (fsOK) { $('fullBtn').hidden = false; $('fullBtn').addEventListener('click', function () { enterFS(); }); }
+
+  // ── Phones and tablets: the game is played sideways ──
+  // Android: full screen, then the screen is locked sideways. iPad: full screen works but can't be turned for you,
+  // so upright it asks you to turn it. iPhone: no full screen at all, so the game fills the page sideways.
+  var touchDev = window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(hover: hover)').matches;
+  var apple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var canLock = !apple && !!(screen.orientation && screen.orientation.lock); // Safari can't turn the screen for you
+  if (touchDev) {
+    board.classList.add('touch');
+    if (apple) board.classList.add('apple');
+    var small = Math.min(screen.width, screen.height) < 600;
+    $('rotateTitle').textContent = small ? 'Turn your phone sideways to play' : 'Turn your tablet sideways to play';
+    if (fsOK && canLock) $('rotateGo').hidden = false;
+  }
+  function lockSideways() {
+    if (!touchDev || !canLock || !isFS()) return;
+    try { var q = screen.orientation.lock('landscape'); if (q && q.catch) q.catch(function () {}); } catch (e) {}
+  }
+  $('rotateGo').addEventListener('click', function () {
+    enterFS().then(function (ok) { if (ok) { lockSideways(); if (!introEl.hidden) $('dealBtn').focus(); } });
+  });
+  // left full screen in the middle of a game on a phone or tablet: offer the way back in
+  var fsBack = $('fsBack'), stayOut = false;
+  function showBack() { fsBack.hidden = !(touchDev && fsOK && !isFS() && !stayOut && introEl.hidden && !over); }
+  $('fsBackGo').addEventListener('click', function () { fsBack.hidden = true; enterFS().then(function (ok) { if (ok) lockSideways(); else showBack(); }); });
+  $('fsBackStay').addEventListener('click', function () { stayOut = true; fsBack.hidden = true; });
+  function vidRest(on) { var v = $('bgVideo'); if (!v || reduce) return; if (on) v.pause(); else if (!document.body.classList.contains('gaming')) { var q = v.play(); if (q && q.catch) q.catch(function () {}); } }
+  document.addEventListener('fullscreenchange', function () { vidRest(isFS()); if (isFS()) { fsBack.hidden = true; lockSideways(); } else setTimeout(showBack, 50); });
+  document.addEventListener('webkitfullscreenchange', function () { vidRest(isFS()); if (isFS()) fsBack.hidden = true; else setTimeout(showBack, 50); });
+  // turning the phone sideways while looking at the game: line the table up with the screen
+  var lastPortrait = window.matchMedia('(orientation: portrait)').matches;
+  window.addEventListener('resize', function () {
+    var p = window.matchMedia('(orientation: portrait)').matches;
+    if (touchDev && lastPortrait && !p && window.__pgSeen && !isFS()) {
+      setTimeout(function () { $('try').scrollIntoView({ behavior: 'auto', block: 'start' }); }, 250);
+    }
+    lastPortrait = p;
+  });
 
   // ── Share: the top bar shares this page; the one in the game shares a link straight to the game ──
   var toastEl = $('shareToast'), toastT;
