@@ -113,7 +113,7 @@
       'border:2px solid rgba(255,255,255,0.12);border-radius:40px;',
       'display:flex;flex-direction:column;align-items:flex-start;justify-content:center;',
       'gap:20px;padding:56px;text-align:left;}',
-      '.nav-menu-story p{margin:0;max-width:560px;font-size:24px;line-height:1.5;color:var(--text,#f0ece4);}',
+      '.nav-menu-story p{margin:0;max-width:560px;font-size:24px;line-height:1.5;color:var(--ink);}',
       // ── Glass top-bar header: the same blurred strip the card overlay uses.
       //    The menu content scrolls underneath it; the existing circular close X
       //    (kept as-is) sits on top of it. ──
@@ -123,13 +123,13 @@
       '.nav-menu-footer{position:relative;flex:0 0 auto;display:flex;align-items:center;',
       'justify-content:space-between;flex-wrap:wrap;gap:10px 24px;padding:18px 40px;',
       'border-top:1px solid rgba(255,255,255,0.12);font-size:14px;line-height:1.45;',
-      'color:var(--text-muted,#9a9a9e);z-index:1;}',
+      'color:var(--ink-2);z-index:1;}',
       '.nav-menu-footer-left{display:flex;flex-wrap:wrap;gap:4px 20px;flex:1 1 340px;min-width:0;}',
       '.nav-menu-footer .nmf-copy{white-space:nowrap;}',
       '.nav-menu-footer-right{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}',
       '.nav-menu-footer .nmf-heart{display:inline-block;vertical-align:middle;}',
       '.nav-menu-footer a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;}',
-      '.nav-menu-footer a:hover{color:#f0ece4;}',
+      '.nav-menu-footer a:hover{color:var(--ink);}',
       // ── Mobile: stack the two halves, allow the overlay to scroll ──
       '@media (max-width:600px){',
       // Mobile: the whole overlay scrolls normally; halves stack (links, story, footer).
@@ -154,7 +154,7 @@
       '.nav-menu-footer-left{flex-basis:100%;}',
       '}',
       // ── Prism (behind both halves) ──
-      '.nav-menu-prism{position:fixed;inset:0;overflow:hidden;z-index:0;background:#1e2028;pointer-events:none;isolation:isolate;-webkit-clip-path:inset(0);clip-path:inset(0);}',
+      '.nav-menu-prism{position:fixed;inset:0;overflow:hidden;z-index:0;background:var(--bg);pointer-events:none;isolation:isolate;-webkit-clip-path:inset(0);clip-path:inset(0);}',
       // Links left-aligned to each other; the block stays centered in the left half.
       '.nav-menu-links{position:relative;z-index:1;align-items:flex-start;text-align:left;}',
       '.nav-menu-arf{align-items:flex-start;}',

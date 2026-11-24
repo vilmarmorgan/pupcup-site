@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-brand="pupcup" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Box QR code points here; send visitors to the How to Play page. -->
 <meta http-equiv="refresh" content="0; url=../howtoplay/">
 <link rel="canonical" href="../howtoplay/">
+<link rel="stylesheet" href="https://design.vilmarmorgan.com/fonts/fonts.css"> <!-- Jost, from the Vilmartian library: no request to Google -->
+<link rel="stylesheet" href="https://design.vilmarmorgan.com/v/2/tokens.css"> <!-- the Vilmartian library, release 2: sizes, type, space, and Pupcup's colours (ADR-023) -->
 <title>Redirecting to How to Play…</title>
 </head>
-<body style="background:#1e2028;color:#f0ece4;font-family:'Jost',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
-<p>Redirecting to <a href="../howtoplay/" style="color:#f5c542;">How to Play</a>…</p>
+<body style="background:var(--bg);color:var(--ink);font-family:var(--f-ui);display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+<p>Redirecting to <a href="../howtoplay/" style="color:var(--accent);">How to Play</a>…</p>
 <script>location.replace('../howtoplay/');</script>
 </body>
 </html>
