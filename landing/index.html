@@ -450,7 +450,7 @@
   .seat-pop .pg-btn { justify-content: center; font-size: 13px; padding: 5px 10px; background: rgba(255, 255, 255, .12); color: var(--color-white); }
   .seat-pop .pg-btn:hover { background: rgba(255, 255, 255, .22); }
   @keyframes seatPopIn { from { opacity: 0; } to { opacity: 1; } }
-  .coach-bubble ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: #c9c7c2; font-size: 14.5px; line-height: 1.4; }
+  .coach-bubble ul { margin: 0; padding-left: var(--sp-6); display: grid; gap: var(--sp-2); color: #c9c7c2; font-size: var(--fs-xl); line-height: var(--lh-snug); }
   .coach-bubble ul b { color: var(--ink); }
 
   /* hand */
@@ -534,17 +534,21 @@
     box-shadow: 0 0 0 3px var(--accent), 0 0 0 9999px rgba(0, 0, 0, .55);
     transition: left .3s, top .3s, width .3s, height .3s;
   }
+  /* the how-to-play tips, 1.5x the first size (Vilmar, 24 Nov 2026: bigger, easy to read, prominent) */
   .coach-bubble {
-    position: absolute; width: 310px; padding: 16px 18px 14px; border-radius: 16px; background: #15161c;
-    box-shadow: 0 18px 44px rgba(0, 0, 0, .6); display: grid; gap: 8px; transition: left .3s, top .3s;
+    position: absolute; width: min(var(--w-lg), calc(100% - var(--sp-5))); padding: var(--sp-6) var(--sp-7) var(--sp-5); border-radius: var(--r-3xl); background: #15161c;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, .6); display: grid; gap: var(--sp-3); transition: left .3s, top .3s;
   }
-  .coach-bubble .k { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
-  .coach-bubble h3 { font-size: 19px; font-weight: 700; line-height: 1.2; }
-  .coach-bubble p { color: #c9c7c2; font-size: 15px; line-height: 1.45; }
-  .coach-bubble .row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .coach-bubble .k { font-size: var(--fs-md); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .coach-bubble h3 { font-size: var(--fs-3xl); font-weight: 700; line-height: var(--lh-tight); }
+  .coach-bubble p { color: #c9c7c2; font-size: var(--fs-2xl); line-height: var(--lh-snug); }
+  .coach-bubble .tips-h { display: block; margin-top: var(--sp-4); font-size: var(--fs-md); font-weight: var(--fw-semibold); letter-spacing: var(--ls-widest); text-transform: uppercase; color: var(--accent); }
+  .coach-bubble p:empty { display: none; } /* a list in the text closes the <p> early and leaves an empty one */
+  .coach-bubble .row { display: flex; align-items: center; gap: var(--sp-3); margin-top: var(--sp-1-5); }
+  .coach-bubble .row .pg-btn { font-size: var(--fs-xl); padding: var(--sp-3) var(--sp-6); }
   .coach-bubble .row .sp { flex: 1; }
   .coach-bubble .row button { white-space: nowrap; flex-shrink: 0; }
-  .coach-bubble .link { appearance: none; border: 0; background: none; color: var(--ink-2); font: inherit; font-size: 13px; cursor: pointer; padding: 6px 2px; text-decoration: underline; }
+  .coach-bubble .link { appearance: none; border: 0; background: none; color: var(--ink-2); font: inherit; font-size: var(--fs-lg); cursor: pointer; padding: 6px 2px; text-decoration: underline; }
   .coach-bubble .link:hover { color: var(--ink); }
   .dots { display: flex; gap: 6px; }
   .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .25); }
@@ -823,8 +827,8 @@
     #board .seat-pop .timer { grid-column: 1 / -1; grid-row: 2; }
     #board .seat-pop .pg-btn { padding: 5px 10px; font-size: 12px; white-space: nowrap; background: rgba(255, 255, 255, .16); }
     #board .seat-pop p { font-size: 11.5px; line-height: 1.25; }
-    #board .coach-bubble { width: min(460px, calc(100% - 20px)); max-height: calc(100% - 12px); overflow: auto; padding: 10px 14px; gap: 5px; }
-    #board .coach-bubble h3 { font-size: 15px; } #board .coach-bubble p, #board .coach-bubble ul { font-size: 12.5px; }
+    #board .coach-bubble { width: min(var(--w-3xl), calc(100% - var(--sp-5))); max-height: calc(100% - var(--sp-3)); overflow: auto; padding: var(--sp-4) var(--sp-5); gap: var(--sp-2); }
+    #board .coach-bubble h3 { font-size: var(--fs-2xl); } #board .coach-bubble p, #board .coach-bubble ul { font-size: var(--fs-lg); }
     #board .pg-tip { width: 240px; font-size: 12.5px; padding: 10px 12px; }
     #board .pg-custom { top: 8px; bottom: auto; right: 8px; max-height: calc(100% - 16px); overflow: auto; }
     /* the site's header steps aside while you're playing */
@@ -866,17 +870,26 @@
   /* A sideways phone gives the buttons a column only ~120-170px wide: Next takes its own row under
      Customise and New game, and the buttons drop to Apple's 44px minimum tap size. */
   @media (max-height: 520px) and (orientation: landscape) {
+    /* small sideways phones: the tip list one step down, and the tip's button pinned to the bottom of the bubble
+       so it is always on screen, even when the words have to scroll (667x375 cut it off) */
+    #board.touch .coach-bubble ul { font-size: var(--fs-xl); }
+    /* the last tip carries the list of pointers: one step tighter so all of it fits a 375-high screen unscrolled */
+    #board.touch .coach-bubble:has(.tips-h) { gap: var(--sp-1-5); padding-top: var(--sp-3); }
+    #board.touch .coach-bubble:has(.tips-h) h3 { font-size: var(--fs-2xl); }
+    #board.touch .coach-bubble:has(.tips-h) p, #board.touch .coach-bubble:has(.tips-h) ul { font-size: var(--fs-lg); }
+    #board.touch .coach-bubble .tips-h { margin-top: var(--sp-2); }
+    #board .coach-bubble .row { position: sticky; bottom: calc(var(--sp-4) * -1); padding: var(--sp-2) 0 var(--sp-4); margin-bottom: calc(var(--sp-4) * -1); background: inherit; }
     #board.touch .pg-tools #nextBtn { flex-basis: 100%; }
     #board.touch .pg-bar .pg-btn { min-height: 44px; padding: 8px 12px; }
     #board.touch .pg-goal { font-size: 12px; }
   }
   #board.touch .pg-bar .pg-btn { min-width: 48px; min-height: 48px; padding: 10px 14px; font-size: 20px; justify-content: center; }
   #board.touch .pg-bar #nextBtn { font-size: 18px; padding: 10px 20px; font-weight: 700; }
-  #board.touch .coach-bubble .k { font-size: 13px; }
-  #board.touch .coach-bubble h3 { font-size: 22px; }
-  #board.touch .coach-bubble p, #board.touch .coach-bubble ul { font-size: 18px; }
-  #board.touch .coach-bubble .link { font-size: 15px; }
-  #board.touch .coach-bubble .row .pg-btn { font-size: 18px; padding: 12px 22px; }
+  #board.touch .coach-bubble .k, #board.touch .coach-bubble .tips-h { font-size: var(--fs-lg); }
+  #board.touch .coach-bubble h3 { font-size: var(--fs-3xl); }
+  #board.touch .coach-bubble p, #board.touch .coach-bubble ul { font-size: var(--fs-2xl); }
+  #board.touch .coach-bubble .link { font-size: var(--fs-xl); }
+  #board.touch .coach-bubble .row .pg-btn { font-size: var(--fs-2xl); padding: var(--sp-4) var(--sp-8); }
   #board.touch .pg-pop-card h3 { font-size: 23px; }
   #board.touch .pg-pop-card p { font-size: 17px; }
   #board.touch .pg-pop-card .opts .pg-btn { font-size: 17px; padding: 12px 20px; }
@@ -1011,10 +1024,10 @@
           <div class="intro-dogs" aria-hidden="true">
             <img src="avatars/av-frida.webp" alt=""><img src="avatars/av-pupstein.webp" alt=""><img src="avatars/av-kpup.webp" alt="">
           </div>
-          <span class="eyebrow">Practice game</span>
-          <h3>Learn how to play</h3>
-          <p>To get started, shuffle the main deck and penalty deck.</p>
-          <button class="pg-btn gold big" id="dealBtn" type="button">Step 1: Deal 4 cards to each player</button>
+          <span class="eyebrow">How to Play</span>
+          <h3>Step 1: Deal 4 cards to each player</h3>
+          <p>Shuffle the main deck and penalty deck, then deal 4 cards to each player.</p>
+          <button class="pg-btn gold big" id="dealBtn" type="button">Next</button>
         </div>
       </div>
       <div class="pg-rotate" id="rotateNote" aria-live="polite">
@@ -2410,16 +2423,16 @@
   });
 
   // ── Practice rounds: a first game starts with 3 guided rounds, then it's a normal game ──
-  var firstGame = false, round = 0, guideSteal = false, guideSlip = false, forcedTarget = null;
+  var firstGame = false, round = 0, guideSlip = false;
   function guided() { return firstGame && round > 0 && round <= 3; }
   // the label is the eyebrow over each practice tip, and the start of the line under the table (Vilmar, 24 Nov 2026)
   var GUIDE = {
     point: { label: 'Step 2', title: 'Play a Point card',
       text: function () { return 'On your turn, play 1 card from your hand. Place Point cards face up in front of you. <b>First player to ' + GOAL + ' total points wins.</b>'; } },
     rule: { label: 'Rule Cards', title: 'Play a Rule card',
-      text: 'Rule cards are the fun part. When you play a Rule card, every other player has to follow your rule. You’re exempt from your own rule.' },
+      text: 'Instead of a Point card, you can play a Rule card. Rule cards are fun: when you play one, every other player has to follow your rule. Btw, you’re exempt from your own rule!' },
     steal: { label: 'Steal Cards', title: 'Steal some points',
-      text: 'Play a Steal card to take one card from another player. But be careful, because they can play a Block to stop you.' }
+      text: 'Play a Steal card to take one card from another player. But be careful! They can play a Block to stop you.' }
   };
   function suggestion() {
     var me = players[0];
@@ -2441,12 +2454,7 @@
     var me = players[0];
     if (firstGame) {
       round++;
-      if (round === 4) {
-        firstGame = false; markSeen('guided');
-        say('Practice rounds done. <b>Now anything goes!</b>');
-        await coach([{ target: me.seat, title: 'Start the race!', btn: 'Let’s Play Pupcup!',
-          text: 'You’re now ready to play. Have fun!!' }], false, 'That’s it!');
-      }
+      if (round === 4) await endPractice(); // only if your third turn was a discard; normally it ends in onHandCard
     }
     mode = 'mine'; waiting(false); refresh();
     var playable = me.hand.some(function (c) { return c.type === 'point' || c.type === 'rule' || (c.type === 'steal' && targets(me).length); });
@@ -2470,9 +2478,20 @@
         await coach([{ target: el(c), title: g.title, text: typeof g.text === 'function' ? g.text() : g.text }], false, g.label);
         mode = 'mine';
         if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
-        say('<b>' + g.label + ':</b> ' + g.title.charAt(0).toLowerCase() + g.title.slice(1) + '. Or pick any card you like.');
+        say('<b>' + g.label + ':</b> ' + g.title + '.');
       }
     }
+  }
+  // the last practice tip comes straight after your third card (the Steal), before the dogs move (Vilmar, 24 Nov 2026)
+  async function endPractice() {
+    firstGame = false; markSeen('guided');
+    say('Practice rounds done. <b>Now anything goes!</b>');
+    await coach([{ target: players[0].seat, title: 'Start the race!', btn: 'Let’s Play Pupcup!',
+      text: 'You’re ready to play. Have fun!!' +
+        '<span class="tips-h">Tips for a fun game</span><ul>' +
+        '<li><b>Games too quick?</b> Play to 150 points.</li>' +
+        '<li><b>Start with 2 rules max</b> in play at once. More rules, harder game.</li>' +
+        '<li><b>Go after your friends.</b> Trick them into breaking your rule!</li></ul>' }], false, 'That’s it!');
   }
   function onHandCard(n) {
     var c = n._card, me = players[0];
@@ -2486,7 +2505,7 @@
     if (c.type === 'steal' && !targets(me).length) { shake(n); say('Nobody has a face-up card to steal yet.'); return; }
     [].forEach.call(hand.children, function (x) { x.classList.remove('glow'); });
     mode = 'busy'; waiting(true); hint('');
-    takeTurn(me, c).then(next);
+    takeTurn(me, c).then(function () { return firstGame && round === 3 ? endPractice() : null; }).then(next);
   }
   function targets(p) {
     var t = [];
@@ -2730,7 +2749,7 @@
     });
     if (!dogs.length) return;
     var forced = guided() && !guideSlip && dogs.some(function (d) { return liveFor(d).some(function (r) { return r.owner.human && r.rule !== 'lady-puppa'; }); });
-    if (!forced && Math.random() > 0.3) return;
+    if (!forced && (guided() || Math.random() > 0.3)) return; // practice: only the one forced slip-up
     if (forced) {
       guideSlip = true;
       dogs = dogs.filter(function (d) { return liveFor(d).some(function (r) { return r.owner.human && r.rule !== 'lady-puppa'; }); });
@@ -2742,14 +2761,15 @@
   // Lady Puppa's Rule (growl when playing a card) can only be broken by whoever just played
   async function growlSlip(p) {
     var r = liveFor(p).filter(function (x) { return x.rule === 'lady-puppa'; })[0];
-    if (!r || Math.random() > 0.3) return;
+    if (!r) return;
+    if (guided()) { if (guideSlip || !r.owner.human) return; guideSlip = true; await wait(300); return slip(p, r, true, null); } // practice: one slip-up, once
+    if (Math.random() > 0.3) return;
     await wait(300);
     await slip(p, r, false, null);
   }
 
   // ── How the dogs play ──
   function botTarget(p) {
-    if (forcedTarget && forcedTarget.owner && forcedTarget.owner !== p) { var f = forcedTarget; forcedTarget = null; return f; }
     var t = targets(p);
     t.sort(function (a, b) {
       var va = a.type === 'rule' ? 15 : a.v, vb = b.type === 'rule' ? 15 : b.v;
@@ -2758,15 +2778,8 @@
     return Math.random() < 0.75 ? t[0] : t[rnd(t.length)];
   }
   function guidedPick(p) {
-    // practice rounds: the dogs play Point cards only (no Rules, no Steals) until you have been shown Steal in
-    // round 3; then one dog tries to steal from you so you can Block it (Vilmar, 24 Nov 2026)
-    var me = players[0], h = p.hand;
-    if (round === 3 && !guideSteal) {
-      var st = h.filter(function (c) { return c.type === 'steal'; })[0];
-      var mineUp = me.up.filter(function (c) { return c.type === 'point'; }).sort(function (a, b) { return b.v - a.v; })
-        .concat(me.up.filter(function (c) { return c.type === 'rule'; }));
-      if (st && mineUp.length) { guideSteal = true; forcedTarget = mineUp[0]; return st; }
-    }
+    // practice rounds: the dogs play Point cards only, no Rules and no Steals (Vilmar, 24 Nov 2026)
+    var h = p.hand;
     var pts = h.filter(function (c) { return c.type === 'point' && score(p) + c.v < GOAL; });
     return pts.length ? pts[rnd(pts.length)] : null;
   }
@@ -2844,7 +2857,7 @@
     clearTimeout(popTimer); pop.hidden = true; $('endPop').hidden = true; centerEl.classList.remove('popping'); clearSel(); board.classList.remove('picking');
     [hand, playSlot].forEach(function (n) { n.textContent = ''; });
     if (seatPopEl) { seatPopEl.remove(); seatPopEl = null; }
-    firstGame = !seen('guided'); round = 0; guideSteal = false; guideSlip = false; forcedTarget = null;
+    firstGame = !seen('guided'); round = 0; guideSlip = false;
     deck = newDeck(true); pens = newPens(); rules = []; over = false; mode = 'intro';
     var me = { i: 0, name: 'You', av: myDog, human: true };
     players = [me].concat(BOTS.map(function (b, k) { return { i: k + 1, name: b.name, av: b.av }; }));
