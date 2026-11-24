@@ -1284,6 +1284,7 @@
   // when the lid was nearly gone. Now 656vh: the box opens in the first ~0.7 screens and the cards start
   // while the lid is still floating off. Card moves keep their old speed per screen of scrolling:
   // CARD_K turns old timeline units (714vh of reveal) into the new ones (500vh).
+  var exploreRoom = null; // px between the lowest landed card above the two buttons and the decks (set in autoFit)
   var CARD_START = 0.1, CARD_K = 714 / 500; // 0.1: the first cards rise while the lid is still in view
   function makeGroup(g, fromX, pileTop, start, step, heroFirst, front) {
     var n = g.cards.length;
@@ -1434,8 +1435,27 @@
       fitShift += ((top + bottom) / 2) - ((U.t + U.b) / 2);
     }
     apply(1, 0);
+    measureExploreRoom();
     apply(keep, 0);
     placeHero();
+  }
+  // With the cards landed (p = 1): how much room is there between the lowest card over the two buttons and
+  // the top of the decks? updateExplore centres the buttons in that gap, so a card never sits on them
+  // (Vilmar, 24 Nov 2026: on desktop the top cards touched the buttons).
+  function measureExploreRoom() {
+    exploreRoom = null;
+    var ex = document.getElementById('explore'); if (!ex) return;
+    var k = mode === 'wide' ? Math.max(0.6, Math.min(1, scale)) : 1;
+    var half = ex.offsetWidth * k / 2 + 16, cx = window.innerWidth / 2;
+    var deckTop = Infinity;
+    groups.forEach(function (g) { if (g.shown) deckTop = Math.min(deckTop, g.topImgs[g.shown].getBoundingClientRect().top); });
+    if (deckTop === Infinity) deckTop = baseFront.getBoundingClientRect().top;
+    var low = -Infinity;
+    groups.forEach(function (g) { g.list.forEach(function (c) {
+      var r = c.face.getBoundingClientRect();
+      if (r.width && r.right > cx - half && r.left < cx + half && r.bottom < deckTop) low = Math.max(low, r.bottom);
+    }); });
+    if (low > -Infinity) exploreRoom = deckTop - low;
   }
   // The heading sits halfway between the top bar and the top of the closed box (p = 0), measured from the
   // real lid on screen rather than a fixed distance, because the box moves with the screen size.
@@ -1521,6 +1541,32 @@
       return (clipBehindWall = 'path(evenodd, "' + hole + '")');
     }
 
+    // The lid is still in the air when the first cards rise (CARD_START), and the card layer draws over
+    // everything in the box's scene, so cut away the part of each card that the lid covers: the cards then
+    // read as beneath it (Vilmar, 24 Nov 2026). Measured only while the lid is up and cards are out.
+    var lidHole = null;
+    if (away < 1 && p > CARD_START) {
+      var LR = cardLayer.getBoundingClientRect(), lt = 1e9, ll = 1e9, lr = -1e9, lb = -1e9;
+      lid.querySelectorAll('.f').forEach(function (n) {
+        var r = n.getBoundingClientRect(); if (!r.width) return;
+        lt = Math.min(lt, r.top); ll = Math.min(ll, r.left); lr = Math.max(lr, r.right); lb = Math.max(lb, r.bottom);
+      });
+      if (lb > LR.top && lb > lt) lidHole = { l: Math.round(ll - LR.left), t: Math.round(lt - LR.top), r: Math.round(lr - LR.left), b: Math.round(lb - LR.top) };
+    }
+    function cardClip(inside) {
+      if (!lidHole) return inside ? wallClip() : 'none';
+      var LR = cardLayer.getBoundingClientRect(), b = lidHole.b, path = 'M0 0 H' + LR.width + ' V' + LR.height + ' H0 Z';
+      if (inside) {
+        // the wall's hole starts at the front wall's top edge; keep the lid's hole above it (evenodd would
+        // turn an overlap back into a visible patch)
+        var fr = baseFront.getBoundingClientRect(), wt = Math.round(fr.top - LR.top + 1);
+        path += ' M' + Math.round(fr.left - LR.left - 4) + ' ' + wt + ' H' + Math.round(fr.right - LR.left + 4) + ' V' + Math.round(LR.height) + ' H' + Math.round(fr.left - LR.left - 4) + ' Z';
+        b = Math.min(b, wt);
+      }
+      if (b > lidHole.t) path += ' M' + lidHole.l + ' ' + lidHole.t + ' H' + lidHole.r + ' V' + b + ' H' + lidHole.l + ' Z';
+      return 'path(evenodd, "' + path + '")';
+    }
+
     groups.forEach(function (g, gi) {
       var slots = SLOTS[mode === 'wide' ? 'wide' : 'narrow'][gi];
       var fs = mode === 'wide' ? 0.86 : 0.6; // landed card size (all cards land the same size)
@@ -1555,7 +1601,7 @@
         var halfH = CH * s / 2, halfW = CW * s / 2;
         var bottom = z - halfH * Math.sin(TILT * turn * Math.PI / 180);
         var inside = bottom < H && Math.abs(x) - halfW < W / 2;
-        css(c.wrap, 'clipPath', inside ? wallClip() : 'none');
+        css(c.wrap, 'clipPath', cardClip(inside));
         // earlier out = in front; the two first cards tie, Frida wins
         c.baseZ = 2000 - Math.round(st * 1000) * 2 + (gi === 1 ? 1 : 0);
         if (!c.lifted) css(c.wrap, 'zIndex', c.baseZ);
@@ -1619,7 +1665,13 @@
       // the buttons shrink along with the scene when it has to fit a short or small screen
       var k = mode === 'wide' ? Math.max(0.6, Math.min(1, scale)) : 1;
       var gap = narrow ? 30 : mode === 'tall' ? Math.round(stageSize().h * 0.05) : Math.round(stageSize().h * 0.11 * k);
-      css(exploreEl, 'top', Math.round(top - host - exploreEl.offsetHeight * (1 + k) / 2 - gap) + 'px');
+      var hS = exploreEl.offsetHeight * k;
+      if (exploreRoom !== null && exploreRoom >= hS + 48) {
+        // centred between the lowest card above and the decks, at least 24px clear of both
+        css(exploreEl, 'top', Math.round(top - host - exploreRoom / 2 - exploreEl.offsetHeight / 2) + 'px');
+      } else {
+        css(exploreEl, 'top', Math.round(top - host - exploreEl.offsetHeight * (1 + k) / 2 - gap) + 'px');
+      }
       css(exploreEl, 'transform', 'translateX(-50%) translateY(' + Math.round((1 - eo) * 14) + 'px) scale(' + k.toFixed(3) + ')');
     }
   }
