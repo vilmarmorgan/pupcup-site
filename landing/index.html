@@ -142,7 +142,11 @@
   /* Pinned reveal */
   #reveal { position: relative; height: 893vh; }
   .stage {
-    position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
+    position: sticky; top: 0; height: 100vh; height: 100svh;
+    /* Clip sideways only. The stage is sized with the browser bars showing (svh); when they collapse on a
+       phone the screen grows taller than the stage, and clipping vertically cut the floor and shadows off
+       in a hard line. 'hidden' stays as the fallback for browsers without 'clip'. */
+    overflow: hidden; overflow: clip visible;
     background: transparent; /* the homepage's moving colours play behind it as a video */
   }
   /* The homepage's drifting colour background, pre-recorded as a looping video.
@@ -869,6 +873,36 @@
     .pc.target img { filter: none; box-shadow: 0 0 0 3px rgba(255, 70, 70, .95); border-radius: 6px; }
   }
   body.gaming .bg-video { visibility: hidden; }
+  #nextBtn:disabled { opacity: .4; cursor: default; }
+  #nextBtn:disabled:hover { background: var(--accent); }
+  /* Phones and tablets: bigger text and buttons in the game (Vilmar, 23 Nov 2026: too small to read).
+     '#board.touch' outranks the sideways-phone rules above, so these win wherever they meet. */
+  #board.touch .pg-goal { font-size: 13px; }
+  #board.touch .pg-hint { font-size: 14px; }
+  #board.touch .pg-tools { gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 100%; }
+  /* A sideways phone gives the buttons a column only ~120-170px wide: Next takes its own row under
+     Customise and New game, and the buttons drop to Apple's 44px minimum tap size. */
+  @media (max-height: 520px) and (orientation: landscape) {
+    #board.touch .pg-tools #nextBtn { flex-basis: 100%; }
+    #board.touch .pg-bar .pg-btn { min-height: 44px; padding: 8px 12px; }
+    #board.touch .pg-goal { font-size: 12px; }
+  }
+  #board.touch .pg-bar .pg-btn { min-width: 48px; min-height: 48px; padding: 10px 14px; font-size: 20px; justify-content: center; }
+  #board.touch .pg-bar #nextBtn { font-size: 18px; padding: 10px 20px; font-weight: 700; }
+  #board.touch .coach-bubble .k { font-size: 13px; }
+  #board.touch .coach-bubble h3 { font-size: 22px; }
+  #board.touch .coach-bubble p, #board.touch .coach-bubble ul { font-size: 18px; }
+  #board.touch .coach-bubble .link { font-size: 15px; }
+  #board.touch .coach-bubble .row .pg-btn { font-size: 18px; padding: 12px 22px; }
+  #board.touch .pg-pop-card h3 { font-size: 23px; }
+  #board.touch .pg-pop-card p { font-size: 17px; }
+  #board.touch .pg-pop-card .opts .pg-btn { font-size: 17px; padding: 12px 20px; }
+  /* the card explanation you get when you tap a card. 280px wide because the script centres it on the card
+     assuming that width (showTip: br.width - 280 and - 135) */
+  #board.touch .pg-tip { width: 280px; font-size: 15px; line-height: 1.4; padding: 12px 14px; }
+  #board.touch .pg-tip b { font-size: 18px; }
+  #board.touch .pg-tip .tip-wait { font-size: 14px; }
+  #board.touch .pg-tip .act .pg-btn { font-size: 16px; padding: 10px 16px; }
 
   /* After the reveal */
   .after { padding: 96px 24px 96px; }
@@ -936,7 +970,7 @@
       <div class="cards-layer" id="cardLayer"></div>
 
       <div class="hero-copy" id="heroCopy">
-        <h1>Open the box. <em>Meet the dogs.</em></h1>
+        <h1>Let’s Play <em>Pupcup</em></h1>
       </div>
 
       <div class="hint" id="hint"><i></i>Scroll to open</div>
@@ -964,6 +998,7 @@
           <button class="pg-btn" id="fullBtn" type="button" hidden>⛶ <span class="t">Full screen</span></button>
           <button class="pg-btn" id="customBtn" type="button" aria-expanded="false" aria-controls="customPanel">🎨 <span class="t">Customise</span></button>
           <button class="pg-btn" id="restartBtn" type="button">↻ <span class="t">New game</span></button>
+          <button class="pg-btn gold" id="nextBtn" type="button" disabled aria-label="Skip to the next step">Next <span aria-hidden="true">→</span></button>
         </div>
       </div>
       <div class="pg-table" id="tableEl">
@@ -1394,7 +1429,24 @@
     }
     apply(1, 0);
     apply(keep, 0);
+    placeHero();
   }
+  // The heading sits halfway between the top bar and the top of the closed box (p = 0), measured from the
+  // real lid on screen rather than a fixed distance, because the box moves with the screen size.
+  function placeHero() {
+    var hdr = document.querySelector('header.top'), st = fit.closest('.stage');
+    if (!hdr || !st || typeof apply !== 'function') return;
+    var keep = revealP;
+    apply(0, 0);
+    var top0 = st.getBoundingClientRect().top, boxTop = 1e9;
+    lid.querySelectorAll('.f').forEach(function (n) { var r = n.getBoundingClientRect(); if (r.width) boxTop = Math.min(boxTop, r.top - top0); });
+    apply(keep, 0);
+    if (boxTop > 1e8) return;
+    var hdrBottom = hdr.offsetHeight, h = heroCopy.offsetHeight;
+    heroCopy.style.top = Math.max(hdrBottom + 8, (hdrBottom + boxTop) / 2 - h / 2) + 'px';
+  }
+  // the heading's height changes once the web font arrives
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeHero);
   window.addEventListener('resize', resize);
 
   var target = 0, current = 0, revealP = 0;
@@ -1678,7 +1730,23 @@
     var g = gen;
     return new Promise(function (res, rej) { p.then(function (v) { if (g === gen) res(v); }, function (e) { if (g === gen) rej(e); }); });
   }
-  function wait(ms) { return guard(new Promise(function (r) { setTimeout(r, reduce ? Math.min(ms, 150) : ms * pace); })); }
+  // Every pause registers itself so the Next button can end it early.
+  var skippers = [];
+  function pause(real) {
+    return guard(new Promise(function (r) {
+      var t = setTimeout(done, real);
+      function done() { clearTimeout(t); var k = skippers.indexOf(done); if (k >= 0) skippers.splice(k, 1); syncNext(); r(); }
+      skippers.push(done); syncNext();
+    }));
+  }
+  function wait(ms) { return pause(reduce ? Math.min(ms, 150) : ms * pace); }
+  // a pause that ignores the game speed setting
+  function waitFixed(ms) { return pause(reduce ? Math.min(ms, 150) : ms); }
+  // Next is live while there is something to skip: a pause, or a tip on screen
+  function syncNext() {
+    var b = document.getElementById('nextBtn'), c = document.getElementById('coach');
+    if (b) b.disabled = (!c || c.hidden) && !skippers.length;
+  }
   // "Caught you!" and rule-test timers get longer on slower speeds (and during the practice rounds)
   function timeFor(ms) { return Math.round(ms * Math.max(1, pace / 1.25) * (guided() ? 1.6 : 1)); }
 
@@ -2193,13 +2261,13 @@
                 : (label ? '<span class="sp"></span>' : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>') +
                   '<button type="button" class="pg-btn gold" data-a="next">' + (st.btn || 'Got it') + '</button>') +
           '</div>';
-        coachEl.hidden = false;
+        coachEl.hidden = false; syncNext();
         place(st.target); fitView();
         setTimeout(function () { if (!coachEl.hidden) place(st.target); }, 450);
         var go = bubble.querySelector('[data-a="next"]'); if (go) go.focus({ preventScroll: true });
       }
       function finish() {
-        coachEl.hidden = true;
+        coachEl.hidden = true; syncNext();
         window.removeEventListener('resize', onMove); window.removeEventListener('scroll', onMove);
         resolve();
       }
@@ -2675,10 +2743,11 @@
     // while a rule is in play, remind you to keep an eye on the dogs
     var watch = players.some(function (o) { return !o.human && liveFor(o).length; });
     hint(watch ? '👀 A rule is in play. Watch every dog, not just ' + p.name + '!' : '');
-    await wait(900);
+    // half a second of thinking in total, whatever the game speed (Vilmar, 23 Nov 2026: it felt too long)
+    await waitFixed(250);
     await otherSlip(p); // another dog may slip up while this one is thinking
     say('<b>' + p.name + '</b> is thinking…');
-    await wait(500);
+    await waitFixed(250);
     var c = botPick(p);
     if (!c) {
       c = p.hand[0]; p.hand.shift();
@@ -2720,6 +2789,7 @@
   // ── Setting up: an empty table, then the dogs sit down and the cards are dealt ──
   function reset() {
     gen++;
+    skippers.length = 0; syncNext();
     applyGoal();
     coachEl.hidden = true; if (!cardView.hidden) { cardView.hidden = true; if (viewing && viewing.el) viewing.el.style.visibility = ''; viewing = null; } pickResolve = null;
     clearTimeout(popTimer); pop.hidden = true; $('endPop').hidden = true; centerEl.classList.remove('popping'); clearSel(); board.classList.remove('picking');
@@ -3040,6 +3110,10 @@
   document.addEventListener('fullscreenchange', fsChange);
   document.addEventListener('webkitfullscreenchange', fsChange);
   $('restartBtn').addEventListener('click', function () { start(); });
+  $('nextBtn').addEventListener('click', function () {
+    if (!coachEl.hidden) { var go = bubble.querySelector('[data-a="next"]'); if (go) { go.click(); return; } }
+    skippers.slice().forEach(function (f) { f(); });
+  });
 
   // ── Super Boop confetti (same as the homepage) ──
   function spawnSuperBoop() {
