@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-brand="pupcup" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,37 +28,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://design.vilmarmorgan.com/v/2/tokens.css"> <!-- the Vilmartian library, release 2: sizes, type, space, and Pupcup's colours (ADR-023) -->
 <style>
   /* ───── DRAFT: scroll-driven box reveal. Self-contained; touches nothing else on the site.
      Box art in box-art/ is cut from the print PDFs (5.75 x 3.75 x 1 in box, full-depth lift-off lid). ───── */
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-  :root {
-    --bg: #1e2028;
-    --surface: #1a1a1e;
-    --accent: #f5c542;
-    --text: #f0ece4;
-    --text-muted: #9a9a9e;
-    --buy-bg: #ff8d1e;
-    --buy-text: #231f20;
-    --lid-inside: #d9115b;   /* magenta turn-in from the lid print file */
-    --base-inside: #141210;  /* base print is black */
-    --base-outside: #2e2c2a; /* outside of the base, a touch lighter so it reads against the backdrop */
-    --card-edge: #ece6da;
-    --studio: #1e2028;       /* same as the site background */
-    /* From the Vilmartian library (dev/vilmartian-design/tokens.css), by the library's own names. This page
-       doesn't load that file, so the values it uses are copied here; keep them equal to the library's. */
-    --fs-2xl: 24px;
-    --sp-6: 24px;
-    --color-white: #ffffff;
-  }
+  /* colours, sizes and the type face come from the library: release 2, Pupcup set (ADR-023) */
 
   html { background: var(--bg); scroll-behavior: smooth; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   body {
     background: var(--bg);
-    font-family: 'Jost', system-ui, sans-serif;
-    color: var(--text);
+    font-family: var(--f-ui);
+    color: var(--ink);
     overflow-x: hidden;
   }
   a { text-decoration: none; color: inherit; }
@@ -71,10 +54,10 @@
   }
   .top img { height: 34px; width: auto; display: block; filter: brightness(0) invert(0.94); }
   .top-actions, .fs-actions { display: flex; gap: 10px; align-items: center; }
-  .share-btn { display: inline-flex; align-items: center; gap: 7px; background: none; border: 0; font-family: inherit; color: var(--text); cursor: pointer; }
+  .share-btn { display: inline-flex; align-items: center; gap: 7px; background: none; border: 0; font-family: inherit; color: var(--ink); cursor: pointer; }
   .share-toast {
     position: fixed; left: 50%; bottom: 28px; z-index: 2147483000; transform: translate(-50%, 20px); opacity: 0;
-    padding: 10px 18px; border-radius: 999px; background: #15161c; color: var(--text); font-size: 15px; font-weight: 600;
+    padding: 10px 18px; border-radius: 999px; background: #15161c; color: var(--ink); font-size: 15px; font-weight: 600;
     box-shadow: 0 10px 30px rgba(0, 0, 0, .45); transition: opacity .25s, transform .25s; pointer-events: none;
   }
   .share-toast.on { opacity: 1; transform: translate(-50%, 0); }
@@ -86,15 +69,15 @@
   .share-menu[hidden] { display: none; }
   .share-menu a, .share-menu button {
     display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; border: 0; background: none;
-    color: var(--text); font: inherit; font-size: 15px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
+    color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
   }
   .share-menu a:hover, .share-menu button:hover, .share-menu :focus-visible { background: rgba(255, 255, 255, .08); outline: none; }
-  .share-menu .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex: none; line-height: 1; }
+  .share-menu .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--color-white); flex: none; line-height: 1; }
   .share-menu .ic .lt { font-family: Arial, Helvetica, sans-serif; font-weight: 700; font-size: 15px; }
   /* official logos: the full round icons fill the circle; glyphs sit on the background their brand uses */
   .share-menu .ic.logo { background: none; box-shadow: none; overflow: hidden; }
   .share-menu .ic.logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .share-menu .ic.wa, .share-menu .ic.ig { background: #fff; }
+  .share-menu .ic.wa, .share-menu .ic.ig { background: var(--color-white); }
   .share-menu .ic.wa img, .share-menu .ic.ig img { width: 19px; height: 19px; }
   .share-menu .ic.x { background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
   .share-menu .ic.x img { width: 15px; height: 15px; }
@@ -109,7 +92,7 @@
   .share-menu .cp { background: #3a3d48; }
   .howto-menu { min-width: 280px; }
   .howto-menu a > span:last-child { display: grid; gap: 1px; }
-  .howto-menu small { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+  .howto-menu small { font-size: 13px; font-weight: 400; color: var(--ink-2); }
   .howto-menu .ic { width: 34px; height: 34px; font-size: 15px; }
   .howto-menu .demo { background: var(--accent); color: var(--buy-text); }
   .howto-menu .vid { background: #3a3d48; }
@@ -125,10 +108,10 @@
   @keyframes fsOut { to { opacity: 0; transform: scale(.96); } }
   @media (prefers-reduced-motion: reduce) { .pg-board.fs-in, .pg-board.fs-out { animation: none; } }
   .howto {
-    color: var(--text); font-weight: 600; font-size: 15px; padding: 10px 18px; border-radius: 999px;
+    color: var(--ink); font-weight: 600; font-size: 15px; padding: 10px 18px; border-radius: 999px;
     box-shadow: inset 0 0 0 2px rgba(240, 236, 228, .45); transition: box-shadow .2s, background .2s;
   }
-  .howto:hover { box-shadow: inset 0 0 0 2px var(--text); background: rgba(255, 255, 255, .06); }
+  .howto:hover { box-shadow: inset 0 0 0 var(--bw-2) var(--ink); background: rgba(255, 255, 255, .06); }
   /* the top bar's outline buttons get a dark backing so they stay readable when a card passes behind them */
   .top .howto { background: rgba(14, 15, 20, .62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
   .top .howto:hover { background: rgba(40, 42, 50, .75); }
@@ -141,7 +124,7 @@
   .buy:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
   .draft-tag {
     position: fixed; left: 24px; bottom: 18px; z-index: 50;
-    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted);
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2);
   }
 
   /* Pinned reveal */
@@ -233,10 +216,10 @@
   }
   /* second button: same size, outlined */
   .explore.ghost {
-    background: rgba(20, 21, 27, .55); color: var(--text); box-shadow: inset 0 0 0 2px rgba(240, 236, 228, .55);
+    background: rgba(20, 21, 27, .55); color: var(--ink); box-shadow: inset 0 0 0 2px rgba(240, 236, 228, .55);
     backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   }
-  .explore.ghost:hover { background: rgba(20, 21, 27, .75); box-shadow: inset 0 0 0 2px var(--text); }
+  .explore.ghost:hover { background: rgba(20, 21, 27, .75); box-shadow: inset 0 0 0 var(--bw-2) var(--ink); }
   .explore:hover { background: #ffd65c; box-shadow: 0 12px 36px rgba(245, 197, 66, .5), 0 2px 0 rgba(255, 255, 255, .4) inset; }
   .explore:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
   .explore span { transition: transform .2s; }
@@ -256,9 +239,9 @@
   .hint {
     position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 5;
     display: flex; flex-direction: column; align-items: center; gap: 8px;
-    font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted);
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2);
   }
-  .hint i { width: 22px; height: 34px; border: 2px solid var(--text-muted); border-radius: 12px; position: relative; }
+  .hint i { width: 22px; height: 34px; border: var(--bw-2) solid var(--ink-2); border-radius: 12px; position: relative; }
   .hint i::after {
     content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px;
     border-radius: 2px; background: var(--accent); animation: nudge 1.6s ease-in-out infinite;
@@ -302,7 +285,7 @@
   .pg { padding: 8px max(12px, 1.2vw) 40px; scroll-margin-top: 70px; }
   .pg-head { display: grid; gap: 6px; justify-items: center; text-align: center; padding: 70px 0 14px; }
   .pg-head h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 700; line-height: 1; }
-  .pg-head p { color: var(--text-muted); font-size: 17px; }
+  .pg-head p { color: var(--ink-2); font-size: 17px; }
   .pg-board {
     --felt: #1d5a3a; --felt-2: #123d27;
     position: relative; max-width: 1500px; margin: 0 auto; border-radius: 28px; overflow: hidden;
@@ -322,7 +305,7 @@
   .pg-tools { display: flex; gap: 8px; }
   .pg-btn {
     appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 600; font-size: 14px;
-    padding: 8px 14px; border-radius: 999px; color: var(--text); background: rgba(0, 0, 0, .28);
+    padding: 8px 14px; border-radius: 999px; color: var(--ink); background: rgba(0, 0, 0, .28);
     display: inline-flex; align-items: center; gap: 6px;
   }
   .pg-btn:hover { background: rgba(0, 0, 0, .45); }
@@ -351,7 +334,7 @@
   .meter { height: 5px; border-radius: 3px; background: rgba(0, 0, 0, .3); overflow: hidden; }
   .meter i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width .5s; }
   .backs { display: flex; }
-  .backs span { width: 16px; height: 22px; border-radius: 3px; background: #fff url("cards/dog-cards-face.webp") center/cover; box-shadow: 0 2px 4px rgba(0, 0, 0, .3); }
+  .backs span { width: 16px; height: 22px; border-radius: 3px; background: var(--color-white) url("cards/dog-cards-face.webp") center/cover; box-shadow: 0 2px 4px rgba(0, 0, 0, .3); }
   .backs span + span { margin-left: -8px; }
   .up { isolation: isolate; display: flex; justify-content: center; min-height: clamp(62px, 9.4vh, 84px); padding-left: 34px; }
   .pc {
@@ -467,22 +450,22 @@
   .seat-pop .who-line { display: flex; gap: 8px; align-items: center; }
   .seat-pop .who-line img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: none; opacity: .9; }
   .seat-pop p { margin: 0; font-size: 13px; line-height: 1.3; }
-  .seat-pop p b { color: #fff; font-weight: 600; }
+  .seat-pop p b { color: var(--color-white); font-weight: 600; }
   .seat-pop p.sub { font-size: 11.5px; color: rgba(255, 255, 255, .55); }
   .seat-pop .timer { height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .1); overflow: hidden; }
   .seat-pop .timer i { display: block; height: 100%; background: rgba(255, 255, 255, .4); transform-origin: 0 50%; }
-  .seat-pop .pg-btn { justify-content: center; font-size: 13px; padding: 5px 10px; background: rgba(255, 255, 255, .12); color: #fff; }
+  .seat-pop .pg-btn { justify-content: center; font-size: 13px; padding: 5px 10px; background: rgba(255, 255, 255, .12); color: var(--color-white); }
   .seat-pop .pg-btn:hover { background: rgba(255, 255, 255, .22); }
   @keyframes seatPopIn { from { opacity: 0; } to { opacity: 1; } }
   .coach-bubble ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: #c9c7c2; font-size: 14.5px; line-height: 1.4; }
-  .coach-bubble ul b { color: var(--text); }
+  .coach-bubble ul b { color: var(--ink); }
 
   /* hand */
   .pg-hand-wrap { display: grid; justify-items: center; gap: 4px; padding: 0 16px 30px; }
   .pg-hand { display: flex; justify-content: center; align-items: flex-end; min-height: clamp(150px, 25vh, 200px); padding-top: 22px; }
   .pg-hand .pc {
     width: clamp(92px, min(9.5vw, 17vh), 150px); margin: 0 -8px; cursor: pointer;
-    transform: translateY(var(--dy, 0)) rotate(var(--r, 0deg)); transform-origin: 50% 110%;
+    transform: translateY(var(--dy, 0)) rotate(var(--tilt, 0deg)); transform-origin: 50% 110%;
     transition: transform .2s cubic-bezier(.2, .8, .2, 1);
   }
   .pg-hand .pc:hover, .pg-hand .pc:focus-visible, .pg-hand .pc.sel { transform: translateY(-26px) rotate(0) scale(1.08); z-index: 5; outline: none; }
@@ -498,7 +481,7 @@
   /* hover / tap card explanation */
   .pg-tip {
     position: absolute; z-index: 30; width: 270px; padding: 14px 16px; border-radius: 14px;
-    background: #101116; color: var(--text); box-shadow: 0 16px 40px rgba(0, 0, 0, .55);
+    background: #101116; color: var(--ink); box-shadow: 0 16px 40px rgba(0, 0, 0, .55);
     font-size: 14px; line-height: 1.45; pointer-events: none; opacity: 0; transform: translateY(6px);
     transition: opacity .15s, transform .15s;
   }
@@ -510,12 +493,12 @@
   .goal-note { display: grid; gap: 8px; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 197, 66, .12); font-size: 13.5px; line-height: 1.35; }
   .goal-note[hidden] { display: none; }
   .goal-note .pg-btn { justify-self: start; }
-  .pg-tip .tip-wait { flex-basis: 100%; font-size: 13px; color: var(--text-muted); }
+  .pg-tip .tip-wait { flex-basis: 100%; font-size: 13px; color: var(--ink-2); }
   .pg-tip .act { pointer-events: auto; margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
   /* dog cards (rules, steals, blocks) can be opened full size to see the art */
   .pc .zoom {
     position: absolute; right: 4px; top: 4px; z-index: 2; width: 26px; height: 26px; border-radius: 50%;
-    display: grid; place-items: center; background: rgba(12, 14, 18, .78); color: #fff; font-size: 13px; line-height: 1;
+    display: grid; place-items: center; background: rgba(12, 14, 18, .78); color: var(--color-white); font-size: 13px; line-height: 1;
     box-shadow: 0 2px 6px rgba(0, 0, 0, .35); opacity: 0; transition: opacity .15s; cursor: zoom-in;
   }
   .pc:hover .zoom, .pc:focus-visible .zoom { opacity: 1; }
@@ -530,7 +513,7 @@
   .card-view figure { margin: 0; display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 520px; }
   .card-view img { height: min(70vh, 640px); width: auto; max-width: 88vw; object-fit: contain; border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, .6); }
   .card-view figcaption { display: grid; gap: 4px; color: #c9c7c2; font-size: 15px; line-height: 1.4; }
-  .card-view figcaption b { color: var(--text); font-size: 18px; }
+  .card-view figcaption b { color: var(--ink); font-size: 18px; }
 
   /* intro: an empty table until you deal */
   .seat { transition: background .3s, box-shadow .3s, opacity .45s, transform .45s cubic-bezier(.2, .9, .3, 1.2); }
@@ -543,7 +526,7 @@
     box-shadow: 0 30px 70px rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(255, 255, 255, .06);
   }
   .pg-intro-card h3 { font-size: clamp(26px, 3vw, 34px); font-weight: 700; line-height: 1.1; text-wrap: balance; }
-  .pg-intro-card p { color: var(--text-muted); font-size: 16px; line-height: 1.45; text-wrap: balance; }
+  .pg-intro-card p { color: var(--ink-2); font-size: 16px; line-height: 1.45; text-wrap: balance; }
   .intro-dogs { display: flex; margin-bottom: 4px; }
   .intro-dogs img { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #15161c; }
   .intro-dogs img + img { margin-left: -14px; }
@@ -568,8 +551,8 @@
   .coach-bubble .row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
   .coach-bubble .row .sp { flex: 1; }
   .coach-bubble .row button { white-space: nowrap; flex-shrink: 0; }
-  .coach-bubble .link { appearance: none; border: 0; background: none; color: var(--text-muted); font: inherit; font-size: 13px; cursor: pointer; padding: 6px 2px; text-decoration: underline; }
-  .coach-bubble .link:hover { color: var(--text); }
+  .coach-bubble .link { appearance: none; border: 0; background: none; color: var(--ink-2); font: inherit; font-size: 13px; cursor: pointer; padding: 6px 2px; text-decoration: underline; }
+  .coach-bubble .link:hover { color: var(--ink); }
   .dots { display: flex; gap: 6px; }
   .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .25); }
   .dots i.on { background: var(--accent); }
@@ -595,7 +578,7 @@
   .pg-pop-card .pop-rule { width: 58px; border-radius: 6px; }
   .pg-pop-card h3 { font-size: 25px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
   .pg-pop-card p { color: #c9c7c2; font-size: 18px; line-height: 1.45; }
-  .pg-pop-card p b { color: var(--text); }
+  .pg-pop-card p b { color: var(--ink); }
   .pg-pop-card .opts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
   .pg-pop-card .opts .pg-btn { font-size: 18px; padding: 13px 24px; background: rgba(255, 255, 255, .1); }
   .pg-pop-card .pop-av { width: 64px; height: 64px; }
@@ -612,7 +595,7 @@
   }
   .pg-end-card .pop-av { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #fff; }
   .pg-end-card h3 { font-size: 22px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
-  .pg-end-card p { color: var(--text-muted); font-size: 16px; line-height: 1.4; text-wrap: balance; }
+  .pg-end-card p { color: var(--ink-2); font-size: 16px; line-height: 1.4; text-wrap: balance; }
   .pg-end-card .opts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
   .pg-end-card .opts .pg-btn { font-size: 16px; padding: 12px 18px; background: rgba(255, 255, 255, .1); }
   .pg-end-card .opts .pg-btn:hover { background: rgba(255, 255, 255, .2); }
@@ -626,7 +609,7 @@
   .pg-board.fs { grid-template-rows: auto minmax(0, 1fr) auto auto; }
   .pg-board.fs .fs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 24px 0; position: relative; z-index: 37; }
   .pg-board.fs .fs-head img { height: 34px; width: auto; display: block; filter: brightness(0) invert(.94); }
-  .pg-board.fs .fs-head .howto { padding: 9px 16px; font-size: 14px; background: none; border: 0; font-family: inherit; color: var(--text); cursor: pointer; }
+  .pg-board.fs .fs-head .howto { padding: 9px 16px; font-size: 14px; background: none; border: 0; font-family: inherit; color: var(--ink); cursor: pointer; }
   .pg-board.fs .fs-head .howto:hover { background: rgba(255, 255, 255, .08); }
   .pg-board.fs .fs-head .buy { white-space: nowrap; }
   @media (max-width: 600px) {
@@ -649,7 +632,7 @@
     background: #15161c; box-shadow: 0 20px 50px rgba(0, 0, 0, .55); display: grid; gap: 12px;
   }
   .pg-custom[hidden] { display: none; }
-  .pg-custom h4 { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); }
+  .pg-custom h4 { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
   .swatches, .dogs, .speeds { display: flex; flex-wrap: wrap; gap: 8px; }
   .speeds .pg-btn { background: rgba(255, 255, 255, .08); }
   .speeds .pg-btn[aria-pressed="true"] { background: var(--accent); color: var(--buy-text); }
@@ -864,11 +847,11 @@
   @media (orientation: portrait) { .pg-board.touch .pg-rotate { display: grid; } .pg-board.touch .pg-back { display: none; } }
   .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
   .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
-  .pg-rotate-card p { color: var(--text-muted); font-size: 15px; line-height: 1.45; text-wrap: balance; }
+  .pg-rotate-card p { color: var(--ink-2); font-size: 15px; line-height: 1.45; text-wrap: balance; }
   .rot-ico { color: var(--accent); animation: rotHint 2.4s ease-in-out infinite; }
   @keyframes rotHint { 0%, 30% { transform: rotate(0) } 55%, 85% { transform: rotate(-90deg) } 100% { transform: rotate(0) } }
   @media (prefers-reduced-motion: reduce) { .rot-ico { animation: none; } }
-  .pg-link { appearance: none; border: 0; background: none; font: inherit; font-size: 14px; color: var(--text-muted); text-decoration: underline; cursor: pointer; padding: 6px; }
+  .pg-link { appearance: none; border: 0; background: none; font: inherit; font-size: 14px; color: var(--ink-2); text-decoration: underline; cursor: pointer; padding: 6px; }
   /* phones and tablets: lighter drawing, so Safari keeps up (no frosted glass, simpler shadows) */
   @media (pointer: coarse) {
     .top .howto, .explore.ghost { -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -914,7 +897,7 @@
   /* After the reveal */
   .after { padding: 96px 24px 96px; }
   /* same disclaimer and footer as the main site */
-  .site-foot { max-width: 1012px; margin: 0 auto; padding: 18px 24px 40px; border-top: 1px solid rgba(255, 255, 255, .12); color: var(--text-muted); font-size: 14px; line-height: 1.45; display: grid; gap: 10px; }
+  .site-foot { max-width: 1012px; margin: 0 auto; padding: 18px 24px 40px; border-top: 1px solid rgba(255, 255, 255, .12); color: var(--ink-2); font-size: 14px; line-height: 1.45; display: grid; gap: 10px; }
   .site-foot .parody { margin: 0; }
   .site-foot .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; }
   .site-foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
@@ -922,7 +905,7 @@
   .card-view .parody { max-width: 420px; font-size: 13px; color: rgba(255, 255, 255, .55); }
   .after-inner { max-width: 960px; margin: 0 auto; display: grid; gap: 28px; justify-items: start; }
   .after h2 { font-size: clamp(30px, 5vw, 52px); font-weight: 700; line-height: 1.05; }
-  .after p { color: var(--text-muted); font-size: 18px; max-width: 56ch; }
+  .after p { color: var(--ink-2); font-size: 18px; max-width: 56ch; }
 </style>
 </head>
 <body>
@@ -1997,7 +1980,7 @@
     cs.forEach(function (b, i) {
       b.style.order = i;
       var k = i - (n - 1) / 2;
-      b.style.setProperty('--r', (k * 6) + 'deg');
+      b.style.setProperty('--tilt', (k * 6) + 'deg'); // was --r, which is the library's corner radius
       b.style.setProperty('--dy', (k * k * 7) + 'px');
       b.tabIndex = 0;
     });
@@ -2557,7 +2540,7 @@
           'Queen Elizapup’s Rule doesn’t make anyone do anything. Whoever owns it can’t be caught breaking any rule.');
       } else if (!p.human) {
         await tipOnce('rule', el(c), 'A rule is in play!',
-          '<b style="color:var(--text)">' + p.name + '</b> set a rule: “' + RULES[c.rule].text + '”<ul>' +
+          '<b style="color:var(--ink)">' + p.name + '</b> set a rule: “' + RULES[c.rule].text + '”<ul>' +
           '<li><b>What to do:</b> follow it. Everyone except ' + p.name + ' has to.</li>' +
           '<li><b>If you break it:</b> you get caught and draw a penalty (−5, −10 or −20).</li>' +
           '<li><b>Watch every dog,</b> even when it’s not their turn: if one breaks it, hit Caught you! next to them. Nobody catches them, no penalty.</li>' +
@@ -2743,7 +2726,7 @@
       await penalty(p, r.owner.human ? 'breaking your rule' : 'breaking ' + RULES[r.rule].name + '’s Rule');
     } else { say('Too slow! Nobody caught <b>' + p.name + '</b>, so no penalty.'); await wait(900); }
     await tipOnce('slip', p.seat, 'Watch every dog, not just whose turn it is',
-      'Dogs can slip up at any time, even while someone else is playing. When one breaks a rule, a bubble pops up next to them. Hit <b style="color:var(--text)">Caught you!</b> in time and they draw a penalty. Nobody catches them, no penalty.');
+      'Dogs can slip up at any time, even while someone else is playing. When one breaks a rule, a bubble pops up next to them. Hit <b style="color:var(--ink)">Caught you!</b> in time and they draw a penalty. Nobody catches them, no penalty.');
   }
   // While one player has the turn, a DIFFERENT dog may break a rule
   async function otherSlip(current) {

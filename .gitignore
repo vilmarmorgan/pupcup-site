@@ -14,6 +14,7 @@ Thumbs.db
 # tracked here is downloadable at the domain. Canonical copies live in the
 # private tooling vault and are installed from there.
 tools/scan-secrets.py
+tools/check-tokens.py
 .githooks/
 
 # Agent guidance, deliberately UNTRACKED. GitHub Pages serves this repo's
