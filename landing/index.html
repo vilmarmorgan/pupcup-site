@@ -520,6 +520,10 @@
   }
   .pg-intro-card h3 { font-size: clamp(26px, 3vw, 34px); font-weight: 700; line-height: 1.1; text-wrap: balance; }
   .pg-intro-card p { color: var(--ink-2); font-size: 16px; line-height: 1.45; text-wrap: balance; }
+  .lesson-skip { appearance: none; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--fs-md); color: var(--ink-2); text-decoration: underline; padding: var(--sp-2); }
+  .lesson-skip:hover { color: var(--ink); }
+  .lesson-skip:focus-visible { outline: var(--bw-2) solid var(--accent); outline-offset: var(--bw-2); border-radius: var(--r-md); }
+  #board.touch .lesson-skip { font-size: var(--fs-lg); min-height: var(--size-lg); }
   .intro-dogs { display: flex; margin-bottom: 4px; }
   .intro-dogs img { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #15161c; }
   .intro-dogs img + img { margin-left: -14px; }
@@ -994,6 +998,7 @@
         <div class="pg-tools">
           <button class="pg-btn" id="fullBtn" type="button" hidden>⛶ <span class="t">Full screen</span></button>
           <button class="pg-btn" id="customBtn" type="button" aria-expanded="false" aria-controls="customPanel">🎨 <span class="t">Customise</span></button>
+          <button class="pg-btn" id="lessonBtn" type="button" aria-label="How to play">? <span class="t">How to play</span></button>
           <button class="pg-btn" id="restartBtn" type="button">↻ <span class="t">New game</span></button>
           <button class="pg-btn gold" id="nextBtn" type="button" disabled aria-label="Skip to the next step">Next <span aria-hidden="true">→</span></button>
         </div>
@@ -1028,6 +1033,7 @@
           <h3>Step 1: Deal 4 cards to each player</h3>
           <p>Shuffle the main deck and penalty deck, then deal 4 cards to each player.</p>
           <button class="pg-btn gold big" id="dealBtn" type="button">Next</button>
+          <button class="lesson-skip" id="skipLessonBtn" type="button">Skip instructions</button>
         </div>
       </div>
       <div class="pg-rotate" id="rotateNote" aria-live="polite">
@@ -2315,7 +2321,8 @@
                   '<span class="dots" aria-hidden="true">' + steps.map(function (_, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('') + '</span>' +
                   (i ? '<button type="button" class="pg-btn" data-a="back">Back</button>' : '') +
                   '<button type="button" class="pg-btn gold" data-a="next">' + (last ? 'Let’s play' : 'Next') + '</button>'
-                : (label ? '<span class="sp"></span>' : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>') +
+                : (st.skip ? '<button type="button" class="link" data-a="skiplesson">Skip instructions</button><span class="sp"></span>'
+                  : label ? '<span class="sp"></span>' : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>') +
                   '<button type="button" class="pg-btn gold" data-a="next">' + (st.btn || 'Next') + '</button>') +
           '</div>';
         coachEl.hidden = false; syncNext();
@@ -2338,6 +2345,7 @@
         else if (a === 'back') { i = Math.max(0, i - 1); render(); }
         else if (a === 'skip') finish();
         else if (a === 'off') { setTips(false); finish(); }
+        else if (a === 'skiplesson') { endLessonQuietly(); finish(); }
       };
       render();
     });
@@ -2475,13 +2483,17 @@
       if (c) {
         var g = GUIDE[c.type];
         mode = 'guide';
-        await coach([{ target: el(c), title: g.title, text: typeof g.text === 'function' ? g.text() : g.text }], false, g.label);
+        await coach([{ target: el(c), title: g.title, text: typeof g.text === 'function' ? g.text() : g.text, skip: true }], false, g.label);
         mode = 'mine';
-        if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
-        say('<b>' + g.label + ':</b> ' + g.title + '.');
+        if (firstGame) { // still in the lesson (not skipped)
+          if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
+          say('<b>' + g.label + ':</b> ' + g.title + '.');
+        }
       }
     }
   }
+  // "Skip instructions" on a lesson tip: the game carries on as a normal game from here
+  function endLessonQuietly() { firstGame = false; round = 0; markSeen('guided'); }
   // the last practice tip comes straight after your third card (the Steal), before the dogs move (Vilmar, 24 Nov 2026)
   async function endPractice() {
     firstGame = false; markSeen('guided');
@@ -2558,7 +2570,7 @@
           '<li><b>Rules can be stolen:</b> play a Steal on it and it’s yours, so you don’t have to follow it anymore.</li></ul>');
       } else if (guided()) {
         markSeen('myrule');
-        await coach([{ target: $('penDeck'), title: 'If they break your rule…', text: '…and you catch them, they draw a penalty card.' }], false, GUIDE.rule.label);
+        await coach([{ target: $('penDeck'), title: 'If they break your rule…', text: '…and you catch them, they draw a penalty card.', skip: true }], false, GUIDE.rule.label);
       } else {
         await tipOnce('myrule', el(c), 'You set a rule!',
           'Your rule sits in front of you.<ul>' +
@@ -2928,7 +2940,7 @@
     introEl.hidden = true;
     if (withSeating) await seatDogs();
     await deal();
-    if (!seen('tour')) await tour();
+    if (firstGame || !seen('tour')) await tour(); // the lesson always opens with the tour
     myTurn();
   }
   async function start(goalChanged) {
@@ -2936,6 +2948,7 @@
     if (mode === 'intro' && !introEl.hidden) return;
     var before = GOAL;
     reset();
+    firstGame = false; // New game is always a normal game; the lesson is "How to play"
     if (goalChanged || GOAL !== before) {
       // the points to win changed: say so on the board before dealing
       var ok = await popup({ title: 'New game: first to ' + GOAL + ' points', text: 'You changed the points to win. Be the first to reach <b>' + GOAL + ' points</b> to win this game.',
@@ -2945,7 +2958,26 @@
     play(false);
   }
   // "Deal the cards" goes full screen, says how to win, then deals
+  $('skipLessonBtn').addEventListener('click', async function () {
+    // straight to a normal game: no tour, no "How to win", no lesson
+    firstGame = false; markSeen('guided'); markSeen('tour');
+    introEl.hidden = true;
+    await enterFS();
+    play(true);
+  });
+  // "How to play" in the toolbar: a fresh game that runs the lesson from the start (Vilmar, 24 Nov 2026)
+  $('lessonBtn').addEventListener('click', async function () {
+    if (mode === 'intro' && !introEl.hidden) { $('dealBtn').click(); return; }
+    reset();
+    firstGame = true; round = 0; guideSlip = false;
+    await popup({ title: 'How to win', text: 'Be the first to reach <b>' + GOAL + ' points</b>.',
+      buttons: [{ label: 'Next', value: 1, gold: true }] });
+    play(false);
+  });
   $('dealBtn').addEventListener('click', async function () {
+    // the intro card is "How to Play · Step 1", so its Next always starts the lesson, even for someone who has
+    // finished it before (Vilmar, 24 Nov 2026: a second visit skipped straight to a normal game). New game does not.
+    firstGame = true; round = 0; guideSlip = false;
     introEl.hidden = true;
     await enterFS();
     await popup({ title: 'How to win', text: 'Be the first to reach <b>' + GOAL + ' points</b>.',
