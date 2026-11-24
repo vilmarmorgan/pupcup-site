@@ -928,14 +928,14 @@
   <a role="menuitem" href="../instructions/PlayPupcup-Original-Nov16.pdf" target="_blank" rel="noopener" data-howto="read"><span class="ic read">📖</span><span><b>Read the instructions</b><small>The full rules</small></span></a>
 </div>
 <div class="share-menu" id="shareMenu" role="menu" hidden>
+  <button type="button" role="menuitem" data-net="copy"><span class="ic cp"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13.5a4.5 4.5 0 0 0 6.8.5l2.9-2.9a4.5 4.5 0 0 0-6.4-6.4l-1.6 1.6"/><path d="M14 10.5a4.5 4.5 0 0 0-6.8-.5l-2.9 2.9a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg></span>Copy link</button>
+  <a role="menuitem" data-net="tiktok" target="_blank" rel="noopener"><span class="ic tt logo"><img src="share-icons/tiktok.png" alt="" width="28" height="28"></span>TikTok</a>
+  <a role="menuitem" data-net="instagram" target="_blank" rel="noopener"><span class="ic ig logo"><img src="share-icons/instagram.png" alt="" width="28" height="28"></span>Instagram</a>
   <a role="menuitem" data-net="facebook" target="_blank" rel="noopener"><span class="ic fb logo"><img src="share-icons/facebook.png" alt="" width="28" height="28"></span>Facebook</a>
   <a role="menuitem" data-net="x" target="_blank" rel="noopener"><span class="ic x logo"><img src="share-icons/x.png" alt="" width="28" height="28"></span>X</a>
   <a role="menuitem" data-net="messenger" target="_blank" rel="noopener"><span class="ic ms logo"><img src="share-icons/messenger.png" alt="" width="28" height="28"></span>Messenger</a>
   <a role="menuitem" data-net="whatsapp" target="_blank" rel="noopener"><span class="ic wa logo"><img src="share-icons/whatsapp.png" alt="" width="28" height="28"></span>WhatsApp</a>
-  <a role="menuitem" data-net="instagram" target="_blank" rel="noopener"><span class="ic ig logo"><img src="share-icons/instagram.png" alt="" width="28" height="28"></span>Instagram</a>
-  <a role="menuitem" data-net="tiktok" target="_blank" rel="noopener"><span class="ic tt logo"><img src="share-icons/tiktok.png" alt="" width="28" height="28"></span>TikTok</a>
   <a role="menuitem" data-net="email"><span class="ic em"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6.5 9 6 9-6"/></svg></span>Email</a>
-  <button type="button" role="menuitem" data-net="copy"><span class="ic cp"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13.5a4.5 4.5 0 0 0 6.8.5l2.9-2.9a4.5 4.5 0 0 0-6.4-6.4l-1.6 1.6"/><path d="M14 10.5a4.5 4.5 0 0 0-6.8-.5l-2.9 2.9a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg></span>Copy link</button>
 </div>
 <header class="top">
   <a href="../" aria-label="Pupcup home"><img src="../images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
@@ -1348,8 +1348,10 @@
   var SLOTS = {
     // The space right above the box is kept clear for the two buttons, so the 30 and Frida land out to the sides.
     wide: [
-      [[-395, 255, -6], [-548, 385, 9], [-560, 160, -12], [-385, 75, 15], [-240, 470, -10], [-470, 525, 7]],
-      [[395, 260, 6], [550, 390, -9], [562, 160, 12], [395, 75, -15], [20, 475, 4], [275, 510, 11], [520, 520, -7]]
+      // 24 Nov 2026 (Vilmar): both batches moved 34 units out to the sides, and the two cards over the buttons
+      // (the 20 here, Aloharf on the right) 34 up, to give the buttons more room. 34 units is ~32px at 1227x685.
+      [[-429, 255, -6], [-582, 385, 9], [-594, 160, -12], [-419, 75, 15], [-240, 504, -10], [-504, 525, 7]],
+      [[429, 260, 6], [584, 390, -9], [596, 160, 12], [429, 75, -15], [20, 509, 4], [309, 510, 11], [554, 520, -7]]
     ],
     // phones and upright tablets: scattered evenly across the screen, like cards tossed on a table
     narrow: [
@@ -1668,7 +1670,9 @@
       var hS = exploreEl.offsetHeight * k;
       if (exploreRoom !== null && exploreRoom >= hS + 48) {
         // centred between the lowest card above and the decks, at least 24px clear of both
-        css(exploreEl, 'top', Math.round(top - host - exploreRoom / 2 - exploreEl.offsetHeight / 2) + 'px');
+        // ...then 8px higher (Vilmar, 24 Nov 2026: buttons up 24px; raising the two cards above them already
+        // lifts the centre point ~16px)
+        css(exploreEl, 'top', Math.round(top - host - exploreRoom / 2 - exploreEl.offsetHeight / 2 - 8) + 'px');
       } else {
         css(exploreEl, 'top', Math.round(top - host - exploreEl.offsetHeight * (1 + k) / 2 - gap) + 'px');
       }
