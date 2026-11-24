@@ -140,7 +140,7 @@
   }
 
   /* Pinned reveal */
-  #reveal { position: relative; height: 893vh; }
+  #reveal { position: relative; height: 656vh; } /* was 893vh; see 'Scroll timeline' in the script */
   .stage {
     position: sticky; top: 0; height: 100vh; height: 100svh;
     /* Clip sideways only. The stage is sized with the browser bars showing (svh); when they collapse on a
@@ -1279,6 +1279,12 @@
   // Each fan: which compartment, when it starts, and who leaves first
   var EXPLORE_URL = '../';
   function goExplore() { window.location.href = EXPLORE_URL; }
+  // ── Scroll timeline (Vilmar, 23 Nov 2026: too much scrolling before anything happened) ──
+  // It was 893vh, the lid only started lifting half a screen in, and the cards waited until ~2.4 screens,
+  // when the lid was nearly gone. Now 656vh: the box opens in the first ~0.7 screens and the cards start
+  // while the lid is still floating off. Card moves keep their old speed per screen of scrolling:
+  // CARD_K turns old timeline units (714vh of reveal) into the new ones (500vh).
+  var CARD_START = 0.1, CARD_K = 714 / 500; // 0.1: the first cards rise while the lid is still in view
   function makeGroup(g, fromX, pileTop, start, step, heroFirst, front) {
     var n = g.cards.length;
     var rank = g.cards.map(function (_, i) { return i; }).sort(function (a, b) {
@@ -1313,8 +1319,8 @@
   var PERSP = 1900; // same as .card-wrap's perspective
   var DOMMatrixRO = window.DOMMatrixReadOnly || window.DOMMatrix || null;
   var groups = [
-    makeGroup(LEFT, -STACK_X, leftTop, 0.34, 0.05, true, 0),   // both compartments start together
-    makeGroup(RIGHT, STACK_X, rightTop, 0.34, 0.04, true, 40)  // hero first: it stays in front
+    makeGroup(LEFT, -STACK_X, leftTop, CARD_START, 0.05 * CARD_K, true, 0),   // both compartments start together
+    makeGroup(RIGHT, STACK_X, rightTop, CARD_START, 0.04 * CARD_K, true, 40)  // hero first: it stays in front
   ];
   // The top of each deck always shows the next card to leave, like a real deck.
   // Once every card is out, it shows the deck's face card.
@@ -1472,11 +1478,11 @@
   }
 
   function apply(p, t) {
-    var intro = easeOut(seg(p, 0, 0.3));
-    var lift = easeInOut(seg(p, 0.08, 0.22));
-    var away = easeInOut(seg(p, 0.18, 0.36));
-    var focus = easeInOut(seg(p, 0.3, 0.85));
-    var pop = seg(p, 0.86, 0.94);
+    var intro = easeOut(seg(p, 0, 0.16));
+    var lift = easeInOut(seg(p, 0.03, 0.09));
+    var away = easeInOut(seg(p, 0.08, 0.2)); // the cards start (CARD_START) just as this begins
+    var focus = easeInOut(seg(p, CARD_START - 0.04 * CARD_K, CARD_START + 0.51 * CARD_K));
+    var pop = seg(p, CARD_START + 0.52 * CARD_K, CARD_START + 0.6 * CARD_K);
 
     var spin = lerp(-22, 0, intro) + Math.sin(t * 0.6) * 1.2 * (1 - intro);
     var bob = Math.sin(t * 1.4) * 6 * (1 - intro);
@@ -1522,10 +1528,10 @@
       g.list.forEach(function (c) {
         var slot = slots[c.r];
         var st = g.start + c.r * g.step;
-        var rise = easeInOut(seg(p, st, st + 0.2));
-        var lift = easeOutBack(seg(p, st, st + 0.2));       // slight overshoot so each card pops up
-        var turn = easeInOut(seg(p, st + 0.04, st + 0.24));
-        var spin = easeInOut(seg(p, st + 0.08, st + 0.28));
+        var rise = easeInOut(seg(p, st, st + 0.2 * CARD_K));
+        var lift = easeOutBack(seg(p, st, st + 0.2 * CARD_K));       // slight overshoot so each card pops up
+        var turn = easeInOut(seg(p, st + 0.04 * CARD_K, st + 0.24 * CARD_K));
+        var spin = easeInOut(seg(p, st + 0.08 * CARD_K, st + 0.28 * CARD_K));
         var isHero = c.r === 0;
 
         var s = lerp(1, fs, rise);
@@ -1577,9 +1583,9 @@
       }
     });
 
-    css(heroCopy, 'opacity', 1 - seg(p, 0.02, 0.12));
-    css(heroCopy, 'transform', 'translateY(' + (-seg(p, 0, 0.12) * 30) + 'px)');
-    css(hint, 'opacity', 1 - seg(p, 0.01, 0.06));
+    css(heroCopy, 'opacity', 1 - seg(p, 0.01, 0.06));
+    css(heroCopy, 'transform', 'translateY(' + (-seg(p, 0, 0.06) * 30) + 'px)');
+    css(hint, 'opacity', 1 - seg(p, 0.005, 0.03));
     revealP = p;
   }
 
@@ -1601,7 +1607,7 @@
   }
   window.addEventListener('scroll', checkPast, { passive: true });
   function updateExplore() {
-    var eo = pastScene ? 0 : seg(revealP, 0.5, 0.62);
+    var eo = pastScene ? 0 : seg(revealP, CARD_START + 0.16 * CARD_K, CARD_START + 0.28 * CARD_K);
     css(exploreEl, 'opacity', eo.toFixed(3));
     css(exploreEl, 'visibility', eo > 0.02 ? 'visible' : 'hidden');
     if (eo > 0.02) {
@@ -1631,7 +1637,7 @@
     }
     if (Math.abs(target - current) < 0.0005) current = target;
     // Before the box opens it sways gently, so keep drawing; after that, only redraw when the scroll moved.
-    if (current !== lastP || current < 0.3 * REVEAL_END || needsDraw) {
+    if (current !== lastP || current < 0.16 * REVEAL_END || needsDraw) {
       apply(Math.min(1, current / REVEAL_END), reduce ? 0 : ms / 1000);
       updateExplore();
       lastP = current; needsDraw = false;
