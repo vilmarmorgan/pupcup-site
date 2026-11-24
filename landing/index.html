@@ -46,6 +46,11 @@
     --base-outside: #2e2c2a; /* outside of the base, a touch lighter so it reads against the backdrop */
     --card-edge: #ece6da;
     --studio: #1e2028;       /* same as the site background */
+    /* From the Vilmartian library (dev/vilmartian-design/tokens.css), by the library's own names. This page
+       doesn't load that file, so the values it uses are copied here; keep them equal to the library's. */
+    --fs-2xl: 24px;
+    --sp-6: 24px;
+    --color-white: #ffffff;
   }
 
   html { background: var(--bg); scroll-behavior: smooth; }
@@ -192,10 +197,12 @@
   /* Copy layered over the stage */
   .hero-copy {
     position: absolute; left: 0; right: 0; top: 96px; z-index: 5;
-    display: grid; justify-items: center; gap: 10px; text-align: center; padding: 0 20px;
+    display: grid; justify-items: center; gap: 0; text-align: center; padding: 0 20px;
   }
   .hero-copy h1 { font-size: clamp(38px, 7vw, 84px); font-weight: 700; line-height: 1; text-wrap: balance; }
   .hero-copy h1 em { font-style: normal; color: var(--accent); }
+  /* the line under the heading (Vilmar, 24 Nov 2026): 24px, white, centred, 24px above and below */
+  .hero-copy .tagline { margin: 0; padding: var(--sp-6) 0; font-size: var(--fs-2xl); color: var(--color-white); text-align: center; }
   /* Landed cards are links to the main site */
   /* Hover: the card comes to the front, straightens up and grows a little (like Cards Against Humanity) */
   .card-flat .card-face.live {
@@ -971,6 +978,7 @@
 
       <div class="hero-copy" id="heroCopy">
         <h1>Let’s Play <em>Pupcup</em></h1>
+        <p class="tagline">A card game that brings people together<br>to bark, growl, and howl with laughter.</p>
       </div>
 
       <div class="hint" id="hint"><i></i>Scroll to open</div>
