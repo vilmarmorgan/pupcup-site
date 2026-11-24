@@ -120,10 +120,6 @@
     box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
   }
   .buy:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-  .draft-tag {
-    position: fixed; left: 24px; bottom: 18px; z-index: 50;
-    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2);
-  }
 
   /* Pinned reveal */
   #reveal { position: relative; height: 656vh; } /* was 893vh; see 'Scroll timeline' in the script */
@@ -257,7 +253,6 @@
     .top-actions .howto, .top-actions .buy { white-space: nowrap; }
     .howto { padding: 8px 12px; font-size: 14px; }
     .hero-copy { top: 80px; }
-    .draft-tag { display: none; }
   }
   @media (max-height: 500px) and (orientation: landscape) {
     .top { padding: 8px 16px; }
@@ -1017,9 +1012,9 @@
             <img src="avatars/av-frida.webp" alt=""><img src="avatars/av-pupstein.webp" alt=""><img src="avatars/av-kpup.webp" alt="">
           </div>
           <span class="eyebrow">Practice game</span>
-          <h3>Ready to learn how to play?</h3>
-          <p>You against three dogs. Everyone starts at 0, and the first to <span class="goal-n">100</span> points wins. Hover or tap any card to see what it does.</p>
-          <button class="pg-btn gold big" id="dealBtn" type="button">🃏 Deal the cards</button>
+          <h3>Learn how to play</h3>
+          <p>To get started, shuffle the main deck and penalty deck.</p>
+          <button class="pg-btn gold big" id="dealBtn" type="button">Step 1: Deal 4 cards to each player</button>
         </div>
       </div>
       <div class="pg-rotate" id="rotateNote" aria-live="polite">
@@ -1097,7 +1092,6 @@
   </footer>
 </main>
 
-<div class="draft-tag">Draft · not linked from the menu</div>
 
 <script>
 (function () {
@@ -1636,11 +1630,10 @@
 
   // "Explore the Cards" fades in once the cards have landed
   var exploreEl = document.getElementById('explore');
-  var draftEl = document.querySelector('.draft-tag');
   var pastScene = false;
   function checkPast() {
     var past = section.getBoundingClientRect().bottom < window.innerHeight * 0.45;
-    if (past !== pastScene) { pastScene = past; updateExplore(); if (draftEl) draftEl.style.visibility = past ? 'hidden' : ''; }
+    if (past !== pastScene) { pastScene = past; updateExplore(); }
   }
   window.addEventListener('scroll', checkPast, { passive: true });
   function updateExplore() {
@@ -2310,7 +2303,7 @@
                   (i ? '<button type="button" class="pg-btn" data-a="back">Back</button>' : '') +
                   '<button type="button" class="pg-btn gold" data-a="next">' + (last ? 'Let’s play' : 'Next') + '</button>'
                 : (label ? '<span class="sp"></span>' : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>') +
-                  '<button type="button" class="pg-btn gold" data-a="next">' + (st.btn || 'Got it') + '</button>') +
+                  '<button type="button" class="pg-btn gold" data-a="next">' + (st.btn || 'Next') + '</button>') +
           '</div>';
         coachEl.hidden = false; syncNext();
         place(st.target); fitView();
@@ -2419,13 +2412,14 @@
   // ── Practice rounds: a first game starts with 3 guided rounds, then it's a normal game ──
   var firstGame = false, round = 0, guideSteal = false, guideSlip = false, forcedTarget = null;
   function guided() { return firstGame && round > 0 && round <= 3; }
+  // the label is the eyebrow over each practice tip, and the start of the line under the table (Vilmar, 24 Nov 2026)
   var GUIDE = {
-    rule: { title: 'Play your Rule card',
-      text: 'Rules are the fun part. Play it and the three dogs have to follow it. If one slips up, you catch them and they draw a penalty.' },
-    point: { title: 'Play a Point card',
-      text: function () { return 'Point cards go face up in front of you and add to your score. <b>First to ' + GOAL + ' points wins.</b> Careful: anything face up can be stolen.'; } },
-    steal: { title: 'Steal some points',
-      text: 'Play your Steal, then pick any face-up card from a dog: points or a rule. It becomes yours. They could Block it, so watch out!' }
+    point: { label: 'Step 2', title: 'Play a Point card',
+      text: function () { return 'On your turn, play 1 card from your hand. Place Point cards face up in front of you. <b>First player to ' + GOAL + ' total points wins.</b>'; } },
+    rule: { label: 'Rule Cards', title: 'Play a Rule card',
+      text: 'Rule cards are the fun part. When you play a Rule card, every other player has to follow your rule. You’re exempt from your own rule.' },
+    steal: { label: 'Steal Cards', title: 'Steal some points',
+      text: 'Play a Steal card to take one card from another player. But be careful, because they can play a Block to stop you.' }
   };
   function suggestion() {
     var me = players[0];
@@ -2450,8 +2444,8 @@
       if (round === 4) {
         firstGame = false; markSeen('guided');
         say('Practice rounds done. <b>Now anything goes!</b>');
-        await coach([{ target: me.seat, title: 'You’ve got the basics!', btn: 'Let’s go',
-          text: 'From now on it’s a normal game. The dogs will steal, set rules and block you. Keep an eye out for rule-breakers. First to ' + GOAL + ' wins!' }], false, 'Practice done');
+        await coach([{ target: me.seat, title: 'Start the race!', btn: 'Let’s Play Pupcup!',
+          text: 'You’re now ready to play. Have fun!!' }], false, 'That’s it!');
       }
     }
     mode = 'mine'; waiting(false); refresh();
@@ -2473,10 +2467,10 @@
       if (c) {
         var g = GUIDE[c.type];
         mode = 'guide';
-        await coach([{ target: el(c), title: g.title, text: typeof g.text === 'function' ? g.text() : g.text }], false, 'Practice round ' + round + ' of 3');
+        await coach([{ target: el(c), title: g.title, text: typeof g.text === 'function' ? g.text() : g.text }], false, g.label);
         mode = 'mine';
         if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
-        say('<b>Round ' + round + ' of 3:</b> ' + g.title.charAt(0).toLowerCase() + g.title.slice(1) + '. Or pick any card you like.');
+        say('<b>' + g.label + ':</b> ' + g.title.charAt(0).toLowerCase() + g.title.slice(1) + '. Or pick any card you like.');
       }
     }
   }
@@ -2543,6 +2537,9 @@
           '<li><b>If you break it:</b> you get caught and draw a penalty (−5, −10 or −20).</li>' +
           '<li><b>Watch every dog,</b> even when it’s not their turn: if one breaks it, hit Caught you! next to them. Nobody catches them, no penalty.</li>' +
           '<li><b>Rules can be stolen:</b> play a Steal on it and it’s yours, so you don’t have to follow it anymore.</li></ul>');
+      } else if (guided()) {
+        markSeen('myrule');
+        await coach([{ target: $('penDeck'), title: 'If they break your rule…', text: '…and you catch them, they draw a penalty card.' }], false, GUIDE.rule.label);
       } else {
         await tipOnce('myrule', el(c), 'You set a rule!',
           'Your rule sits in front of you.<ul>' +
@@ -2581,7 +2578,7 @@
       await wait(400);
       discard(c);
     }
-    await wait(500);
+    await wait(p.human ? 500 : 250);
     await refill(p);
     if (p.human) { await ruleTest(p, c); await otherSlip(p); }
     else await growlSlip(p);
@@ -2598,7 +2595,7 @@
                  : 'If you had a Block card, you could play it now to stop the steal. Keep your Blocks for moments like this.');
       if (guided() && myBlock && !seen('stolen')) {
         markSeen('stolen');
-        await coach([{ target: el(myBlock), title: 'Block it!', text: stolenText }], false, 'Practice round ' + round + ' of 3');
+        await coach([{ target: el(myBlock), title: 'Block it!', text: stolenText }], false, 'Block Cards');
       } else {
         await tipOnce('stolen', myBlock ? el(myBlock) : victim.seat, 'Someone’s stealing from you!', stolenText);
       }
@@ -2703,7 +2700,7 @@
         title: 'Caught! −' + v + ' points',
         text: '<b>' + catcher.name + '</b> caught you breaking their rule: “' + RULES[r.rule].text + '” ' +
               'You drew a −' + v + ' penalty: ' + before + ' → ' + score(me) + ' points.',
-        buttons: [{ label: 'Got it', value: 1, gold: true }]
+        buttons: [{ label: 'Next', value: 1, gold: true }]
       });
     } else {
       say('<b>Safe!</b> That followed ' + RULES[r.rule].name + '’s Rule, so no penalty.');
@@ -2761,9 +2758,10 @@
     return Math.random() < 0.75 ? t[0] : t[rnd(t.length)];
   }
   function guidedPick(p) {
-    // practice rounds: the dogs play points, and in round 2 Frida tries to steal from you so you can Block her
+    // practice rounds: the dogs play Point cards only (no Rules, no Steals) until you have been shown Steal in
+    // round 3; then one dog tries to steal from you so you can Block it (Vilmar, 24 Nov 2026)
     var me = players[0], h = p.hand;
-    if (round === 2 && !guideSteal) {
+    if (round === 3 && !guideSteal) {
       var st = h.filter(function (c) { return c.type === 'steal'; })[0];
       var mineUp = me.up.filter(function (c) { return c.type === 'point'; }).sort(function (a, b) { return b.v - a.v; })
         .concat(me.up.filter(function (c) { return c.type === 'rule'; }));
@@ -2808,7 +2806,7 @@
       await takeTurn(p, c);
     }
     hint('');
-    await wait(1000); // time to read what the dog just did
+    await wait(500); // time to read what the dog just did (was 1000; Vilmar, 24 Nov 2026: get back to me sooner)
     next();
   }
 
@@ -2820,7 +2818,7 @@
     if (w) return win(w);
     turn = (turn + 1) % players.length;
     refresh();
-    await wait(600);
+    await wait(players[turn].human ? 600 : 300);
     if (players[turn].human) myTurn(); else botTurn(players[turn]);
   }
   async function win(p) {
@@ -2928,7 +2926,7 @@
     if (goalChanged || GOAL !== before) {
       // the points to win changed: say so on the board before dealing
       var ok = await popup({ title: 'New game: first to ' + GOAL + ' points', text: 'You changed the points to win. Be the first to reach <b>' + GOAL + ' points</b> to win this game.',
-        buttons: [{ label: 'Got it', value: 1, gold: true }] });
+        buttons: [{ label: 'Next', value: 1, gold: true }] });
       if (!ok) return;
     }
     play(false);
@@ -2938,7 +2936,7 @@
     introEl.hidden = true;
     await enterFS();
     await popup({ title: 'How to win', text: 'Be the first to reach <b>' + GOAL + ' points</b>.',
-      buttons: [{ label: 'Okay, got it', value: 1, gold: true }] });
+      buttons: [{ label: 'Next', value: 1, gold: true }] });
     play(true);
   });
 
