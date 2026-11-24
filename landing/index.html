@@ -522,6 +522,7 @@
   .pg-intro-card p { color: var(--ink-2); font-size: 16px; line-height: 1.45; text-wrap: balance; }
   .lesson-skip { appearance: none; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--fs-md); color: var(--ink-2); text-decoration: underline; padding: var(--sp-2); }
   .lesson-skip:hover { color: var(--ink); }
+  .lesson-alt { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 var(--sp-6); }
   .lesson-skip:focus-visible { outline: var(--bw-2) solid var(--accent); outline-offset: var(--bw-2); border-radius: var(--r-md); }
   #board.touch .lesson-skip { font-size: var(--fs-lg); min-height: var(--size-lg); }
   .intro-dogs { display: flex; margin-bottom: 4px; }
@@ -1033,7 +1034,7 @@
           <h3>Step 1: Deal 4 cards to each player</h3>
           <p>Shuffle the main deck and penalty deck, then deal 4 cards to each player.</p>
           <button class="pg-btn gold big" id="dealBtn" type="button">Next</button>
-          <button class="lesson-skip" id="skipLessonBtn" type="button">Skip instructions</button>
+          <div class="lesson-alt"><button class="lesson-skip" id="skipLessonBtn" type="button">Skip instructions</button><button class="lesson-skip" id="tourLessonBtn" type="button">Take the tour</button></div>
         </div>
       </div>
       <div class="pg-rotate" id="rotateNote" aria-live="polite">
@@ -2940,7 +2941,7 @@
     introEl.hidden = true;
     if (withSeating) await seatDogs();
     await deal();
-    if (firstGame || !seen('tour')) await tour(); // the lesson always opens with the tour
+    if (wantTour) { wantTour = false; await tour(); } // only from "Take the tour" (Vilmar, 24 Nov 2026: the lesson is for people with the box; the tour is for people playing here)
     myTurn();
   }
   async function start(goalChanged) {
@@ -2958,13 +2959,16 @@
     play(false);
   }
   // "Deal the cards" goes full screen, says how to win, then deals
-  $('skipLessonBtn').addEventListener('click', async function () {
-    // straight to a normal game: no tour, no "How to win", no lesson
-    firstGame = false; markSeen('guided'); markSeen('tour');
+  var wantTour = false;
+  // straight to a normal game: no lesson, no "How to win"; "Take the tour" adds the tour first
+  async function playNoLesson(tourFirst) {
+    firstGame = false; markSeen('guided'); wantTour = tourFirst;
     introEl.hidden = true;
     await enterFS();
     play(true);
-  });
+  }
+  $('skipLessonBtn').addEventListener('click', function () { playNoLesson(false); });
+  $('tourLessonBtn').addEventListener('click', function () { playNoLesson(true); });
   // "How to play" in the toolbar: a fresh game that runs the lesson from the start (Vilmar, 24 Nov 2026)
   $('lessonBtn').addEventListener('click', async function () {
     if (mode === 'intro' && !introEl.hidden) { $('dealBtn').click(); return; }
