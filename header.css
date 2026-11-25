@@ -62,6 +62,13 @@
 .hero-island.is-compact.is-grid .hero-pill { gap: var(--lgap); }
 .hero-island.is-compact.is-grid .hero-left { margin-right: auto; }
 
+/* the compact practice pill on wider screens (desktop, tablets): as slim as the phones' one and only as wide as its five
+   pieces need, so the game keeps the room (Vilmar, 25 Nov 2026) */
+@media (min-width: 601px) {
+  .hero-island.is-compact.is-practice { --logo-h: var(--size-sm); width: min(var(--w-md), calc(100vw - var(--sp-7))); }
+  .hero-island.is-compact.is-practice .hero-pill { padding: var(--sp-3-5) var(--sp-3) var(--sp-3-5) var(--sp-4-5); }
+}
+
 /* phones (600px and narrower): How to Play stays in the pill, left of Buy Now. The pill is as wide as the page's content
    (16px in from each edge) and the logo is as large as fits beside the buttons (header.js), never below 20px */
 @media (max-width: 600px) {
