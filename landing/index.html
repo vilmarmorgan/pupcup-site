@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" data-brand="pupcup" data-theme="dark">
 <head>
+<script>/* game only: the homepage shows this page inside its table (?embed). Set before anything draws. */
+if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add('embed');
+  else if (window.top === window) location.replace('../' + location.hash); // the game lives on the homepage's table now (25 Nov 2026): this address leads there</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1028,6 +1031,14 @@
   .after-inner { max-width: 960px; margin: 0 auto; display: grid; gap: 28px; justify-items: start; }
   .after h2 { font-size: clamp(30px, 5vw, 52px); font-weight: 700; line-height: 1.05; }
   .after p { color: var(--ink-2); font-size: 18px; max-width: 56ch; }
+
+  /* ── Game only (?embed): the homepage shows this page inside its table (Vilmar, 25 Nov 2026). Only the board shows,
+     filling the frame; the homepage's header pill floats over the top, so the board leaves it that much room. ── */
+  html.embed, html.embed body { background: transparent; overflow: hidden; }
+  html.embed .top, html.embed #reveal, html.embed .site-foot, html.embed .bg-video, html.embed .pg-bar { display: none; }
+  html.embed .pg { padding: 0; }
+  .pg-board { --embed-top: 0; } /* the room the homepage's pill needs, set by the homepage (0 elsewhere) */
+  html.embed .pg-board { max-width: none; border-radius: 0; height: 100vh; min-height: 0; padding-top: var(--embed-top); box-shadow: none; }
 </style>
 </head>
 <body>
@@ -1221,7 +1232,7 @@
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
-      <span class="ver" title="Version of this page">v1.5</span>
+      <span class="ver" title="Version of this page">v1.6</span>
       <span class="made">Made with <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -3678,7 +3689,15 @@
     tour().then(function () { mode = m; waiting(false); });
   });
   setFelt(feltI); setDog(myDog); setTips(tipsOn);
-  showIntro();
+  // game only (?embed): the homepage starts the lesson once its table has settled, and its header buttons drive the game
+  var embedded = document.documentElement.classList.contains('embed'), begun = false;
+  if (!embedded) showIntro();
+  window.pupGame = {
+    start: function () { if (!begun) { begun = true; showIntro(); } },
+    newGame: function () { begun = true; $('restartBtn').click(); },
+    customise: function () { cBtn.click(); },
+    howto: function () { begun = true; closeMenu(); lStart(0); }
+  };
   window.__pg = { players: function () { return players; }, rules: function () { return rules; }, boop: spawnSuperBoop };
 })();
 </script>

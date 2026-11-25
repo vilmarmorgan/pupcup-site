@@ -29,7 +29,9 @@
     var isl = island(); if (!isl) return;
     Object.keys(MODES).forEach(function (k) { if (k in modes) isl.classList.toggle(MODES[k], !!modes[k]); });
     if ('practice' in modes) {
-      if (!pause) { pause = document.createElement('span'); pause.className = 'overlay'; pause.hidden = true; document.body.appendChild(pause); }
+      // the marker carries bone-lick's 'overlay' class but must never draw: on the homepage .overlay is the full-screen
+      // card popup (display: flex beats the hidden attribute), so it is switched off inline with !important
+      if (!pause) { pause = document.createElement('span'); pause.className = 'overlay pup-lick-pause'; pause.hidden = true; pause.style.setProperty('display', 'none', 'important'); document.body.appendChild(pause); }
       pause.classList.toggle('active', !!modes.practice);
     }
   }
