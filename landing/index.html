@@ -869,6 +869,7 @@
   /* the table during the lesson: Step 1 is the box in the middle; you and the decks come in after the deal */
   .pg-board.lesson-setup .pgdeck, .pg-board.lesson-setup .pg-msg { visibility: hidden; }
   .pg-board.lesson-setup .seat[data-p="0"] { display: none; }
+  .pg-board.measuring .pg-hand .pc { transform: none !important; transition: none !important; animation: none !important; } /* sizing the lesson's table: cards at rest */
   .pg-board.fs.lesson .pg-bar { display: none; } /* in full screen the toolbar sits under your hand: the drawer has Skip, so it steps aside */
   .pg-board.lesson .pg-hand-wrap { padding-bottom: var(--sp-12); } /* the fanned cards' corners clear the drawer */
   .pg-board.lesson-setup .pg-hand-wrap { display: none; } /* no hand yet: the box and the drawer get the room */
@@ -1214,7 +1215,7 @@
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
-      <span class="ver" title="Version of this page">v1.3</span>
+      <span class="ver" title="Version of this page">v1.4</span>
       <span class="made">Made with <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -3049,17 +3050,23 @@
       var slack = cssPx('var(--sp-1)'), R = function (n) { return n.getBoundingClientRect(); };
       var hit = function (a, b) { return a.left < b.right - slack && b.left < a.right - slack && a.top < b.bottom - slack && b.top < a.bottom - slack; };
       var parts = [].map.call(t.querySelectorAll('.seat, .pg-mid'), R), up = R(players[0].upEl);
-      var cards = [].filter.call(hand.children, function (n) { return !n.classList.contains('glow') && !n.classList.contains('show'); }).map(R); // a lifted card is meant to rise
+      var cards = [].map.call(hand.children, R); // measured at rest: see .measuring
       for (var i = 0; i < parts.length; i++) for (var j = i + 1; j < parts.length; j++) if (hit(parts[i], parts[j])) return false;
       // and the hand's own row ends above the drawer, so nothing has to scroll
       var floor = board.getBoundingClientRect().bottom - (lSide() ? 0 : drawerEl.offsetHeight);
       return R(hw).bottom <= floor + slack && cards.every(function (c) { return !hit(c, up) && parts.every(function (p) { return !hit(c, p); }); });
     };
+    // Your cards are measured where they rest, not where they are this instant: a card still settling after you
+    // tapped it, or one that's glowing, sat high enough to fail every size, and the table shrank to half for the
+    // Steal step (Vilmar, 25 Nov 2026).
+    board.classList.add('measuring');
     var lo = 1;
     if (!fits(1)) {
       lo = 0.5; var hi = 1;
       for (var k = 0; k < 7; k++) { var m = (lo + hi) / 2; if (fits(m)) lo = m; else hi = m; }
     }
+    board.classList.remove('measuring');
+    if (Math.abs(lo - L.zoom) < 0.02) lo = L.zoom; // a hair's difference between steps: keep the table still
     L.zoom = lo;
     if (page === 0) lLay(0);
     drawerEl.hidden = wasHidden;
