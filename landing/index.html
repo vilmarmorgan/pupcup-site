@@ -180,6 +180,7 @@
   .hero-copy h1 em { font-style: normal; color: var(--accent); }
   /* the line under the heading (Vilmar, 24 Nov 2026): 24px, white, centred, 24px above and below */
   .hero-copy .tagline { margin: 0; padding: var(--sp-6) 0; font-size: var(--fs-2xl); color: var(--color-white); text-align: center; }
+  @media (max-width: 600px) { .hero-copy .tagline { text-wrap: balance; } .hero-copy .tagline br { display: none; } } /* no word left alone on a line (Vilmar, 25 Nov 2026) */
   /* Landed cards are links to the main site */
   /* Hover: the card comes to the front, straightens up and grows a little (like Cards Against Humanity) */
   .card-flat .card-face.live {
@@ -461,10 +462,13 @@
     transform: translateY(var(--dy, 0)) rotate(var(--tilt, 0deg)); transform-origin: 50% 110%;
     transition: transform .2s cubic-bezier(.2, .8, .2, 1);
   }
-  .pg-hand .pc:hover, .pg-hand .pc:focus-visible, .pg-hand .pc.sel { transform: translateY(-26px) rotate(0) scale(1.08); z-index: 5; outline: none; }
+  /* raised on hover only where there's a real pointer: a phone keeps "hover" on the spot last tapped, so the next card
+     to land there sat raised (Vilmar's iPhone, 25 Nov 2026) */
+  .pg-hand .pc:focus-visible, .pg-hand .pc.sel { transform: translateY(-26px) rotate(0) scale(1.08); z-index: 5; outline: none; }
+  @media (hover: hover) { .pg-hand .pc:hover { transform: translateY(-26px) rotate(0) scale(1.08); z-index: 5; outline: none; } }
   .pg-hand .pc:focus-visible img { filter: drop-shadow(0 0 0 #fff) drop-shadow(0 0 8px rgba(255, 255, 255, .9)); }
   .pg-board.wait .pg-hand .pc { cursor: default; }
-  .pg-board.wait .pg-hand .pc:not(.glow) { filter: saturate(.75) brightness(.85); }
+  .pg-board.wait .pg-hand .pc:not(.glow) img { filter: saturate(.75) brightness(.85); } /* on the picture, not the tilted card: iPhone Safari dropped tilted cards with a filter */
   .pg-hand .pc.glow { animation: glow 1s ease-in-out infinite; z-index: 5; }
   @keyframes glow { 0%, 100% { transform: translateY(-14px) scale(1.04) } 50% { transform: translateY(-26px) scale(1.08) } }
   .shake { animation: shake .4s; }
@@ -511,23 +515,6 @@
   /* intro: an empty table until you deal */
   .seat { transition: background .3s, box-shadow .3s, opacity .45s, transform .45s cubic-bezier(.2, .9, .3, 1.2); }
   .seat.away { opacity: 0; transform: scale(.7); }
-  .pg-intro { position: absolute; inset: 0; z-index: 36; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .35); }
-  .pg-intro[hidden] { display: none; }
-  .pg-intro-card {
-    width: min(480px, 100%); display: grid; gap: 12px; justify-items: center; text-align: center;
-    padding: 30px 28px 28px; border-radius: 24px; background: #15161c;
-    box-shadow: 0 30px 70px rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(255, 255, 255, .06);
-  }
-  .pg-intro-card h3 { font-size: clamp(26px, 3vw, 34px); font-weight: 700; line-height: 1.1; text-wrap: balance; }
-  .pg-intro-card p { color: var(--ink-2); font-size: 16px; line-height: 1.45; text-wrap: balance; }
-  .lesson-skip { appearance: none; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--fs-md); color: var(--ink-2); text-decoration: underline; padding: var(--sp-2); }
-  .lesson-skip:hover { color: var(--ink); }
-  .lesson-alt { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 var(--sp-6); }
-  .lesson-skip:focus-visible { outline: var(--bw-2) solid var(--accent); outline-offset: var(--bw-2); border-radius: var(--r-md); }
-  #board.touch .lesson-skip { font-size: var(--fs-lg); min-height: var(--size-lg); }
-  .intro-dogs { display: flex; margin-bottom: 4px; }
-  .intro-dogs img { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px #15161c; }
-  .intro-dogs img + img { margin-left: -14px; }
   .pg-btn.big { font-size: 18px; padding: 14px 28px; margin-top: 6px; }
   .deal-fly { position: absolute; z-index: 20; border-radius: 6px; pointer-events: none; box-shadow: 0 6px 14px rgba(0, 0, 0, .4); }
 
@@ -774,7 +761,8 @@
     #board.apple .pg-hand-wrap { padding-bottom: 26px; } /* clear of the iPhone's home bar */
     #board .pg-hand { min-height: 0; padding-top: 10px; }
     #board .pg-hand .pc { width: clamp(44px, 16.5vh, 80px); margin: 0 -4px; }
-    #board .pg-hand .pc:hover, #board .pg-hand .pc.sel { transform: translateY(-12px) rotate(0) scale(1.05); }
+    #board .pg-hand .pc.sel { transform: translateY(-12px) rotate(0) scale(1.05); }
+    @media (hover: hover) { #board .pg-hand .pc:hover { transform: translateY(-12px) rotate(0) scale(1.05); } }
     @keyframes glowS { 0%, 100% { transform: translateY(-6px) scale(1.02) } 50% { transform: translateY(-12px) scale(1.05) } }
     #board .pg-hand .pc.glow { animation-name: glowS; }
     #board .pg-hint { font-size: 11px; min-height: 0; }
@@ -819,10 +807,6 @@
     #board .pg-end-card .pop-av { width: 40px; height: 40px; }
     #board .pg-end-card h3 { font-size: 18px; } #board .pg-end-card p { font-size: 13.5px; }
     #board .pg-end-card .opts .pg-btn { font-size: 14px; padding: 8px 14px; }
-    #board .pg-intro { padding: 8px; }
-    #board .pg-intro-card { padding: 14px 20px; gap: 6px; width: min(460px, 100%); }
-    #board .pg-intro-card h3 { font-size: 20px; } #board .pg-intro-card p { font-size: 13.5px; }
-    #board .intro-dogs img { width: 36px; height: 36px; }
     #board .pg-btn.big { font-size: 15px; padding: 9px 20px; margin-top: 2px; }
     /* slip-ups: one compact, solid line (dog + what they did + Caught you!) so it fits the short screen */
     #board .seat-pop { width: 230px; padding: 6px 8px; gap: 5px 8px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; background: rgba(12, 14, 18, .9); }
@@ -841,22 +825,143 @@
   }
 
 
-  /* phones and tablets: the game is played sideways. Upright, a note asks you to turn the screen. */
-  .pg-rotate, .pg-back { position: absolute; inset: 0; z-index: 45; display: none; place-items: center; padding: 20px; background: rgba(8, 10, 12, .82); }
+  /* phones and tablets: left full screen mid-game, a card offers the way back */
+  .pg-back { position: absolute; inset: 0; z-index: 45; display: none; place-items: center; padding: 20px; background: rgba(8, 10, 12, .82); }
   .pg-back:not([hidden]) { display: grid; }
   .pg-btn[hidden] { display: none; }
-  @media (orientation: portrait) { .pg-board.touch .pg-rotate { display: grid; } .pg-board.touch .pg-back { display: none; } }
-  /* How to play (lesson.html) is played upright on a phone, so the intro and the lesson never ask you to turn it */
-  .pg-board:has(#intro:not([hidden])) .pg-rotate, html.lesson-on .pg-board .pg-rotate { display: none; }
-  .lesson-frame { position: fixed; inset: 0; z-index: 2147481500; background: var(--bg); }
-  .lesson-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
-  html.lesson-on, html.lesson-on body { overflow: hidden; }
+  /* ── How to play (Vilmar, 25 Nov 2026): the steps run on this table on every screen. The step you're on is a
+     drawer at the bottom, and the table makes room for it. ── */
+  .lesson-drawer { position: absolute; left: 50%; bottom: 0; z-index: 38; translate: -50% 0; width: min(100%, var(--w-3xl));
+    max-height: 62%; overflow: auto; display: flex; flex-direction: column; gap: var(--sp-2); color: var(--ink);
+    padding: var(--sp-4) var(--sp-10) var(--sp-10); border-radius: var(--r-5xl) var(--r-5xl) 0 0; background: var(--color-neutral-950);
+    box-shadow: 0 calc(var(--sp-2) * -1) var(--sp-8) color-mix(in srgb, var(--color-black) calc(var(--op-45) * 100%), transparent); }
+  .lesson-drawer[hidden] { display: none; }
+  /* one height for every step (the tallest, Block with its button), so the table doesn't change size from step to step */
+  .lesson-drawer { min-height: calc(var(--w-72) + var(--sp-4)); }
+  .lesson-drawer.in { animation: lessonIn var(--dur-300) var(--ease-out); }
+  @keyframes lessonIn { from { transform: translateY(var(--sp-6)); opacity: var(--op-0); } }
+  .lesson-drawer .dots { display: flex; justify-content: center; gap: var(--sp-1-5); padding-bottom: var(--sp-5); }
+  .lesson-drawer .dots i { width: var(--sp-6); height: var(--sp-1); border-radius: var(--r-pill); background: var(--line); }
+  .lesson-drawer .dots i.done { background: color-mix(in srgb, var(--accent) calc(var(--op-60) * 100%), transparent); }
+  .lesson-drawer .dots i.on { background: var(--accent); }
+  .lesson-drawer .l-top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+  .lesson-drawer .k { font-size: var(--fs-sm); font-weight: var(--fw-semibold); letter-spacing: var(--ls-widest); text-transform: uppercase; color: var(--accent); line-height: var(--lh-none); }
+  .lesson-drawer h2 { margin: 0 0 var(--sp-4); font-size: var(--fs-2xl); font-weight: var(--fw-bold); line-height: var(--lh-tight); text-wrap: balance; }
+  .lesson-drawer p { margin: 0; font-size: var(--fs-lg); line-height: var(--lh-snug); color: var(--ink-2); }
+  .lesson-drawer p b { color: var(--ink); }
+  .lesson-drawer .do { color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--fs-md); }
+  .lesson-drawer .tips-h { font-size: var(--fs-sm); font-weight: var(--fw-semibold); letter-spacing: var(--ls-widest); text-transform: uppercase; color: var(--accent); margin-top: var(--sp-1); }
+  .lesson-drawer ul { margin: 0; padding-left: var(--sp-5); display: grid; gap: var(--sp-1-5); font-size: var(--fs-md); line-height: var(--lh-snug); color: var(--ink-2); }
+  .lesson-drawer ul b { color: var(--ink); }
+  .lesson-drawer .row { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-top: auto; padding-top: var(--sp-3); }
+  .lesson-drawer .row .sp { flex: 1; }
+  .lesson-drawer .pg-btn.big { font-size: var(--fs-xl); padding: var(--sp-3) var(--sp-6); min-height: var(--size-lg); }
+  .lesson-drawer .link { appearance: none; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--fs-md); color: var(--ink-2); text-decoration: underline; padding: var(--sp-1) 0; }
+  .lesson-drawer .link:hover { color: var(--ink); }
+  .lesson-drawer .nav { display: flex; align-items: center; margin-block: calc((var(--size-lg) - var(--fs-sm)) / -2); margin-right: calc(var(--sp-3) * -1); }
+  .lesson-drawer .navbtn { appearance: none; border: 0; background: none; cursor: pointer; display: grid; place-items: center; width: var(--size-lg); height: var(--size-lg); border-radius: var(--r-pill); color: var(--ink); }
+  .lesson-drawer .navbtn svg { width: var(--size-xs); height: var(--size-xs); fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .lesson-drawer .navbtn:hover:not(:disabled) { background: color-mix(in srgb, var(--color-white) calc(var(--op-10) * 100%), transparent); }
+  .lesson-drawer .navbtn:disabled { cursor: default; opacity: var(--op-25); }
+  .lesson-drawer .navbtn:focus-visible, .lesson-drawer .link:focus-visible { outline: var(--bw-2) solid var(--accent); outline-offset: calc(var(--bw-2) * -1); }
+  .lesson-drawer .l-top .link.skip { min-height: var(--size-lg); padding: 0 var(--sp-3); }
+  .lesson-drawer .vh { position: absolute; width: var(--bw-1); height: var(--bw-1); overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* the table during the lesson: Step 1 is the box in the middle; you and the decks come in after the deal */
+  .pg-board.lesson-setup .pgdeck, .pg-board.lesson-setup .pg-msg { visibility: hidden; }
+  .pg-board.lesson-setup .seat[data-p="0"] { display: none; }
+  .pg-board.fs.lesson .pg-bar { display: none; } /* in full screen the toolbar sits under your hand: the drawer has Skip, so it steps aside */
+  .pg-board.lesson .pg-hand-wrap { padding-bottom: var(--sp-12); } /* the fanned cards' corners clear the drawer */
+  .pg-board.lesson-setup .pg-hand-wrap { display: none; } /* no hand yet: the box and the drawer get the room */
+  .pg-board.lesson-end .pg-table { opacity: var(--op-40); }
+  .pg-board.lesson-end .pg-hand-wrap { visibility: hidden; }
+  .pg-board.lesson-end .lesson-drawer { max-height: 80%; } /* the tips and Let's Play fit without scrolling */
+  .pg-board .pgdeck.lesson-ring img { box-shadow: 0 0 0 var(--bw-2) var(--accent), 0 0 var(--sp-5) color-mix(in srgb, var(--accent) calc(var(--op-60) * 100%), transparent); }
+  .pg-hand .pc.show { transform: translateY(calc(var(--sp-4) * -1)) scale(1.06); z-index: 5; }
+  .pg-hand .pc.show img { filter: drop-shadow(0 0 var(--sp-3) var(--accent)); }
+  .lesson-box { grid-area: mid; z-index: 6; position: relative; align-self: stretch; display: grid; place-items: center; pointer-events: none; }
+  .lesson-box[hidden] { display: none; }
+  .lesson-box .setup-row { display: grid; place-items: center; transition: opacity var(--dur-300), transform var(--dur-300); }
+  .lesson-box .setup-row.gone { opacity: var(--op-0); transform: scale(.92); }
+  .pbox { padding: var(--sp-2); border-radius: var(--r-lg);
+    background: color-mix(in srgb, var(--base-outside), var(--color-white) calc(var(--op-20) * 100%));
+    box-shadow: inset 0 0 0 var(--bw-1) color-mix(in srgb, var(--color-white) calc(var(--op-25) * 100%), transparent),
+      0 0 0 var(--bw-2) var(--base-outside), var(--shadow-xl); }
+  .pbox .in { position: relative; overflow: hidden; width: var(--w-60); aspect-ratio: 414 / 270 /*geometry*/; border-radius: var(--r-sm); background: var(--color-neutral-500);
+    box-shadow: inset 0 var(--sp-3) var(--sp-4) color-mix(in srgb, var(--color-black) calc(var(--op-45) * 100%), transparent),
+      inset 0 0 var(--sp-2) color-mix(in srgb, var(--color-black) calc(var(--op-30) * 100%), transparent); }
+  .pbox .in::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 0.73% /*geometry: 3 of 414*/; translate: -50% 0;
+    background: color-mix(in srgb, var(--base-inside), var(--color-black) calc(var(--op-40) * 100%)); }
+  .in-deck { position: absolute; z-index: 1; top: 50%; height: 97.78% /*geometry: 264 of 270*/; aspect-ratio: 186 / 264 /*geometry*/; translate: -50% -50%; }
+  #lbMain { left: 25.12% /*geometry: centre 207 - 103 of 414*/; }
+  #lbPen { left: 74.88% /*geometry: centre 207 + 103 of 414*/; }
+  .in-deck img, .tdeck img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: var(--r-sm);
+    box-shadow: 0 var(--sp-0-5) 0 var(--color-pupcup-card), 0 var(--sp-1) 0 color-mix(in srgb, var(--color-pupcup-card), var(--color-black) calc(var(--op-15) * 100%)),
+      0 var(--sp-2) var(--sp-2) color-mix(in srgb, var(--color-black) calc(var(--op-40) * 100%), transparent); }
+  .lesson-box .shuffle-row { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: var(--sp-10); }
+  .lesson-box .shuffle-row[hidden] { display: none; }
+  .tdeck { position: relative; height: var(--w-40); aspect-ratio: 534 / 753 /*geometry*/; }
+  .lesson-flyer { position: fixed; z-index: 2147481400; pointer-events: none; border-radius: var(--r-md); filter: drop-shadow(0 var(--sp-1) var(--sp-2) var(--color-black)); }
+  @media (prefers-reduced-motion: reduce) { .lesson-drawer.in { animation: none; } }
+  /* ── Upright phones (Vilmar, 25 Nov 2026): the same game as sideways, laid out like the upright lesson. The dogs
+     across the top with only the cards they've played; the decks and the message; you, with your played cards
+     beside you; your hand. The controls are one menu. On an iPhone, which has no full screen, the game fills the
+     screen anyway. ── */
+  .pg-menu { display: none; position: relative; }
+  .menu-list { position: absolute; right: 0; top: calc(100% + var(--sp-2)); z-index: 2; min-width: var(--w-56); display: grid; gap: var(--sp-0-5);
+    padding: var(--sp-2); border-radius: var(--r-2xl); background: var(--color-neutral-950); box-shadow: var(--shadow-xl); }
+  .menu-list[hidden] { display: none; }
+  .menu-list > * { appearance: none; border: 0; background: none; font: inherit; color: var(--ink); text-decoration: none; cursor: pointer; text-align: left;
+    display: flex; align-items: center; gap: var(--sp-3); min-height: var(--size-lg); padding: 0 var(--sp-4); border-radius: var(--r-lg); font-size: var(--fs-lg); }
+  .menu-list > *:hover, .menu-list > *:focus-visible { background: color-mix(in srgb, var(--color-white) calc(var(--op-10) * 100%), transparent); outline: none; }
+  .menu-list > [hidden] { display: none; }
+  .menu-list > * > span { width: var(--sp-6); text-align: center; color: var(--accent); }
+  .pg-bar.menu-open { z-index: 40; }
+  .pg-board.fake-fs { position: fixed; inset: 0; z-index: 2147481000; max-width: none; border-radius: 0; height: 100dvh; min-height: 0; overflow: auto; }
+  html.fake-fs, html.fake-fs body { overflow: hidden; }
+  html.fake-fs .top { display: none; } /* the site's bar would sit over the game */
+  @media (max-width: 760px) and (orientation: portrait) {
+    #board .pg-tools { display: none; }
+    #board .pg-menu { display: block; }
+    #board .menu-btn { font-size: var(--fs-md); padding: var(--sp-2) var(--sp-4); min-height: var(--size-md); }
+    #board.fs .fs-head { display: none; }
+    /* full screen keeps the same three rows (the logo row is in the menu now); placed, so a hidden bar leaves its row empty */
+    #board.fs { grid-template-rows: auto minmax(0, 1fr) auto; }
+    #board .pg-bar { grid-row: 1; } #board .pg-table { grid-row: 2; } #board .pg-hand-wrap { grid-row: 3; }
+    #board.fs .pg-bar { order: 0; padding: var(--sp-2) var(--sp-3) 0; }
+    #board .pg-bar { padding: var(--sp-2) var(--sp-3) 0; }
+    #board .seat .backs { display: none; }
+    #board .seat:not([data-p="0"]) { justify-items: start; padding: var(--sp-1-5) var(--sp-1); }
+    #board .seat:not([data-p="0"]) .who { flex-direction: row; text-align: left; gap: var(--sp-1-5); }
+    #board .seat:not([data-p="0"]) .who-txt { justify-items: start; }
+    #board .seat:not([data-p="0"]) .meter { width: 100%; }
+    #board .seat .up { justify-content: flex-start; }
+    #board .seat[data-p="0"] { justify-self: stretch; grid-auto-flow: column; grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; gap: var(--sp-4); padding: var(--sp-2) var(--sp-4); }
+    .lesson-drawer { min-height: calc(42% - var(--sp-10)); }
+  }
+  @media (max-height: 520px) and (orientation: landscape) {
+    .lesson-drawer { left: auto; right: 0; top: 0; bottom: 0; translate: none; width: min(45%, var(--w-96)); min-height: 0; max-height: none;
+      padding: var(--sp-4) max(var(--sp-6), env(safe-area-inset-right)) var(--sp-4) var(--sp-6); border-radius: var(--r-5xl) 0 0 var(--r-5xl); }
+    .lesson-drawer .dots { padding-bottom: var(--sp-2); }
+    .lesson-drawer .l-top { margin-bottom: var(--sp-2); }
+    .lesson-drawer h2 { margin-bottom: var(--sp-2); font-size: var(--fs-xl); }
+    .lesson-drawer p { font-size: var(--fs-md); }
+    .pg-board.lesson-end .lesson-drawer { max-height: none; }
+    #board.lesson .pg-bar, #board.lesson .fs-head { display: none; } /* the drawer has Skip; the table gets the room */
+    @keyframes lessonInSide { from { transform: translateX(var(--sp-6)); opacity: var(--op-0); } }
+    .lesson-drawer.in { animation-name: lessonInSide; }
+  }
+  @media (max-width: 760px) and (orientation: portrait) and (max-height: 600px) {
+    .lesson-drawer { min-height: calc(40% - var(--sp-10)); padding: var(--sp-3) var(--sp-8) var(--sp-6); }
+    .lesson-drawer .dots { padding-bottom: var(--sp-3); }
+    .lesson-drawer .l-top { margin-bottom: var(--sp-2); }
+    .lesson-drawer h2 { margin-bottom: var(--sp-1); font-size: var(--fs-xl); }
+    .lesson-drawer p { font-size: var(--fs-md); }
+    .lesson-drawer .row { padding-top: var(--sp-3); }
+    .lesson-drawer .pg-btn.big { font-size: var(--fs-lg); padding: var(--sp-2) var(--sp-5); }
+  }
   .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
   .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
   .pg-rotate-card p { color: var(--ink-2); font-size: 15px; line-height: 1.45; text-wrap: balance; }
-  .rot-ico { color: var(--accent); animation: rotHint 2.4s ease-in-out infinite; }
-  @keyframes rotHint { 0%, 30% { transform: rotate(0) } 55%, 85% { transform: rotate(-90deg) } 100% { transform: rotate(0) } }
-  @media (prefers-reduced-motion: reduce) { .rot-ico { animation: none; } }
   .pg-link { appearance: none; border: 0; background: none; font: inherit; font-size: 14px; color: var(--ink-2); text-decoration: underline; cursor: pointer; padding: 6px; }
   /* phones and tablets: lighter drawing, so Safari keeps up (no frosted glass, simpler shadows) */
   @media (pointer: coarse) {
@@ -971,7 +1076,7 @@
 
       <div class="hero-copy" id="heroCopy">
         <h1>Let’s Play <em>Pupcup</em></h1>
-        <p class="tagline">A card game that brings people together<br>to bark, growl, and howl with laughter.</p>
+        <p class="tagline">A card game that brings people together <br>to bark, growl, and howl with laughter.</p>
       </div>
 
       <div class="hint" id="hint"><i></i>Scroll to open</div>
@@ -1002,6 +1107,18 @@
           <button class="pg-btn" id="restartBtn" type="button">↻ <span class="t">New game</span></button>
           <button class="pg-btn gold" id="nextBtn" type="button" disabled aria-label="Skip to the next step">Next <span aria-hidden="true">→</span></button>
         </div>
+        <div class="pg-menu" id="pgMenu">
+          <button class="pg-btn menu-btn" id="menuBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menuList"><span aria-hidden="true">☰</span> Menu</button>
+          <div class="menu-list" id="menuList" role="menu" hidden>
+            <button type="button" role="menuitem" data-m="restartBtn"><span aria-hidden="true">↻</span> New game</button>
+            <button type="button" role="menuitem" data-m="customBtn"><span aria-hidden="true">🎨</span> Customise</button>
+            <button type="button" role="menuitem" data-m="lessonBtn"><span aria-hidden="true">?</span> How to play</button>
+            <button type="button" role="menuitem" data-m="share"><span aria-hidden="true">⇪</span> Share</button>
+            <button type="button" role="menuitem" data-m="fsExit" class="m-fs"><span aria-hidden="true">✕</span> Exit full screen</button>
+            <a role="menuitem" href="https://shop.playpupcup.com/" target="_blank" rel="noopener"><span aria-hidden="true">🛒</span> Buy Pupcup</a>
+            <a role="menuitem" href="../"><span aria-hidden="true">⌂</span> Home</a>
+          </div>
+        </div>
       </div>
       <div class="pg-table" id="tableEl">
         <div class="seat" data-p="2"></div>
@@ -1017,6 +1134,16 @@
         </div>
         <div class="seat" data-p="3"></div>
         <div class="seat" data-p="0"></div>
+        <div class="lesson-box" id="lessonBox" aria-label="The Pupcup box" hidden>
+          <div class="setup-row" id="lbRow"><div class="pbox"><div class="in">
+            <div class="in-deck" id="lbMain"><img src="cards/dog-cards-face.webp" alt="The main deck, in the box"></div>
+            <div class="in-deck" id="lbPen"><img src="cards/penalty.webp" alt="The penalty deck, in the box"></div>
+          </div></div></div>
+          <div class="shuffle-row" id="lbShuf" hidden>
+            <div class="tdeck" id="lbtMain"><img src="cards/dog-cards-face.webp" alt="The main deck"></div>
+            <div class="tdeck" id="lbtPen"><img src="cards/penalty.webp" alt="The penalty deck"></div>
+          </div>
+        </div>
       </div>
       <div class="pg-hand-wrap">
         <div class="pg-hand" id="hand" aria-label="Your hand"></div>
@@ -1024,26 +1151,7 @@
       <div class="play-slot" id="playSlot" aria-hidden="true"></div>
       <div class="pg-end" id="endPop" hidden><div class="pg-end-card" id="endCard" role="dialog" aria-modal="true"></div></div>
       <div class="pg-tip" id="tip" role="tooltip"></div>
-      <div class="pg-intro" id="intro" hidden>
-        <div class="pg-intro-card">
-          <div class="intro-dogs" aria-hidden="true">
-            <img src="avatars/av-frida.webp" alt=""><img src="avatars/av-pupstein.webp" alt=""><img src="avatars/av-kpup.webp" alt="">
-          </div>
-          <span class="eyebrow">How to Play</span>
-          <h3>Learn how to play</h3>
-          <button class="pg-btn gold big" id="dealBtn" type="button">Next</button>
-          <div class="lesson-alt"><button class="lesson-skip" id="skipLessonBtn" type="button">Skip instructions</button><button class="lesson-skip" id="tourLessonBtn" type="button">Take the tour</button></div>
-        </div>
-      </div>
-      <div class="lesson-frame" id="lessonFrame" hidden></div>
-      <div class="pg-rotate" id="rotateNote" aria-live="polite">
-        <div class="pg-rotate-card">
-          <svg class="rot-ico" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><rect x="20" y="6" width="24" height="44" rx="5"/><path d="M29 43h6" stroke-linecap="round"/><path d="M10 40a24 24 0 0 0 16 18" stroke-linecap="round"/><path d="M21 58l5 0 0-5" stroke-linecap="round"/></svg>
-          <h3 id="rotateTitle">Turn your phone sideways to play</h3>
-          <p>The practice game is played sideways, so the whole table fits on your screen.</p>
-          <button class="pg-btn gold big" id="rotateGo" type="button" hidden>Play sideways</button>
-        </div>
-      </div>
+      <section class="lesson-drawer" id="lessonDrawer" aria-live="polite" hidden></section>
       <div class="pg-back" id="fsBack" hidden>
         <div class="pg-rotate-card">
           <h3>Your game is waiting</h3>
@@ -1106,6 +1214,7 @@
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
+      <span class="ver" title="Version of this page">v1.3</span>
       <span class="made">Made with <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -2263,6 +2372,7 @@
     e.stopPropagation();
     var n = e.target.closest('.pc'); if (!n) return;
     if (e.target.closest('.zoom')) { e.stopPropagation(); viewCard(n._card); return; }
+    if (L.on) { hideTip(); if (L.pick) L.pick(n); return; }
     if (canHover) { hideTip(); onHandCard(n); return; }
     // phones: first tap explains the card, then "Play this card"
     if (selected === n) { clearSel(); if (mode === 'mine' || mode === 'blockPrompt') onHandCard(n); return; }
@@ -2783,6 +2893,7 @@
 
   // ── Setting up: an empty table, then the dogs sit down and the cards are dealt ──
   function reset() {
+    lStop();
     gen++;
     skippers.length = 0; syncNext();
     applyGoal();
@@ -2837,14 +2948,8 @@
     players[0].seat.classList.remove('away');
     await guard(new Promise(function (r) { setTimeout(r, reduce ? 0 : 450); }));
   }
-  var introEl = $('intro'), restartQueued = false;
-  function showIntro() {
-    reset();
-    players.forEach(function (p) { p.seat.classList.add('away'); });
-    introEl.hidden = false;
-  }
+  var restartQueued = false;
   async function play(withSeating) {
-    introEl.hidden = true;
     if (withSeating) await seatDogs();
     await deal();
     if (wantTour) { wantTour = false; await tour(); } // only from "Take the tour" (Vilmar, 24 Nov 2026: the lesson is for people with the box; the tour is for people playing here)
@@ -2852,7 +2957,6 @@
   }
   async function start(goalChanged) {
     // New game starts right away, even in the middle of a dog's move
-    if (mode === 'intro' && !introEl.hidden) return;
     var before = GOAL;
     reset();
     if (goalChanged || GOAL !== before) {
@@ -2865,63 +2969,397 @@
   }
   // "Deal the cards" goes full screen, says how to win, then deals
   var wantTour = false;
-  // straight to a normal game, no lesson; "Take the tour" adds the tour first
-  async function playNoLesson(tourFirst) {
-    markSeen('guided'); wantTour = tourFirst;
-    introEl.hidden = true;
-    await enterFS();
-    play(true);
+  // ── How to play (Vilmar, 25 Nov 2026) ──
+  // The lesson runs on this table on every screen, upright or sideways, with the step you're on in a drawer at the
+  // bottom. It ends by carrying on as a normal game from the cards on the table.
+  function ms(name) { var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return reduce ? 0 : (v.endsWith('ms') ? parseFloat(v) : parseFloat(v) * 1000); }
+  function cssPx(v) { var p = document.createElement('div'); p.style.position = 'absolute'; p.style.width = v; board.appendChild(p); var w = p.getBoundingClientRect().width; p.remove(); return w; }
+  function tap() { return canHover ? 'Click' : 'Tap'; }
+  function lwait(t) { return new Promise(function (r) { setTimeout(r, t); }); }
+
+
+  // desktops and tablets: the lesson on this table. Eight pages; playing a page animates the table into the next
+  // one, and ‹ › jump between pages, setting the table straight to how it stands at the start of that page.
+  var drawerEl = $('lessonDrawer'), lboxEl = $('lessonBox');
+  var L = { on: false, page: 0, gen: 0, pick: null, zoom: 1, busy: false };
+  var L_STEPS = ['Deal', 'Point', 'Rule', 'Steal', 'Block', 'Tips'], L_LAST = 7, L_PLAYS = [10, 30, 20]; // Frida, Pupstein, K-Pup
+  function mk(s) {
+    return s === 'p10' ? card('point', { v: 10 }) : s === 'p20' ? card('point', { v: 20 }) : s === 'p30' ? card('point', { v: 30 })
+      : s === 'rule' ? card('rule', { rule: 'kpup' }) : s === 'steal' ? card('steal', { art: 'steal-coco' })
+      : s === 'steal2' ? card('steal', { art: 'steal-popcorn' }) : s === 'block' ? card('block', { art: 'block-lucky' })
+      : card('penalty', { v: 10 });
   }
-  $('skipLessonBtn').addEventListener('click', function () { playNoLesson(false); });
-  $('tourLessonBtn').addEventListener('click', function () { playNoLesson(true); });
-  // ── How to play: the lesson (lesson.html) over the table, upright on a phone; it ends in a normal game ──
-  // (Vilmar, 25 Nov 2026: the portrait lesson, adopted for desktop too). The intro card's Next and "How to play"
-  // in the toolbar both open it. It says "play" when it's done on a desktop; on a phone it says "turn" while it
-  // asks for the phone to be turned, and the game starts once it is sideways (on Android, it is turned for you).
-  var lessonEl = $('lessonFrame'), lessonTurn = false;
-  function openLesson() {
-    reset();
-    players.forEach(function (p) { p.seat.classList.add('away'); });
-    introEl.hidden = true; lessonTurn = false;
-    var f = document.createElement('iframe');
-    f.src = 'lesson.html'; f.title = 'How to play Pupcup';
-    // in full screen only the board is drawn, so the lesson goes inside it; otherwise it goes on the page itself,
-    // above the site's top bar (inside the board it sat under it on an iPhone, which has no full screen)
-    (isFS() ? board : document.body).appendChild(lessonEl);
-    lessonEl.textContent = ''; lessonEl.appendChild(f); lessonEl.hidden = false;
-    document.documentElement.classList.add('lesson-on');
-    f.addEventListener('load', function () { try { f.contentWindow.focus(); } catch (e) {} });
+  var L_TABLE = [null,
+    { hand: ['p20', 'rule', 'steal', 'block'], up: [[], [], [], []], msg: '<b>Your turn.</b> You’re on 0' },
+    { hand: ['rule', 'steal', 'block', 'p10'], up: [['p20'], ['p10'], ['p30'], ['p20']], msg: '<b>Your turn.</b> You’re on 20' },
+    { hand: ['steal', 'block', 'p10', 'p30'], up: [['p20', 'rule'], ['p10'], ['p30'], ['p20']], msg: 'Your rule: <b>Don’t show your teeth</b>' },
+    { hand: ['steal', 'block', 'p10', 'p30'], up: [['p20', 'rule'], ['p10'], ['p30'], ['p20']], msg: '' },
+    { hand: ['steal', 'block', 'p10', 'p30'], up: [['p20', 'rule'], ['p10'], ['p30', 'n10'], ['p20']], msg: '<b>Your turn.</b> You’re on 20' },
+    { hand: ['block', 'p10', 'p30', 'steal2'], up: [['p20', 'rule', 'p10'], [], ['p30', 'n10'], ['p20']], msg: 'You stole <b>10 points</b> from Frida Puplo!' },
+    null];
+  L_TABLE[7] = L_TABLE[6];
+
+  function lStep(o) {
+    var at = L_STEPS.indexOf(o.step), p = L.page;
+    drawerEl.innerHTML =
+      '<div class="dots" aria-hidden="true">' + L_STEPS.map(function (_, i) { return '<i class="' + (i < at ? 'done' : i === at ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
+      '<div class="l-top"><span class="k">' + o.k + ' <span class="vh">· step ' + (at + 1) + ' of ' + L_STEPS.length + '</span></span>' +
+      '<span class="nav">' +
+        '<button class="navbtn" type="button" data-a="back" aria-label="Previous step"' + (p === 0 ? ' disabled' : '') + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+        '<button class="navbtn" type="button" data-a="fwd" aria-label="Next step"' + (p === L_LAST ? ' disabled' : '') + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>' +
+        (o.skip === false ? '' : '<button class="link skip" type="button" data-a="skip">Skip</button>') +
+      '</span></div>' +
+      '<h2>' + o.title + '</h2>' + (o.text ? '<p>' + o.text + '</p>' : '') + (o.extra || '') +
+      (o.doing ? '<p class="do">' + o.doing + '</p>' : '') +
+      (o.btn ? '<div class="row">' + (o.tour ? '<button class="link" type="button" data-a="tour">Take the tour</button>' : '') +
+        '<span class="sp"></span><button class="pg-btn gold big" type="button" data-a="next">' + o.btn + '</button></div>' : '');
+    drawerEl.hidden = false;
+    drawerEl.classList.remove('in'); void drawerEl.offsetWidth; drawerEl.classList.add('in'); drawerEl.scrollTop = 0;
+    if (L.busy) lRoom(); else lCalc(); // sized to this step's words (on desktop every step is one height, so the table holds still)
+    var b = drawerEl.querySelector('[data-a="next"]'); if (b) b.focus({ preventScroll: true });
+    return new Promise(function (resolve) { drawerEl._next = resolve; });
   }
-  function closeLesson() {
-    lessonEl.hidden = true; lessonEl.textContent = ''; lessonTurn = false;
-    document.documentElement.classList.remove('lesson-on');
-    markSeen('guided');
-    play(true);
+  // the table makes room for the drawer: the board's bottom edge sits on the drawer's top edge, and when the
+  // table and your hand don't fit above it (a 720-high screen), both shrink together, layout unchanged
+  // a phone on its side has no height for a drawer: there it stands at the right, and the table keeps the rest
+  function lSide() { return getComputedStyle(drawerEl).translate === 'none'; } // the CSS decides: centred at the bottom it's shifted half its width
+  function lPad(on) {
+    var side = on && lSide();
+    board.style.paddingBottom = on && !side ? drawerEl.offsetHeight + 'px' : '';
+    board.style.paddingRight = side ? drawerEl.offsetWidth + 'px' : '';
   }
-  function sideways() { return !window.matchMedia('(orientation: portrait)').matches; }
-  window.addEventListener('message', function (e) {
-    var f = lessonEl.querySelector('iframe');
-    if (!f || e.source !== f.contentWindow || e.origin !== location.origin || typeof e.data !== 'string') return;
-    if (e.data === 'pupcup-lesson:play') closeLesson();
-    else if (e.data === 'pupcup-lesson:stay') lessonTurn = false;
-    else if (e.data === 'pupcup-lesson:turn') {
-      if (sideways()) closeLesson();
-      else if (canLock && isFS()) { closeLesson(); lockSideways(); }
-      else lessonTurn = true;
+  function lRoom() {
+    var t = $('tableEl'), hw = hand.parentNode, z = L.on && !drawerEl.hidden && L.zoom < 1 ? String(L.zoom) : '';
+    lPad(L.on && !drawerEl.hidden);
+    t.style.zoom = z; hw.style.zoom = z;
+    if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); });
+  }
+  // How big the table can be: the largest size at which nothing covers anything, with the dogs and the middle clear
+  // of you, and your face-up cards clear of your hand (Vilmar, 25 Nov 2026). Measured on a dealt table (page 1)
+  // with the drawer at its one height, then kept for the whole lesson so the table never changes size between steps.
+  function lCalc() {
+    var t = $('tableEl'), hw = hand.parentNode, page = L.page, wasHidden = drawerEl.hidden;
+    if (page === 0) lLay(1);
+    drawerEl.hidden = false;
+    lPad(true);
+    var fits = function (z) {
+      t.style.zoom = z; hw.style.zoom = z;
+      players.forEach(function (p) { if (p.upEl) fitUp(p); }); // the face-up rows size themselves to the space
+      // nothing on the table overlaps anything else, whatever the layout (you sit in a corner on a tablet)
+      var slack = cssPx('var(--sp-1)'), R = function (n) { return n.getBoundingClientRect(); };
+      var hit = function (a, b) { return a.left < b.right - slack && b.left < a.right - slack && a.top < b.bottom - slack && b.top < a.bottom - slack; };
+      var parts = [].map.call(t.querySelectorAll('.seat, .pg-mid'), R), up = R(players[0].upEl);
+      var cards = [].filter.call(hand.children, function (n) { return !n.classList.contains('glow') && !n.classList.contains('show'); }).map(R); // a lifted card is meant to rise
+      for (var i = 0; i < parts.length; i++) for (var j = i + 1; j < parts.length; j++) if (hit(parts[i], parts[j])) return false;
+      // and the hand's own row ends above the drawer, so nothing has to scroll
+      var floor = board.getBoundingClientRect().bottom - (lSide() ? 0 : drawerEl.offsetHeight);
+      return R(hw).bottom <= floor + slack && cards.every(function (c) { return !hit(c, up) && parts.every(function (p) { return !hit(c, p); }); });
+    };
+    var lo = 1;
+    if (!fits(1)) {
+      lo = 0.5; var hi = 1;
+      for (var k = 0; k < 7; k++) { var m = (lo + hi) / 2; if (fits(m)) lo = m; else hi = m; }
     }
+    L.zoom = lo;
+    if (page === 0) lLay(0);
+    drawerEl.hidden = wasHidden;
+    lRoom();
+  }
+  window.addEventListener('resize', function () { if (L.on && !L.busy) lCalc(); });
+  drawerEl.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-a]'); if (!a) return;
+    a = a.dataset.a;
+    if (a === 'next' && drawerEl._next) { var r = drawerEl._next; drawerEl._next = null; r(); }
+    else if (a === 'skip') { if (L.page === 0) lEnd(false); else lContinue(); } // once dealt, Skip carries on from the table
+    else if (a === 'tour') lEnd(true);
+    else if (a === 'back' && L.page > 0) lGo(L.page - 1);
+    else if (a === 'fwd' && L.page < L_LAST) lGo(L.page + 1);
   });
-  window.addEventListener('resize', function () { if (lessonTurn && sideways()) closeLesson(); });
-  $('lessonBtn').addEventListener('click', async function () {
-    if (mode === 'intro' && !introEl.hidden) { $('dealBtn').click(); return; }
+
+  // the lesson's own animations: a deck lifting out of the box, a riffle, a card flying between two places
+  function lFly(srcName, from, to) {
+    if (reduce) return Promise.resolve();
+    var a = from.getBoundingClientRect ? from.getBoundingClientRect() : from, b = to.getBoundingClientRect ? to.getBoundingClientRect() : to;
+    var f = document.createElement('img'); f.className = 'lesson-flyer'; f.src = C + srcName + '.webp'; f.alt = '';
+    f.style.left = a.left + 'px'; f.style.top = a.top + 'px'; f.style.width = a.width + 'px'; f.style.height = a.height + 'px';
+    (isFS() ? board : document.body).appendChild(f);
+    var dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+    return f.animate([{ transform: 'none' }, { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + (b.height / a.height) + ')' }],
+      { duration: ms('--dur-500'), easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished.catch(function () {}).then(function () { f.remove(); }); // cancelled counts as done
+  }
+  function liftOut(srcName, fromEl, toEl) {
+    if (reduce) return Promise.resolve();
+    var a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+    var f = document.createElement('img'); f.className = 'lesson-flyer'; f.src = C + srcName + '.webp'; f.alt = '';
+    f.style.left = b.left + 'px'; f.style.top = b.top + 'px'; f.style.width = b.width + 'px'; f.style.height = b.height + 'px';
+    (isFS() ? board : document.body).appendChild(f);
+    var s0 = a.height / b.height, dx = a.left + a.width / 2 - (b.left + b.width / 2), dy = a.top + a.height / 2 - (b.top + b.height / 2);
+    return f.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + s0 + ')' }, { transform: 'translateY(' + (-cssPx('var(--sp-4)')) + 'px) scale(1.06)', offset: .7 }, { transform: 'none' }],
+      { duration: ms('--dur-700'), easing: 'cubic-bezier(.2,.8,.2,1)' }).finished.catch(function () {}).then(function () { f.remove(); });
+  }
+  function riffle(deckEl, times) {
+    if (reduce) return Promise.resolve();
+    var srcUrl = deckEl.querySelector('img').src, w = deckEl.getBoundingClientRect().width, halves = [-1, 1].map(function (sgn) {
+      var h = document.createElement('img'); h.src = srcUrl; h.alt = ''; h.style.position = 'absolute'; h.style.inset = '0'; h.style.width = '100%'; h.style.height = '100%';
+      h.style.borderRadius = 'var(--r-sm)'; h.style.boxShadow = 'var(--shadow-md)'; deckEl.appendChild(h);
+      return { el: h, sgn: sgn };
+    });
+    var ROT = 9 /*artwork: degrees a half tilts as it slides*/;
+    return Promise.all(halves.map(function (x) {
+      return x.el.animate([{ transform: 'none' }, { transform: 'translateX(' + (x.sgn * w * .58) + 'px) rotate(' + (x.sgn * ROT) + 'deg)' }, { transform: 'none' }],
+        { duration: ms('--dur-500'), iterations: times, easing: 'ease-in-out', delay: x.sgn > 0 ? ms('--dur-75') : 0 }).finished.catch(function () {});
+    })).then(function () { halves.forEach(function (x) { x.el.remove(); }); });
+  }
+
+  function lClear() {
+    document.querySelectorAll('.lesson-flyer, .seat-pop').forEach(function (x) { x.remove(); });
+    board.classList.remove('picking', 'lesson-end');
+    board.querySelectorAll('.pc.pick, .pc.glow, .pc.show').forEach(function (n) { n.classList.remove('pick', 'glow', 'show'); });
+    penDeck.classList.remove('lesson-ring');
+    drawerEl._next = null; L.pick = null; pickResolve = null; seatPopEl = null;
+    lboxEl.hidden = true; $('lbShuf').hidden = true; $('lbRow').classList.remove('gone');
+    ['lbMain', 'lbPen', 'lbtMain', 'lbtPen'].forEach(function (id) { $(id).style.visibility = ''; });
+    [mainDeck, penDeck, players[0].seat, $('hand')].forEach(function (n) { n.style.visibility = ''; });
+  }
+  // set the table straight to page i, no animation
+  function lLay(i) {
+    lClear();
+    hand.textContent = '';
+    if (i === 0) {
+      board.classList.add('lesson-setup'); lboxEl.hidden = false;
+      players.forEach(function (p) { p.hand = []; p.up = []; p.upEl.textContent = ''; p.shown = 0; });
+      turn = 0; over = true; refresh(); over = false; say('');
+      return;
+    }
+    var t = L_TABLE[i];
+    board.classList.remove('lesson-setup');
+    players.forEach(function (p, j) {
+      p.up = t.up[j].map(function (s) { var c = mk(s); c.owner = p; return c; });
+      p.upEl.textContent = ''; p.up.forEach(function (c) { p.upEl.appendChild(el(c)); });
+      p.hand = p.human ? t.hand.map(mk) : [0, 0, 0, 0].map(function () { return mk('p10'); });
+      p.shown = score(p);
+    });
+    players[0].hand.forEach(function (c) { hand.appendChild(el(c)); }); fanHand();
+    rules = players[0].up.filter(function (c) { return c.type === 'rule'; });
+    turn = 0; refresh(); say(t.msg);
+    if (i === L_LAST) board.classList.add('lesson-end');
+    lRoom();
+  }
+  function lGo(i, played) {
+    L.page = i; L.busy = false; var g = ++L.gen; gen++; // gen stops anything still flying from the page before
+    if (!played) lLay(i);
+    L_PAGES[i](function () { return g !== L.gen || !L.on; });
+  }
+  // tap the glowing card in your hand
+  function lPick(c) {
+    var n = el(c); n.classList.add('glow');
+    return new Promise(function (resolve) { L.pick = function (x) { if (x !== n) { shake(x); return; } L.pick = null; n.classList.remove('glow'); resolve(); }; });
+  }
+  function lFind(type) { return players[0].hand.filter(function (c) { return c.type === type; })[0]; }
+  async function lPlay(c) { // a card from your hand to the table in front of you
+    var me = players[0];
+    me.hand.splice(me.hand.indexOf(c), 1); c.owner = me; me.up.push(c);
+    if (c.type === 'rule') rules = [c];
+    await moveTo(c, me.upEl); fanHand(); refresh();
+  }
+  async function lDraw(s) { // every player ends their turn back on 4 cards (Vilmar, 24 Nov 2026)
+    var c = mk(s), me = players[0];
+    me.hand.push(c); hand.appendChild(el(c)); fanHand();
+    await fly(el(c), mainDeck.querySelector('img').getBoundingClientRect());
+  }
+  async function lStart(i) {
+    reset();
+    L.on = true; mode = 'lesson'; board.classList.add('lesson'); waiting(false);
+    players.forEach(function (p) { p.seat.classList.remove('away'); });
+    L.page = 0; lCalc();
+    lGo(i || 0);
+  }
+  function lStop() {
+    if (!L.on && drawerEl.hidden) return;
+    L.on = false; L.gen++;
+    lClear(); drawerEl.hidden = true; drawerEl.innerHTML = '';
+    board.classList.remove('lesson', 'lesson-setup', 'lesson-end'); lPad(false);
+    $('tableEl').style.zoom = ''; hand.parentNode.style.zoom = '';
+  }
+  // "Let's Play Pupcup!", or Skip once the cards are dealt: the game carries on from the table as it stands. No new
+  // deal and no turning the phone (Vilmar, 25 Nov 2026). The dogs' hands become real cards, and the deck loses the
+  // cards already on the table.
+  function same(a, b) { return a.type === b.type && a.v === b.v && a.rule === b.rule && a.art === b.art; }
+  function lContinue() {
+    var p = L.page;
+    lLay(p);   // the page as it starts, whatever was still moving
+    lStop(); markSeen('guided');
+    deck = newDeck(true); pens = newPens();
+    var onTable = players[0].hand.slice();
+    players.forEach(function (q) { onTable = onTable.concat(q.up); });
+    onTable.forEach(function (c) { for (var i = 0; i < deck.length; i++) if (same(deck[i], c)) { deck.splice(i, 1); break; } });
+    players.forEach(function (q) { if (!q.human) { q.hand = []; while (q.hand.length < 4) q.hand.push(draw()); } });
+    rules = players[0].up.filter(function (c) { return c.type === 'rule'; });
+    turn = 0; refresh();
+    if (p === 1 || p === 2 || p === 5) myTurn(); // pages that start on your turn
+    else next();                                  // you've just played: the dogs go next
+  }
+  // Skip on Step 1, or Take the tour: a normal game, dealt fresh
+  async function lEnd(tourFirst) {
+    lStop(); markSeen('guided'); wantTour = tourFirst;
     await enterFS();
-    openLesson();
+    reset(); players.forEach(function (p) { p.seat.classList.add('away'); });
+    play(true);
+  }
+
+  var L_PAGES = [
+    // 0 · Step 1: shuffle and deal
+    async function (stale) {
+      await lStep({ step: 'Deal', k: 'How to Play', title: 'Step 1: Shuffle and deal 4 cards', text: 'Shuffle the main deck and penalty deck, then deal 4 cards to each player', btn: 'Next', tour: true });
+      if (stale()) return;
+      var row = drawerEl.querySelector('.row'); if (row) row.remove(); // the words stay while the cards go out
+      lRoom();
+      await enterFS(); if (stale()) return;
+      lCalc(); L.busy = true; // measured for full screen; the deal below doesn't re-measure
+      // both decks come out of the box; the box clears away
+      $('lbShuf').hidden = false; $('lbtMain').style.visibility = 'hidden'; $('lbtPen').style.visibility = 'hidden';
+      var lifts = [liftOut('dog-cards-face', $('lbMain'), $('lbtMain')), liftOut('penalty', $('lbPen'), $('lbtPen'))];
+      $('lbMain').style.visibility = 'hidden'; $('lbPen').style.visibility = 'hidden'; $('lbRow').classList.add('gone');
+      await Promise.all(lifts); if (stale()) return;
+      $('lbtMain').style.visibility = ''; $('lbtPen').style.visibility = '';
+      say('Shuffling the main deck…'); // the line in the middle stays hidden until the box has gone: the decks sit on it
+      mainDeck.style.visibility = 'hidden'; penDeck.style.visibility = 'hidden';
+      players[0].seat.style.visibility = 'hidden';
+      await riffle($('lbtMain'), 3); if (stale()) return;
+      say('Shuffling the penalty deck…'); await riffle($('lbtPen'), 2); if (stale()) return;
+      // the decks go to their places on the table
+      var rMain = $('lbtMain').getBoundingClientRect(), rPen = $('lbtPen').getBoundingClientRect();
+      lboxEl.hidden = true; board.classList.remove('lesson-setup');
+      await Promise.all([lFly('penalty', rPen, penDeck.querySelector('img')), lFly('dog-cards-face', rMain, mainDeck.querySelector('img'))]);
+      if (stale()) return;
+      mainDeck.style.visibility = ''; penDeck.style.visibility = ''; players[0].seat.style.visibility = '';
+      lRoom();
+      // deal 4 to everyone, one at a time round the table
+      say('Dealing four cards to everyone…');
+      var deal4 = L_TABLE[1].hand.map(mk);
+      for (var k = 0; k < 4; k++) {
+        var c = deal4[k]; players[0].hand.push(c); hand.appendChild(el(c)); fanHand();
+        await fly(el(c), mainDeck.querySelector('img').getBoundingClientRect()); if (stale()) return;
+        for (var j = 1; j < players.length; j++) { players[j].hand.push(mk('p10')); flyBack(players[j].avEl.getBoundingClientRect()).then(refresh); }
+        await lwait(ms('--dur-300')); if (stale()) return;
+      }
+      L.busy = false; refresh(); say(L_TABLE[1].msg); lGo(1, true);
+    },
+    // 1 · Step 2: a Point card
+    async function (stale) {
+      turn = 0; refresh();
+      lStep({ step: 'Point', k: 'Step 2', title: 'Play a Point card', text: 'On your turn, play 1 card from your hand. Place Point cards face up in front of you. <b>First player to ' + GOAL + ' total points wins</b>', doing: tap() + ' your glowing Point card' });
+      var c = lFind('point'); await lPick(c); if (stale()) return;
+      await lPlay(c); if (stale()) return;
+      say('You played <b>20 points</b>. Draw a card'); await lDraw('p10'); if (stale()) return;
+      await lwait(ms('--dur-500'));
+      for (var j = 1; j < players.length; j++) {
+        if (stale()) return;
+        var p = players[j], d = mk(L_PLAYS[j - 1] === 10 ? 'p10' : L_PLAYS[j - 1] === 20 ? 'p20' : 'p30'); d.owner = p;
+        turn = j; refresh(); say('<b>' + p.name + '</b> played ' + d.v + ' points');
+        p.up.push(d); await moveTo(d, p.upEl, fromRect(p)); refresh();
+        await lwait(ms('--dur-500'));
+      }
+      if (stale()) return; turn = 0; refresh(); say(L_TABLE[2].msg); lGo(2, true);
+    },
+    // 2 · Rule cards
+    async function (stale) {
+      lStep({ step: 'Rule', k: 'Rule Cards', title: 'Play a Rule card', text: 'Instead of a Point card, you can play a Rule card. Rule cards are fun: when you play one, every other player has to follow your rule. Btw, you’re exempt from your own rule!', doing: tap() + ' your glowing Rule card' });
+      var c = lFind('rule'); await lPick(c); if (stale()) return;
+      await lPlay(c); if (stale()) return;
+      await lDraw('p30'); if (stale()) return;
+      say(L_TABLE[3].msg); lGo(3, true);
+    },
+    // 3 · if they break your rule
+    async function (stale) {
+      penDeck.classList.add('lesson-ring');
+      await lStep({ step: 'Rule', k: 'Rule Cards', title: 'If they break your rule…', text: '…and you catch them, they draw a penalty card', btn: 'Next' });
+      if (stale()) return; penDeck.classList.remove('lesson-ring'); say(''); lGo(4, true);
+    },
+    // 4 · one dog slips up, once
+    async function (stale) {
+      var p = players[2]; turn = 2; refresh(); say('');
+      lStep({ step: 'Rule', k: 'Rule Cards', title: 'Catch them!', text: 'Pupstein just broke your rule', doing: tap() + ' Caught you! next to Pupstein' });
+      var n = document.createElement('div'); n.className = 'seat-pop'; n.setAttribute('role', 'alertdialog');
+      n.innerHTML = '<div class="who-line"><img alt="" src="' + AV + 'av-pupstein.webp"><p><b>Pupstein</b> just flashed a big toothy grin</p></div>' +
+        '<button type="button" class="pg-btn">🫵 Caught you!</button>';
+      board.appendChild(n); seatPopEl = n;
+      var at = besideSeat(p, n.offsetWidth, n.offsetHeight); n.style.left = at.x + 'px'; n.style.top = at.y + 'px';
+      await new Promise(function (r) { n.querySelector('button').onclick = r; }); if (stale()) return;
+      n.remove(); seatPopEl = null;
+      var pen = mk('n10'); pen.owner = p; p.up.push(pen);
+      await moveTo(pen, p.upEl, penDeck.querySelector('img').getBoundingClientRect()); if (stale()) return;
+      refresh(); say('Caught! <b>Pupstein</b> draws a −10 penalty');
+      await lwait(ms('--dur-1000')); if (stale()) return;
+      turn = 0; refresh(); say(L_TABLE[5].msg); lGo(5, true);
+    },
+    // 5 · Steal cards
+    async function (stale) {
+      lStep({ step: 'Steal', k: 'Steal Cards', title: 'Steal some points', text: 'Play a Steal card to take one card from another player. But be careful! They can play a Block to stop you', doing: tap() + ' your glowing Steal card' });
+      var me = players[0], st = lFind('steal'); await lPick(st); if (stale()) return;
+      el(st).style.visibility = 'hidden';
+      lStep({ step: 'Steal', k: 'Steal Cards', title: 'Steal some points', text: 'Which card do you want?', doing: tap() + ' a glowing card in front of a dog' });
+      say('<b>Steal!</b> Pick a card to take');
+      var list = []; players.slice(1).forEach(function (p) { p.up.forEach(function (c) { if (c.type === 'point') list.push(c); }); });
+      var got = await choose(list); if (stale()) return;
+      me.hand.splice(me.hand.indexOf(st), 1); el(st).remove(); fanHand();
+      var victim = got.owner; victim.up.splice(victim.up.indexOf(got), 1); got.owner = me; me.up.push(got);
+      await moveTo(got, me.upEl); if (stale()) return;
+      refresh(); say('You stole <b>' + got.v + ' points</b> from ' + victim.name + '!');
+      await lDraw('steal2'); if (stale()) return;
+      lGo(6, true);
+    },
+    // 6 · Block cards
+    async function (stale) {
+      var bl = lFind('block'); if (bl) el(bl).classList.add('show');
+      await lStep({ step: 'Block', k: 'Block Cards', title: 'Stop a Steal', text: 'If someone plays a Steal on you, play your Block card to stop it. A Block can be blocked too!', btn: 'Got it' });
+      if (stale()) return; if (bl) el(bl).classList.remove('show'); lGo(7, true);
+    },
+    // 7 · That's it
+    async function (stale) {
+      board.classList.add('lesson-end'); say('');
+      await lStep({ step: 'Tips', k: 'That’s it!', title: 'Start the race!', text: 'You’re ready to play. Have fun!!', skip: false,
+        extra: '<span class="tips-h">Tips for a fun game</span><ul>' +
+          '<li><b>Games too quick?</b> Play to 150 points</li>' +
+          '<li><b>Games too long?</b> Try playing to 80 points</li>' +
+          '<li><b>Start with 2 rules max</b> in play at once. More rules, harder game</li>' +
+          '<li><b>Go after your friends.</b> Trick them into breaking your rule!</li></ul>',
+        btn: 'Let’s Play Pupcup!' });
+      if (stale()) return;
+      lContinue();
+    }
+  ];
+
+  // upright phones: one menu for the controls. Each item presses the control it stands for.
+  var menuBtn = $('menuBtn'), menuList = $('menuList');
+  function closeMenu() {
+    if (menuList.hidden) return;
+    menuList.hidden = true; menuBtn.setAttribute('aria-expanded', 'false'); menuBtn.closest('.pg-bar').classList.remove('menu-open');
+  }
+  function openMenu() {
+    menuList.querySelector('.m-fs').hidden = !isFS();
+    menuList.hidden = false; menuBtn.setAttribute('aria-expanded', 'true'); menuBtn.closest('.pg-bar').classList.add('menu-open');
+    menuList.querySelector('[role="menuitem"]').focus({ preventScroll: true });
+  }
+  menuBtn.addEventListener('click', function (e) { e.stopPropagation(); if (menuList.hidden) openMenu(); else closeMenu(); });
+  menuList.addEventListener('click', function (e) {
+    var it = e.target.closest('[data-m]');
+    closeMenu();
+    if (!it) return; // the links open by themselves
+    e.stopPropagation(); // or the panel it opens would take this same tap as a tap outside and close again
+    var m = it.dataset.m;
+    if (m === 'share') {
+      document.querySelector('.share-btn[data-share="game"]').click();
+      var sm = $('shareMenu');
+      if (sm && !sm.hidden) { var r = menuBtn.getBoundingClientRect(); sm.style.top = (r.bottom + cssPx('var(--sp-2)')) + 'px'; sm.style.left = Math.max(cssPx('var(--sp-2)'), r.right - sm.offsetWidth) + 'px'; }
+    } else $(m).click();
   });
-  $('dealBtn').addEventListener('click', async function () {
-    // the intro card's Next always starts the lesson, even for someone who has finished it before
-    introEl.hidden = true;
-    await enterFS();
-    openLesson();
-  });
+  document.addEventListener('click', function (e) { if (!menuList.hidden && !e.target.closest('#pgMenu')) closeMenu(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+
+  // the practice game opens on Step 1 of the lesson, on every screen; "How to play" starts it again
+  function showIntro() { lStart(0); }
+  $('lessonBtn').addEventListener('click', function () { closeMenu(); lStart(0); });
 
   // ── Customise: board colour and your dog ──
   var feltI = +store('pg-felt') || 0; if (!FELTS[feltI]) feltI = 0;
@@ -2969,7 +3407,12 @@
   // ── Full screen (eased in and out) ──
   var fsOK = board.requestFullscreen || board.webkitRequestFullscreen;
   var veil = $('fsVeil');
-  function isFS() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function isFS() { return !!(document.fullscreenElement || document.webkitFullscreenElement) || board.classList.contains('fake-fs'); }
+  // iPhone has no full screen: the game fills the screen itself, and Exit full screen puts it back on the page
+  function fakeFS(on) {
+    board.classList.toggle('fake-fs', on); document.documentElement.classList.toggle('fake-fs', on);
+    fsChange(); vidRest(on);
+  }
   function animate(cls, ms) {
     board.classList.remove('fs-in', 'fs-out'); void board.offsetWidth; board.classList.add(cls);
     return new Promise(function (r) { setTimeout(function () { if (cls === 'fs-in') board.classList.remove('fs-in'); r(); }, reduce ? 0 : ms); });
@@ -2978,6 +3421,7 @@
   function enterFS() {
     return new Promise(function (resolve) {
       if (isFS()) return resolve(true);
+      if (!fsOK && touchDev) { fakeFS(true); return resolve(true); }
       if (!fsOK) { $('try').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); return resolve(false); }
       veil.classList.add('on');
       setTimeout(function () {
@@ -2996,6 +3440,7 @@
   }
   function exitFS() {
     if (!isFS()) return;
+    if (board.classList.contains('fake-fs')) { fakeFS(false); return; }
     animate('fs-out', 450).then(function () {
       try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
     });
@@ -3013,33 +3458,21 @@
   // outside full screen, a button to go (back) into it; hidden where full screen isn't available (iPhone)
   if (fsOK) { $('fullBtn').hidden = false; $('fullBtn').addEventListener('click', function () { enterFS(); }); }
 
-  // ── Phones and tablets: the game is played sideways ──
-  // Android: full screen, then the screen is locked sideways. iPad: full screen works but can't be turned for you,
-  // so upright it asks you to turn it. iPhone: no full screen at all, so the game fills the page sideways.
+  // ── Phones and tablets: played upright or sideways, the same game either way (Vilmar, 25 Nov 2026) ──
+  // Android and iPad go full screen; iPhone has no full screen, so the game fills the page.
   var touchDev = window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(hover: hover)').matches;
   var apple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  var canLock = !apple && !!(screen.orientation && screen.orientation.lock); // Safari can't turn the screen for you
   if (touchDev) {
     board.classList.add('touch');
     if (apple) board.classList.add('apple');
-    var small = Math.min(screen.width, screen.height) < 600;
-    $('rotateTitle').textContent = small ? 'Turn your phone sideways to play' : 'Turn your tablet sideways to play';
-    if (fsOK && canLock) $('rotateGo').hidden = false;
   }
-  function lockSideways() {
-    if (!touchDev || !canLock || !isFS() || !lessonEl.hidden) return;
-    try { var q = screen.orientation.lock('landscape'); if (q && q.catch) q.catch(function () {}); } catch (e) {}
-  }
-  $('rotateGo').addEventListener('click', function () {
-    enterFS().then(function (ok) { if (ok) { lockSideways(); if (!introEl.hidden) $('dealBtn').focus(); } });
-  });
   // left full screen in the middle of a game on a phone or tablet: offer the way back in
   var fsBack = $('fsBack'), stayOut = false;
-  function showBack() { fsBack.hidden = !(touchDev && fsOK && !isFS() && !stayOut && introEl.hidden && !over); }
-  $('fsBackGo').addEventListener('click', function () { fsBack.hidden = true; enterFS().then(function (ok) { if (ok) lockSideways(); else showBack(); }); });
+  function showBack() { fsBack.hidden = !(touchDev && fsOK && !isFS() && !stayOut && !(L.on && L.page === 0) && !over); }
+  $('fsBackGo').addEventListener('click', function () { fsBack.hidden = true; enterFS().then(function (ok) { if (!ok) showBack(); }); });
   $('fsBackStay').addEventListener('click', function () { stayOut = true; fsBack.hidden = true; });
   function vidRest(on) { var v = $('bgVideo'); if (!v || reduce) return; if (on) v.pause(); else if (!document.body.classList.contains('gaming')) { var q = v.play(); if (q && q.catch) q.catch(function () {}); } }
-  document.addEventListener('fullscreenchange', function () { vidRest(isFS()); if (isFS()) { fsBack.hidden = true; lockSideways(); } else setTimeout(showBack, 50); });
+  document.addEventListener('fullscreenchange', function () { vidRest(isFS()); if (isFS()) fsBack.hidden = true; else setTimeout(showBack, 50); });
   document.addEventListener('webkitfullscreenchange', function () { vidRest(isFS()); if (isFS()) fsBack.hidden = true; else setTimeout(showBack, 50); });
   // turning the phone sideways while looking at the game: line the table up with the screen
   var lastPortrait = window.matchMedia('(orientation: portrait)').matches;
