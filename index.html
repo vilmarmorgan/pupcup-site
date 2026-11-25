@@ -783,6 +783,15 @@
   }
   .hint.hidden { opacity: 0; }
 
+  /* ───── Laptop screens: 1366 x 768 or smaller in either direction, the cards about 25% smaller so more fit (phones below) ───── */
+  @media (max-width: 1366px), (max-height: 768px) {
+    :root {
+      --card-w: var(--w-52);
+      --card-h: calc(var(--card-w) * 381 / 280); /* the card's own proportion */
+      --gap: var(--sp-12);
+    }
+  }
+
   /* ───── Mobile adjustments ───── */
   @media (max-width: 600px) {
     :root {
@@ -1863,7 +1872,7 @@ body.compact-head .ctl { display: none; }
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
-      <span class="ver" title="Version of this page">1.8</span>
+      <span class="ver" title="Version of this page">1.9</span>
       <span class="made">Made with <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -2319,10 +2328,11 @@ function unlockBodyScroll() {
 const hint     = document.getElementById('hint');
 
 // Layout constants (computed from CSS vars)
-const rootStyle = getComputedStyle(document.documentElement);
-const CARD_W    = parseInt(rootStyle.getPropertyValue('--card-w'));
-const CARD_H    = parseInt(rootStyle.getPropertyValue('--card-h'));
-const GAP       = parseInt(rootStyle.getPropertyValue('--gap'));
+// measured, not parsed: the sizes can be tokens and calc() (a custom property reads back as its text)
+const cssSize   = (v) => { const d = document.createElement('div'); d.style.position = 'absolute'; d.style.width = v; document.body.appendChild(d); const w = d.getBoundingClientRect().width; d.remove(); return Math.round(w); };
+const CARD_W    = cssSize('var(--card-w)');
+const CARD_H    = cssSize('var(--card-h)');
+const GAP       = cssSize('var(--gap)');
 const CELL_W    = CARD_W + GAP;
 const CELL_H    = CARD_H + GAP;
 
@@ -4705,8 +4715,11 @@ init();
   function gameDoc() { try { return game.contentDocument; } catch (e) { return null; } }
   function feltTop() { return M.phone ? 0 : felt.offsetTop; } // phones: the table ends up filling the screen
   function gameBox() {
-    var d = gameDoc(), box = d && d.getElementById('lessonBox'), inn = box && !box.hidden && box.querySelector('.pbox .in');
-    if (!inn) return null;
+    // only while the game shows its box as it first does (the lesson's first step, both decks still in it): once the game
+    // has moved on its box changes or goes, and ours keeps the place it measured then (it shrank to the game's later box before)
+    var d = gameDoc(), board = d && d.querySelector('.pg-board'), row = d && d.getElementById('lbRow');
+    var box = d && d.getElementById('lessonBox'), inn = box && !box.hidden && box.querySelector('.pbox .in');
+    if (!inn || !board.classList.contains('lesson-setup') || (row && row.classList.contains('gone'))) return null;
     var r = inn.getBoundingClientRect(); if (!r.width) return null;
     return { y: feltTop() + r.top + r.height / 2, w: r.width };
   }
