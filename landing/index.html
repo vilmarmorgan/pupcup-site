@@ -26,7 +26,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="https://design.vilmarmorgan.com/fonts/fonts.css"> <!-- Jost, from the Vilmartian library: no request to Google -->
-<link rel="stylesheet" href="https://design.vilmarmorgan.com/v/2/tokens.css"> <!-- the Vilmartian library, release 2: sizes, type, space, and Pupcup's colours (ADR-023) -->
+<link rel="stylesheet" href="https://design.vilmarmorgan.com/v/3/tokens.css"> <!-- the Vilmartian library, release 3: sizes, type, space, and Pupcup's colours (ADR-023) -->
 <style>
   /* ───── DRAFT: scroll-driven box reveal. Self-contained; touches nothing else on the site.
      Box art in box-art/ is cut from the print PDFs (5.75 x 3.75 x 1 in box, full-depth lift-off lid). ───── */
@@ -522,6 +522,7 @@
   .pg-intro-card p { color: var(--ink-2); font-size: 16px; line-height: 1.45; text-wrap: balance; }
   .lesson-skip { appearance: none; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--fs-md); color: var(--ink-2); text-decoration: underline; padding: var(--sp-2); }
   .lesson-skip:hover { color: var(--ink); }
+  .lesson-alt { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 var(--sp-6); }
   .lesson-skip:focus-visible { outline: var(--bw-2) solid var(--accent); outline-offset: var(--bw-2); border-radius: var(--r-md); }
   #board.touch .lesson-skip { font-size: var(--fs-lg); min-height: var(--size-lg); }
   .intro-dogs { display: flex; margin-bottom: 4px; }
@@ -546,7 +547,6 @@
   .coach-bubble .k { font-size: var(--fs-md); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
   .coach-bubble h3 { font-size: var(--fs-3xl); font-weight: 700; line-height: var(--lh-tight); }
   .coach-bubble p { color: #c9c7c2; font-size: var(--fs-2xl); line-height: var(--lh-snug); }
-  .coach-bubble .tips-h { display: block; margin-top: var(--sp-4); font-size: var(--fs-md); font-weight: var(--fw-semibold); letter-spacing: var(--ls-widest); text-transform: uppercase; color: var(--accent); }
   .coach-bubble p:empty { display: none; } /* a list in the text closes the <p> early and leaves an empty one */
   .coach-bubble .row { display: flex; align-items: center; gap: var(--sp-3); margin-top: var(--sp-1-5); }
   .coach-bubble .row .pg-btn { font-size: var(--fs-xl); padding: var(--sp-3) var(--sp-6); }
@@ -846,6 +846,11 @@
   .pg-back:not([hidden]) { display: grid; }
   .pg-btn[hidden] { display: none; }
   @media (orientation: portrait) { .pg-board.touch .pg-rotate { display: grid; } .pg-board.touch .pg-back { display: none; } }
+  /* How to play (lesson.html) is played upright on a phone, so the intro and the lesson never ask you to turn it */
+  .pg-board:has(#intro:not([hidden])) .pg-rotate, html.lesson-on .pg-board .pg-rotate { display: none; }
+  .lesson-frame { position: fixed; inset: 0; z-index: 2147481500; background: var(--bg); }
+  .lesson-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+  html.lesson-on, html.lesson-on body { overflow: hidden; }
   .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
   .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
   .pg-rotate-card p { color: var(--ink-2); font-size: 15px; line-height: 1.45; text-wrap: balance; }
@@ -877,11 +882,6 @@
     /* small sideways phones: the tip list one step down, and the tip's button pinned to the bottom of the bubble
        so it is always on screen, even when the words have to scroll (667x375 cut it off) */
     #board.touch .coach-bubble ul { font-size: var(--fs-xl); }
-    /* the last tip carries the list of pointers: one step tighter so all of it fits a 375-high screen unscrolled */
-    #board.touch .coach-bubble:has(.tips-h) { gap: var(--sp-1-5); padding-top: var(--sp-3); }
-    #board.touch .coach-bubble:has(.tips-h) h3 { font-size: var(--fs-2xl); }
-    #board.touch .coach-bubble:has(.tips-h) p, #board.touch .coach-bubble:has(.tips-h) ul { font-size: var(--fs-lg); }
-    #board.touch .coach-bubble .tips-h { margin-top: var(--sp-2); }
     #board .coach-bubble .row { position: sticky; bottom: calc(var(--sp-4) * -1); padding: var(--sp-2) 0 var(--sp-4); margin-bottom: calc(var(--sp-4) * -1); background: inherit; }
     #board.touch .pg-tools #nextBtn { flex-basis: 100%; }
     #board.touch .pg-bar .pg-btn { min-height: 44px; padding: 8px 12px; }
@@ -889,7 +889,7 @@
   }
   #board.touch .pg-bar .pg-btn { min-width: 48px; min-height: 48px; padding: 10px 14px; font-size: 20px; justify-content: center; }
   #board.touch .pg-bar #nextBtn { font-size: 18px; padding: 10px 20px; font-weight: 700; }
-  #board.touch .coach-bubble .k, #board.touch .coach-bubble .tips-h { font-size: var(--fs-lg); }
+  #board.touch .coach-bubble .k { font-size: var(--fs-lg); }
   #board.touch .coach-bubble h3 { font-size: var(--fs-3xl); }
   #board.touch .coach-bubble p, #board.touch .coach-bubble ul { font-size: var(--fs-2xl); }
   #board.touch .coach-bubble .link { font-size: var(--fs-xl); }
@@ -1030,12 +1030,12 @@
             <img src="avatars/av-frida.webp" alt=""><img src="avatars/av-pupstein.webp" alt=""><img src="avatars/av-kpup.webp" alt="">
           </div>
           <span class="eyebrow">How to Play</span>
-          <h3>Step 1: Deal 4 cards to each player</h3>
-          <p>Shuffle the main deck and penalty deck, then deal 4 cards to each player.</p>
+          <h3>Learn how to play</h3>
           <button class="pg-btn gold big" id="dealBtn" type="button">Next</button>
-          <button class="lesson-skip" id="skipLessonBtn" type="button">Skip instructions</button>
+          <div class="lesson-alt"><button class="lesson-skip" id="skipLessonBtn" type="button">Skip instructions</button><button class="lesson-skip" id="tourLessonBtn" type="button">Take the tour</button></div>
         </div>
       </div>
+      <div class="lesson-frame" id="lessonFrame" hidden></div>
       <div class="pg-rotate" id="rotateNote" aria-live="polite">
         <div class="pg-rotate-card">
           <svg class="rot-ico" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><rect x="20" y="6" width="24" height="44" rx="5"/><path d="M29 43h6" stroke-linecap="round"/><path d="M10 40a24 24 0 0 0 16 18" stroke-linecap="round"/><path d="M21 58l5 0 0-5" stroke-linecap="round"/></svg>
@@ -1810,8 +1810,8 @@
     var b = document.getElementById('nextBtn'), c = document.getElementById('coach');
     if (b) b.disabled = (!c || c.hidden) && !skippers.length;
   }
-  // "Caught you!" and rule-test timers get longer on slower speeds (and during the practice rounds)
-  function timeFor(ms) { return Math.round(ms * Math.max(1, pace / 1.25) * (guided() ? 1.6 : 1)); }
+  // "Caught you!" and rule-test timers get longer on slower speeds
+  function timeFor(ms) { return Math.round(ms * Math.max(1, pace / 1.25)); }
 
   var uid = 0;
   function card(type, extra) { var c = { id: ++uid, type: type }; for (var k in extra) c[k] = extra[k]; return c; }
@@ -2303,9 +2303,9 @@
     // the highlight and its bubble both on screen, below the top bar
     showOnScreen([ringEl.getBoundingClientRect(), bubble.getBoundingClientRect()]);
   }
-  function coach(steps, tour, label) { return guard(coach_(steps, tour, label)); }
-  function coach_(steps, tour, label) {
-    // steps: [{ target, title, text }]. tour: Back/Next/Skip. label: a practice-round note (no "turn off tips").
+  function coach(steps, tour) { return guard(coach_(steps, tour)); }
+  function coach_(steps, tour) {
+    // steps: [{ target, title, text }]. tour: Back/Next/Skip.
     // Resolves when finished, skipped, or dismissed.
     return new Promise(function (resolve) {
       var i = 0;
@@ -2314,16 +2314,15 @@
       function render() {
         var st = steps[i], last = i === steps.length - 1;
         bubble.innerHTML =
-          '<span class="k">' + (tour ? 'Quick tour · ' + (i + 1) + ' of ' + steps.length : label || 'Tip') + '</span>' +
+          '<span class="k">' + (tour ? 'Quick tour · ' + (i + 1) + ' of ' + steps.length : 'Tip') + '</span>' +
           '<h3>' + st.title + '</h3><p>' + st.text + '</p>' +
           '<div class="row">' +
           (tour ? '<button type="button" class="link" data-a="skip">Skip tour</button><span class="sp"></span>' +
                   '<span class="dots" aria-hidden="true">' + steps.map(function (_, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('') + '</span>' +
                   (i ? '<button type="button" class="pg-btn" data-a="back">Back</button>' : '') +
                   '<button type="button" class="pg-btn gold" data-a="next">' + (last ? 'Let’s play' : 'Next') + '</button>'
-                : (st.skip ? '<button type="button" class="link" data-a="skiplesson">Skip instructions</button><span class="sp"></span>'
-                  : label ? '<span class="sp"></span>' : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>') +
-                  '<button type="button" class="pg-btn gold" data-a="next">' + (st.btn || 'Next') + '</button>') +
+                : '<button type="button" class="link" data-a="off">Turn off tips</button><span class="sp"></span>' +
+                  '<button type="button" class="pg-btn gold" data-a="next">Next</button>') +
           '</div>';
         coachEl.hidden = false; syncNext();
         place(st.target); fitView();
@@ -2345,7 +2344,6 @@
         else if (a === 'back') { i = Math.max(0, i - 1); render(); }
         else if (a === 'skip') finish();
         else if (a === 'off') { setTips(false); finish(); }
-        else if (a === 'skiplesson') { endLessonQuietly(); finish(); }
       };
       render();
     });
@@ -2430,40 +2428,12 @@
     if (n) { clearSel(); showInfo(n, true); }
   });
 
-  // ── Practice rounds: a first game starts with 3 guided rounds, then it's a normal game ──
-  var firstGame = false, round = 0, guideSlip = false;
-  function guided() { return firstGame && round > 0 && round <= 3; }
-  // the label is the eyebrow over each practice tip, and the start of the line under the table (Vilmar, 24 Nov 2026)
-  var GUIDE = {
-    point: { label: 'Step 2', title: 'Play a Point card',
-      text: function () { return 'On your turn, play 1 card from your hand. Place Point cards face up in front of you. <b>First player to ' + GOAL + ' total points wins.</b>'; } },
-    rule: { label: 'Rule Cards', title: 'Play a Rule card',
-      text: 'Instead of a Point card, you can play a Rule card. Rule cards are fun: when you play one, every other player has to follow your rule. Btw, you’re exempt from your own rule!' },
-    steal: { label: 'Steal Cards', title: 'Steal some points',
-      text: 'Play a Steal card to take one card from another player. But be careful! They can play a Block to stop you.' }
-  };
-  function suggestion() {
-    var me = players[0];
-    // practice order: Points first (that's how you win), then your Rule, then a Steal (and a dog's steal teaches Block)
-    var want = round === 1 ? ['point', 'rule', 'steal'] : round === 2 ? ['rule', 'point', 'steal'] : ['steal', 'rule', 'point'];
-    for (var i = 0; i < want.length; i++) {
-      var list = me.hand.filter(function (c) { return c.type === want[i] && c.rule !== 'queen-elizapup'; });
-      if (want[i] === 'steal' && !targets(me).length) continue;
-      if (want[i] === 'point') list.sort(function (a, b) { return b.v - a.v; });
-      if (list.length) return list[0];
-    }
-    return null;
-  }
   function liveFor(p) { return rules.filter(function (r) { return !exempt(p, r) && r.rule !== 'queen-elizapup'; }); }
 
   // ── Your turn ──
   var mode = 'wait', pickResolve = null;
   async function myTurn() {
     var me = players[0];
-    if (firstGame) {
-      round++;
-      if (round === 4) await endPractice(); // only if your third turn was a discard; normally it ends in onHandCard
-    }
     mode = 'mine'; waiting(false); refresh();
     var playable = me.hand.some(function (c) { return c.type === 'point' || c.type === 'rule' || (c.type === 'steal' && targets(me).length); });
     if (!playable) {
@@ -2478,32 +2448,6 @@
     }
     say('Your turn. You’re on <b>' + score(me) + '</b>. Pick a card to play.');
     hint(canHover ? 'Hover a card to see what it does. Click to play it.' : 'Tap a card to see what it does.');
-    if (guided()) {
-      var c = suggestion();
-      if (c) {
-        var g = GUIDE[c.type];
-        mode = 'guide';
-        await coach([{ target: el(c), title: g.title, text: typeof g.text === 'function' ? g.text() : g.text, skip: true }], false, g.label);
-        mode = 'mine';
-        if (firstGame) { // still in the lesson (not skipped)
-          if (c.el && c.el.parentNode === hand) c.el.classList.add('glow');
-          say('<b>' + g.label + ':</b> ' + g.title + '.');
-        }
-      }
-    }
-  }
-  // "Skip instructions" on a lesson tip: the game carries on as a normal game from here
-  function endLessonQuietly() { firstGame = false; round = 0; markSeen('guided'); }
-  // the last practice tip comes straight after your third card (the Steal), before the dogs move (Vilmar, 24 Nov 2026)
-  async function endPractice() {
-    firstGame = false; markSeen('guided');
-    say('Practice rounds done. <b>Now anything goes!</b>');
-    await coach([{ target: players[0].seat, title: 'Start the race!', btn: 'Let’s Play Pupcup!',
-      text: 'You’re ready to play. Have fun!!' +
-        '<span class="tips-h">Tips for a fun game</span><ul>' +
-        '<li><b>Games too quick?</b> Play to 150 points.</li>' +
-        '<li><b>Start with 2 rules max</b> in play at once. More rules, harder game.</li>' +
-        '<li><b>Go after your friends.</b> Trick them into breaking your rule!</li></ul>' }], false, 'That’s it!');
   }
   function onHandCard(n) {
     var c = n._card, me = players[0];
@@ -2517,7 +2461,7 @@
     if (c.type === 'steal' && !targets(me).length) { shake(n); say('Nobody has a face-up card to steal yet.'); return; }
     [].forEach.call(hand.children, function (x) { x.classList.remove('glow'); });
     mode = 'busy'; waiting(true); hint('');
-    takeTurn(me, c).then(function () { return firstGame && round === 3 ? endPractice() : null; }).then(next);
+    takeTurn(me, c).then(next);
   }
   function targets(p) {
     var t = [];
@@ -2568,9 +2512,6 @@
           '<li><b>If you break it:</b> you get caught and draw a penalty (−5, −10 or −20).</li>' +
           '<li><b>Watch every dog,</b> even when it’s not their turn: if one breaks it, hit Caught you! next to them. Nobody catches them, no penalty.</li>' +
           '<li><b>Rules can be stolen:</b> play a Steal on it and it’s yours, so you don’t have to follow it anymore.</li></ul>');
-      } else if (guided()) {
-        markSeen('myrule');
-        await coach([{ target: $('penDeck'), title: 'If they break your rule…', text: '…and you catch them, they draw a penalty card.', skip: true }], false, GUIDE.rule.label);
       } else {
         await tipOnce('myrule', el(c), 'You set a rule!',
           'Your rule sits in front of you.<ul>' +
@@ -2624,12 +2565,7 @@
       var stolenText = thief.name + ' played a Steal to take ' + (target.type === 'rule' ? 'your rule' : 'your ' + target.v + ' points') + '. ' +
         (myBlock ? 'You have a Block card: play it now to stop the steal, or let it go.'
                  : 'If you had a Block card, you could play it now to stop the steal. Keep your Blocks for moments like this.');
-      if (guided() && myBlock && !seen('stolen')) {
-        markSeen('stolen');
-        await coach([{ target: el(myBlock), title: 'Block it!', text: stolenText }], false, 'Block Cards');
-      } else {
-        await tipOnce('stolen', myBlock ? el(myBlock) : victim.seat, 'Someone’s stealing from you!', stolenText);
-      }
+      await tipOnce('stolen', myBlock ? el(myBlock) : victim.seat, 'Someone’s stealing from you!', stolenText);
     }
     while (true) {
       var b = defender.hand.filter(function (x) { return x.type === 'block'; })[0];
@@ -2637,8 +2573,6 @@
       var use;
       if (defender.human) {
         use = await askBlock(attacker, target, blocks > 0);
-      } else if (guided()) {
-        use = null; // the dogs go easy on you in the practice rounds
       } else {
         var worth = target.type === 'rule' || target.v >= 20 || score(defender) >= 60;
         use = Math.random() < (worth ? 0.85 : 0.5) ? b : null;
@@ -2739,11 +2673,11 @@
     }
   }
   // Dogs slip up sometimes. A bubble pops up next to the dog who slipped: catch them!
-  async function slip(p, r, forced, current) {
+  async function slip(p, r, current) {
     var whose = r.owner.human ? 'your' : (r.owner === p ? 'their own' : r.owner.name + '’s');
     var caught = await seatPop(p, {
       text: '<b>' + p.name + '</b> ' + TESTS[r.rule].slip + '!',
-      sub: 'Breaks ' + whose + ' rule' + (forced ? '. Catch them before the bar runs out!' : ''),
+      sub: 'Breaks ' + whose + ' rule',
       label: '🫵 Caught you!', timer: 3500
     });
     if (caught) {
@@ -2760,24 +2694,18 @@
       return !o.human && o !== current && liveFor(o).some(function (r) { return r.rule !== 'lady-puppa'; });
     });
     if (!dogs.length) return;
-    var forced = guided() && !guideSlip && dogs.some(function (d) { return liveFor(d).some(function (r) { return r.owner.human && r.rule !== 'lady-puppa'; }); });
-    if (!forced && (guided() || Math.random() > 0.3)) return; // practice: only the one forced slip-up
-    if (forced) {
-      guideSlip = true;
-      dogs = dogs.filter(function (d) { return liveFor(d).some(function (r) { return r.owner.human && r.rule !== 'lady-puppa'; }); });
-    }
+    if (Math.random() > 0.3) return;
     var p = dogs[rnd(dogs.length)];
-    var live = liveFor(p).filter(function (r) { return r.rule !== 'lady-puppa' && (!forced || r.owner.human); });
-    await slip(p, live[rnd(live.length)], forced, current);
+    var live = liveFor(p).filter(function (r) { return r.rule !== 'lady-puppa'; });
+    await slip(p, live[rnd(live.length)], current);
   }
   // Lady Puppa's Rule (growl when playing a card) can only be broken by whoever just played
   async function growlSlip(p) {
     var r = liveFor(p).filter(function (x) { return x.rule === 'lady-puppa'; })[0];
     if (!r) return;
-    if (guided()) { if (guideSlip || !r.owner.human) return; guideSlip = true; await wait(300); return slip(p, r, true, null); } // practice: one slip-up, once
     if (Math.random() > 0.3) return;
     await wait(300);
-    await slip(p, r, false, null);
+    await slip(p, r, null);
   }
 
   // ── How the dogs play ──
@@ -2789,14 +2717,7 @@
     });
     return Math.random() < 0.75 ? t[0] : t[rnd(t.length)];
   }
-  function guidedPick(p) {
-    // practice rounds: the dogs play Point cards only, no Rules and no Steals (Vilmar, 24 Nov 2026)
-    var h = p.hand;
-    var pts = h.filter(function (c) { return c.type === 'point' && score(p) + c.v < GOAL; });
-    return pts.length ? pts[rnd(pts.length)] : null;
-  }
   function botPick(p) {
-    if (guided()) return guidedPick(p);
     var me = score(p), h = p.hand;
     var pts = h.filter(function (c) { return c.type === 'point'; }).sort(function (a, b) { return b.v - a.v; });
     var steal = h.filter(function (c) { return c.type === 'steal'; })[0];
@@ -2869,7 +2790,6 @@
     clearTimeout(popTimer); pop.hidden = true; $('endPop').hidden = true; centerEl.classList.remove('popping'); clearSel(); board.classList.remove('picking');
     [hand, playSlot].forEach(function (n) { n.textContent = ''; });
     if (seatPopEl) { seatPopEl.remove(); seatPopEl = null; }
-    firstGame = !seen('guided'); round = 0; guideSlip = false;
     deck = newDeck(true); pens = newPens(); rules = []; over = false; mode = 'intro';
     var me = { i: 0, name: 'You', av: myDog, human: true };
     players = [me].concat(BOTS.map(function (b, k) { return { i: k + 1, name: b.name, av: b.av }; }));
@@ -2892,43 +2812,30 @@
     for (var i = deck.length - 1; i >= 0; i--) if (test(deck[i])) return deck.splice(i, 1)[0];
     return draw();
   }
-  function riggedHands() {
-    // a first game: you get a point, a rule, a Steal and a Block; Frida gets a Steal; everyone else gets points
-    var teach = ['frida', 'kpup', 'pupquiao', 'pupstein', 'rupup'], rr = teach[rnd(teach.length)];
-    function pt() { return pull(function (c) { return c.type === 'point'; }); }
-    return [
-      [pull(function (c) { return c.type === 'point' && c.v === 20; }), pull(function (c) { return c.type === 'rule' && c.rule === rr; }),
-       pull(function (c) { return c.type === 'steal'; }), pull(function (c) { return c.type === 'block'; })],
-      [pt(), pull(function (c) { return c.type === 'steal'; }), pt(), pt()],
-      [pt(), pt(), pt(), pt()],
-      [pt(), pt(), pt(), pt()]
-    ];
-  }
   async function deal() {
     say('Dealing four cards to everyone…');
-    var rig = firstGame ? riggedHands() : null;
     for (var k = 0; k < 4; k++) {
       for (var i = 0; i < players.length; i++) {
-        var p = players[i], c = rig ? rig[i][k] : draw(); p.hand.push(c);
+        var p = players[i], c = draw(); p.hand.push(c);
         if (p.human) {
           var a = mainDeck.querySelector('img').getBoundingClientRect();
           hand.appendChild(el(c)); fanHand(); fly(el(c), a);
         } else {
           flyBack(p.avEl.getBoundingClientRect()).then(refresh);
         }
-        await new Promise(function (r) { setTimeout(r, reduce ? 0 : 170); });
+        await guard(new Promise(function (r) { setTimeout(r, reduce ? 0 : 170); })); // a new game or the lesson stops this deal
       }
     }
-    await new Promise(function (r) { setTimeout(r, reduce ? 0 : 600); });
+    await guard(new Promise(function (r) { setTimeout(r, reduce ? 0 : 600); }));
     refresh();
   }
   async function seatDogs() {
     for (var i = 1; i < players.length; i++) {
       players[i].seat.classList.remove('away');
-      await new Promise(function (r) { setTimeout(r, reduce ? 0 : 380); });
+      await guard(new Promise(function (r) { setTimeout(r, reduce ? 0 : 380); }));
     }
     players[0].seat.classList.remove('away');
-    await new Promise(function (r) { setTimeout(r, reduce ? 0 : 450); });
+    await guard(new Promise(function (r) { setTimeout(r, reduce ? 0 : 450); }));
   }
   var introEl = $('intro'), restartQueued = false;
   function showIntro() {
@@ -2940,7 +2847,7 @@
     introEl.hidden = true;
     if (withSeating) await seatDogs();
     await deal();
-    if (firstGame || !seen('tour')) await tour(); // the lesson always opens with the tour
+    if (wantTour) { wantTour = false; await tour(); } // only from "Take the tour" (Vilmar, 24 Nov 2026: the lesson is for people with the box; the tour is for people playing here)
     myTurn();
   }
   async function start(goalChanged) {
@@ -2948,7 +2855,6 @@
     if (mode === 'intro' && !introEl.hidden) return;
     var before = GOAL;
     reset();
-    firstGame = false; // New game is always a normal game; the lesson is "How to play"
     if (goalChanged || GOAL !== before) {
       // the points to win changed: say so on the board before dealing
       var ok = await popup({ title: 'New game: first to ' + GOAL + ' points', text: 'You changed the points to win. Be the first to reach <b>' + GOAL + ' points</b> to win this game.',
@@ -2958,31 +2864,63 @@
     play(false);
   }
   // "Deal the cards" goes full screen, says how to win, then deals
-  $('skipLessonBtn').addEventListener('click', async function () {
-    // straight to a normal game: no tour, no "How to win", no lesson
-    firstGame = false; markSeen('guided'); markSeen('tour');
+  var wantTour = false;
+  // straight to a normal game, no lesson; "Take the tour" adds the tour first
+  async function playNoLesson(tourFirst) {
+    markSeen('guided'); wantTour = tourFirst;
     introEl.hidden = true;
     await enterFS();
     play(true);
+  }
+  $('skipLessonBtn').addEventListener('click', function () { playNoLesson(false); });
+  $('tourLessonBtn').addEventListener('click', function () { playNoLesson(true); });
+  // ── How to play: the lesson (lesson.html) over the table, upright on a phone; it ends in a normal game ──
+  // (Vilmar, 25 Nov 2026: the portrait lesson, adopted for desktop too). The intro card's Next and "How to play"
+  // in the toolbar both open it. It says "play" when it's done on a desktop; on a phone it says "turn" while it
+  // asks for the phone to be turned, and the game starts once it is sideways (on Android, it is turned for you).
+  var lessonEl = $('lessonFrame'), lessonTurn = false;
+  function openLesson() {
+    reset();
+    players.forEach(function (p) { p.seat.classList.add('away'); });
+    introEl.hidden = true; lessonTurn = false;
+    var f = document.createElement('iframe');
+    f.src = 'lesson.html'; f.title = 'How to play Pupcup';
+    // in full screen only the board is drawn, so the lesson goes inside it; otherwise it goes on the page itself,
+    // above the site's top bar (inside the board it sat under it on an iPhone, which has no full screen)
+    (isFS() ? board : document.body).appendChild(lessonEl);
+    lessonEl.textContent = ''; lessonEl.appendChild(f); lessonEl.hidden = false;
+    document.documentElement.classList.add('lesson-on');
+    f.addEventListener('load', function () { try { f.contentWindow.focus(); } catch (e) {} });
+  }
+  function closeLesson() {
+    lessonEl.hidden = true; lessonEl.textContent = ''; lessonTurn = false;
+    document.documentElement.classList.remove('lesson-on');
+    markSeen('guided');
+    play(true);
+  }
+  function sideways() { return !window.matchMedia('(orientation: portrait)').matches; }
+  window.addEventListener('message', function (e) {
+    var f = lessonEl.querySelector('iframe');
+    if (!f || e.source !== f.contentWindow || e.origin !== location.origin || typeof e.data !== 'string') return;
+    if (e.data === 'pupcup-lesson:play') closeLesson();
+    else if (e.data === 'pupcup-lesson:stay') lessonTurn = false;
+    else if (e.data === 'pupcup-lesson:turn') {
+      if (sideways()) closeLesson();
+      else if (canLock && isFS()) { closeLesson(); lockSideways(); }
+      else lessonTurn = true;
+    }
   });
-  // "How to play" in the toolbar: a fresh game that runs the lesson from the start (Vilmar, 24 Nov 2026)
+  window.addEventListener('resize', function () { if (lessonTurn && sideways()) closeLesson(); });
   $('lessonBtn').addEventListener('click', async function () {
     if (mode === 'intro' && !introEl.hidden) { $('dealBtn').click(); return; }
-    reset();
-    firstGame = true; round = 0; guideSlip = false;
-    await popup({ title: 'How to win', text: 'Be the first to reach <b>' + GOAL + ' points</b>.',
-      buttons: [{ label: 'Next', value: 1, gold: true }] });
-    play(false);
+    await enterFS();
+    openLesson();
   });
   $('dealBtn').addEventListener('click', async function () {
-    // the intro card is "How to Play · Step 1", so its Next always starts the lesson, even for someone who has
-    // finished it before (Vilmar, 24 Nov 2026: a second visit skipped straight to a normal game). New game does not.
-    firstGame = true; round = 0; guideSlip = false;
+    // the intro card's Next always starts the lesson, even for someone who has finished it before
     introEl.hidden = true;
     await enterFS();
-    await popup({ title: 'How to win', text: 'Be the first to reach <b>' + GOAL + ' points</b>.',
-      buttons: [{ label: 'Next', value: 1, gold: true }] });
-    play(true);
+    openLesson();
   });
 
   // ── Customise: board colour and your dog ──
@@ -3089,7 +3027,7 @@
     if (fsOK && canLock) $('rotateGo').hidden = false;
   }
   function lockSideways() {
-    if (!touchDev || !canLock || !isFS()) return;
+    if (!touchDev || !canLock || !isFS() || !lessonEl.hidden) return;
     try { var q = screen.orientation.lock('landscape'); if (q && q.catch) q.catch(function () {}); } catch (e) {}
   }
   $('rotateGo').addEventListener('click', function () {
