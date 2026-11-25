@@ -969,6 +969,21 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
     .lesson-drawer .row { padding-top: var(--sp-3); }
     .lesson-drawer .pg-btn.big { font-size: var(--fs-lg); padding: var(--sp-2) var(--sp-5); }
   }
+  /* desktop and tablets (Vilmar, 25 Nov 2026): the drawer in two columns so it takes less of the table's height.
+     Left: the eyebrow, title, words and Take the tour. Right: the arrows and Skip at the top, Next at the bottom. */
+  @media (min-width: 761px) and (min-height: 521px) {
+    .lesson-drawer { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--sp-10); row-gap: var(--sp-2); align-content: start;
+      min-height: 0; padding: var(--sp-4) var(--sp-10) var(--sp-8); }
+    .lesson-drawer .l-top, .lesson-drawer .row { display: contents; }
+    .lesson-drawer > *, .lesson-drawer .l-top > *, .lesson-drawer .row > * { grid-column: 1; }
+    .lesson-drawer .dots { grid-column: 1 / -1; padding-bottom: var(--sp-3); }
+    .lesson-drawer .l-top > .k { align-self: center; }
+    .lesson-drawer .l-top > .nav { grid-column: 2; grid-row: 2; justify-self: end; }
+    .lesson-drawer .row > .sp { display: none; }
+    .lesson-drawer .row > .pg-btn { grid-column: 2; align-self: end; justify-self: end; }
+    .lesson-drawer h2 { margin-bottom: var(--sp-1); }
+    .lesson-drawer .row > .link { justify-self: start; margin-top: var(--sp-2); }
+  }
   .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
   .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
   .pg-rotate-card p { color: var(--ink-2); font-size: 15px; line-height: 1.45; text-wrap: balance; }
@@ -3228,7 +3243,6 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
   // Skip on Step 1, or Take the tour: a normal game, dealt fresh
   async function lEnd(tourFirst) {
     lStop(); markSeen('guided'); wantTour = tourFirst;
-    await enterFS();
     reset(); players.forEach(function (p) { p.seat.classList.add('away'); });
     play(true);
   }
@@ -3240,8 +3254,7 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
       if (stale()) return;
       var row = drawerEl.querySelector('.row'); if (row) row.remove(); // the words stay while the cards go out
       lRoom();
-      await enterFS(); if (stale()) return;
-      lCalc(); L.busy = true; // measured for full screen; the deal below doesn't re-measure
+      lCalc(); L.busy = true; // measured once; the deal below doesn't re-measure
       // both decks come out of the box; the box clears away
       $('lbShuf').hidden = false; $('lbtMain').style.visibility = 'hidden'; $('lbtPen').style.visibility = 'hidden';
       var lifts = [liftOut('dog-cards-face', $('lbMain'), $('lbtMain')), liftOut('penalty', $('lbPen'), $('lbtPen'))];
@@ -3443,27 +3456,6 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
     board.classList.remove('fs-in', 'fs-out'); void board.offsetWidth; board.classList.add(cls);
     return new Promise(function (r) { setTimeout(function () { if (cls === 'fs-in') board.classList.remove('fs-in'); r(); }, reduce ? 0 : ms); });
   }
-  // Must be called from a click or tap. Resolves once the game is in full screen (or couldn't be).
-  function enterFS() {
-    return new Promise(function (resolve) {
-      if (isFS()) return resolve(true);
-      if (!fsOK && touchDev) { fakeFS(true); return resolve(true); }
-      if (!fsOK) { $('try').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); return resolve(false); }
-      veil.classList.add('on');
-      setTimeout(function () {
-        $('try').scrollIntoView({ behavior: 'auto', block: 'start' });
-        function done(ok) {
-          veil.classList.remove('on');
-          if (ok) animate('fs-in', 900).then(function () { resolve(true); }); else resolve(false);
-        }
-        try {
-          var r = fsOK.call(board);
-          if (r && r.then) r.then(function () { done(true); }, function () { done(false); });
-          else setTimeout(function () { done(isFS()); }, 120);
-        } catch (err) { done(false); }
-      }, reduce ? 0 : 450);
-    });
-  }
   function exitFS() {
     if (!isFS()) return;
     if (board.classList.contains('fake-fs')) { fakeFS(false); return; }
@@ -3481,8 +3473,6 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
     setTimeout(function () { if (players) players.forEach(function (p) { if (p.upEl) fitUp(p); }); }, 60);
   }
   $('fsExit').addEventListener('click', exitFS);
-  // outside full screen, a button to go (back) into it; hidden where full screen isn't available (iPhone)
-  if (fsOK) { $('fullBtn').hidden = false; $('fullBtn').addEventListener('click', function () { enterFS(); }); }
 
   // ── Phones and tablets: played upright or sideways, the same game either way (Vilmar, 25 Nov 2026) ──
   // Android and iPad go full screen; iPhone has no full screen, so the game fills the page.
@@ -3495,7 +3485,6 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
   // left full screen in the middle of a game on a phone or tablet: offer the way back in
   var fsBack = $('fsBack'), stayOut = false;
   function showBack() { fsBack.hidden = !(touchDev && fsOK && !isFS() && !stayOut && !(L.on && L.page === 0) && !over); }
-  $('fsBackGo').addEventListener('click', function () { fsBack.hidden = true; enterFS().then(function (ok) { if (!ok) showBack(); }); });
   $('fsBackStay').addEventListener('click', function () { stayOut = true; fsBack.hidden = true; });
   function vidRest(on) { var v = $('bgVideo'); if (!v || reduce) return; if (on) v.pause(); else if (!document.body.classList.contains('gaming')) { var q = v.play(); if (q && q.catch) q.catch(function () {}); } }
   document.addEventListener('fullscreenchange', function () { vidRest(isFS()); if (isFS()) fsBack.hidden = true; else setTimeout(showBack, 50); });
@@ -3590,13 +3579,13 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
     howtoMenu.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
     howtoMenu.querySelector('a').focus({ preventScroll: true });
   });
-  howtoMenu.querySelector('[data-howto="demo"]').addEventListener('click', function (e) { e.preventDefault(); closeHowto(); enterFS(); });
+  howtoMenu.querySelector('[data-howto="demo"]').addEventListener('click', function (e) { e.preventDefault(); closeHowto(); });
   howtoMenu.addEventListener('click', function (e) { if (e.target.closest('[data-howto="video"], [data-howto="read"]')) closeHowto(); });
   document.addEventListener('click', function (e) { if (!howtoMenu.hidden && !e.target.closest('#howtoMenu, #howtoBtn')) closeHowto(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !howtoMenu.hidden) { closeHowto(); howtoBtn.focus(); } });
   window.addEventListener('scroll', function () { if (!howtoMenu.hidden) closeHowto(); }, { passive: true });
   [].forEach.call(document.querySelectorAll('.explore[href="#try"]'), function (btn) {
-    btn.addEventListener('click', function (e) { e.preventDefault(); enterFS(); });
+    btn.addEventListener('click', function (e) { e.preventDefault(); });
   });
   document.addEventListener('fullscreenchange', fsChange);
   document.addEventListener('webkitfullscreenchange', fsChange);
