@@ -45,7 +45,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="https://design.vilmarmorgan.com/fonts/fonts.css"> <!-- Jost, from the Vilmartian library: no request to Google -->
-<link rel="stylesheet" href="https://design.vilmarmorgan.com/v/2/tokens.css"> <!-- the Vilmartian library, release 2: sizes, type, space, and Pupcup's colours (ADR-023) -->
+<link rel="stylesheet" href="https://design.vilmarmorgan.com/v/3/tokens.css"> <!-- the Vilmartian library, release 3: sizes, type, space, and Pupcup's colours (ADR-023) -->
 <style>
   /* ───── Reset & Base ───── */
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -69,73 +69,7 @@
     user-select: none;
   }
 
-  /* ───── Floating Hero Island ───── */
-  .hero-island {
-    position: fixed;
-    top: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 100;
-    width: min(680px, calc(100vw - 28px));
-    display: flex;
-    flex-direction: column;
-  }
-  /* Bottom "pill": a large-radius rounded rectangle spanning the whole island, its
-     top edge flush with the top pill's top edge, revealing beneath as the mission bar. */
-  .hero-island::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 52px;
-    background: rgba(225, 205, 205, 0.9);
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
-    box-shadow: 0 20px 36px rgba(18, 20, 28, 0.26);
-    z-index: 0;
-  }
-  .hero-pill {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 40px;
-    padding: 19px 16px 19px 26px;
-    border-radius: 100px;
-    background: rgba(255, 255, 255, 0.92);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-    box-shadow: 0 6px 16px rgba(18, 20, 28, 0.18);
-  }
-  .hero-logo { height: 52px; width: auto; display: block; flex-shrink: 0; }
-  .hero-logo-link { display: block; line-height: 0; flex-shrink: 0; }
-  .hero-left { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
-  .hero-burger {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 6px;
-    width: 34px;
-    height: 34px;
-    padding: 4px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .hero-burger span {
-    display: block;
-    width: 100%;
-    height: 3px;
-    border-radius: 2px;
-    background: var(--howto-bg);
-    transition: transform 0.15s ease;
-  }
-  .hero-burger:active { transform: scale(0.92); }
-  .hero-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-  /* Mobile-only bottom How to Play button */
-  .mobile-howto { display: none; }
 
   /* Full-screen navigation menu */
   .nav-menu {
@@ -198,41 +132,6 @@
   .mode-card-only .overlay-left { flex: 1 1 100%; }
   .mode-card-only .overlay-info { display: none; }
   .mode-card-only .overlay-shop-btn { display: none; }
-  .hero-btn {
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
-    padding: 0 22px;
-    border-radius: 100px;
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-  .hero-btn:hover { transform: scale(1.04); }
-  .hero-btn:active { transform: scale(0.96); }
-  .hero-btn-howto { background: var(--howto-bg); color: var(--howto-text); }
-  .hero-btn-buy {
-    background: var(--buy-bg);
-    color: var(--buy-text);
-    font-weight: 700;
-    box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
-  }
-  /* Mission text sits over the bottom pill (::before), below the top pill. */
-  .hero-mission {
-    position: relative;
-    z-index: 1;
-    padding: 18px 28px 22px;
-    text-align: center;
-    color: #3c3733;
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 1.35;
-  }
 
   /* Bone toss + tongue lick styles + logic now live in the shared bone-lick.js
      (loaded near the end of <body>), so all header pages share one source. */
@@ -892,34 +791,9 @@
       --card-h: 212px;
       --gap: 10px;
     }
-    .hero-island { top: 36px; width: 90vw; }
-    .hero-island::before { border-radius: 42px; }
-    .hero-pill { gap: 12px; padding: 15px 12px 15px 18px; }
-    .hero-logo { height: 33px; }
-    .hero-btn { padding: 10px 16px; font-size: 14px; height: auto; }
-    .hero-btn-howto { display: none; }
-    .mobile-howto {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      padding: 13px 30px;
-      border-radius: 100px;
-      background: var(--howto-bg);
-      color: var(--howto-text);
-      font-weight: 600;
-      font-size: 15px;
-      text-decoration: none;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
     .nav-menu-links a { font-size: 40px; }
     .nav-menu-links { gap: 40px; }
     .nav-menu-close { top: 16px; left: 16px; width: 54px; height: 54px; font-size: 30px; }
-    .hero-mission { padding: 15px 18px 18px; font-size: 16px; }
     .rp-banner-link { margin-bottom: 112px; }
     .overlay { overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; }
     .overlay::-webkit-scrollbar { display: none; }
@@ -1761,6 +1635,7 @@
     .tap-finger, .tap-ring, .card-cell.hint-pulse .card-inner { animation: none; }
   }
 </style>
+<link rel="stylesheet" href="header.css"> <!-- the shared header: one copy for every page -->
 </head>
 <body>
 
@@ -1793,8 +1668,6 @@
   <div class="hero-mission">A card game that brings people together to bark, growl, and howl with laughter.</div>
 </div>
 
-<!-- Mobile-only How to Play button pinned to the bottom -->
-<a class="mobile-howto" href="howtoplay/">How to Play</a>
 
 <!-- Full-screen navigation menu -->
 <div class="nav-menu" id="navMenu">
@@ -4371,6 +4244,7 @@ function init() {
 
 init();
 </script>
+<script src="header.js"></script>
 <script src="bone-lick.js"></script>
 </body>
 </html>

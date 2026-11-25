@@ -1,0 +1,84 @@
+/* Pupcup's header: one component for every page (Vilmar, 25 Nov 2026). Edit it here and every page that uses it changes.
+   The pages: the homepage, How to Play, Kickstarter backers, and the one-page design with its practice game and card grid.
+   Every value is a library token (release 3). Load it after the page's own <style>; header.js sizes the logo on phones
+   and switches the modes. The bone and tongue are bone-lick.js.
+
+   States (classes on .hero-island, set with PupHeader.set):
+     regular                     menu, logo, How to Play, Buy Now, and the tagline bar (with the bone and tongue)
+     .is-practice                the tagline bar folds away (no bone or tongue); wide screens keep the regular pill
+     .is-compact.is-practice     back, new game, logo in the middle, customise, video        (phones, tablets, narrow windows)
+     .is-compact.is-grid         back where the menu was, logo, How to Play, Buy Now          (the card grid on the same screens)
+   The menu and the back button share one box and one gap to the logo, so switching between them moves nothing. */
+
+.hero-island { --lgap: var(--sp-4); --btn-box: var(--size-sm); --logo-h: var(--size-lg); --phone: 0;
+  position: fixed; top: var(--sp-10); left: 50%; transform: translateX(-50%); z-index: 100;
+  width: min(var(--w-2xl), calc(100vw - var(--sp-7))); display: flex; flex-direction: column; }
+/* the tagline bar: a large rounded shape behind the whole island, showing below the pill */
+.hero-island::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: var(--r-5xl);
+  background: color-mix(in srgb, color-mix(in srgb, var(--color-pupcup-magenta) calc(var(--op-10) * 100%), var(--color-pupcup-cream)) calc(var(--op-90) * 100%), transparent);
+  -webkit-backdrop-filter: blur(var(--sp-0-5)); backdrop-filter: blur(var(--sp-0-5)); box-shadow: var(--shadow-xl); }
+.hero-pill { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-10);
+  padding: var(--sp-5) var(--sp-4) var(--sp-5) var(--sp-6); border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--color-white) calc(var(--op-90) * 100%), transparent);
+  -webkit-backdrop-filter: blur(var(--sp-1)); backdrop-filter: blur(var(--sp-1)); box-shadow: var(--shadow-md); }
+.hero-left { display: flex; align-items: center; gap: var(--lgap); flex-shrink: 0; }
+.hero-logo-link { display: block; line-height: 0; flex-shrink: 0; }
+.hero-logo { height: var(--logo-h); width: auto; display: block; flex-shrink: 0; }
+.hero-burger { display: flex; flex-direction: column; justify-content: center; gap: var(--sp-1-5); width: var(--btn-box); height: var(--btn-box);
+  padding: var(--sp-1); border: 0; background: none; cursor: pointer; flex-shrink: 0; }
+.hero-burger span { display: block; width: 100%; height: var(--bw-2); border-radius: var(--r-xs); background: var(--howto-bg); }
+.hero-burger:active { transform: scale(.92); }
+.hero-actions { display: flex; align-items: center; gap: var(--sp-2); flex-shrink: 0; }
+.hero-btn { display: inline-flex; align-items: center; height: var(--size-md); padding: 0 var(--sp-5); border: 0; border-radius: var(--r-pill); cursor: pointer;
+  font-family: inherit; font-size: var(--fs-md); font-weight: var(--fw-semibold); text-decoration: none; white-space: nowrap;
+  transition: transform var(--dur-150) var(--ease-out); }
+.hero-btn:hover { transform: scale(1.04); }
+.hero-btn:active { transform: scale(.96); }
+.hero-btn-howto { background: var(--howto-bg); color: var(--howto-text); }
+.hero-btn-buy { background: var(--buy-bg); color: var(--buy-text); font-weight: var(--fw-bold); }
+.hero-mission { position: relative; z-index: 1; padding: var(--sp-4) var(--sp-7) var(--sp-5); text-align: center; color: var(--color-pupcup-black);
+  font-size: var(--fs-md); font-weight: var(--fw-medium); line-height: var(--lh-snug);
+  max-height: var(--w-32); overflow: hidden;
+  transition: max-height var(--dur-500) var(--ease-in-out), padding var(--dur-500) var(--ease-in-out), opacity var(--dur-300) var(--ease-out); }
+.hero-lick-stage { transition: opacity var(--dur-300) var(--ease-out); }
+
+/* the icon buttons of the compact modes (hidden until a mode shows them) */
+.hero-side { display: none; align-items: center; gap: var(--sp-1); }
+.hero-icon { appearance: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  width: var(--btn-box); height: var(--btn-box); border-radius: var(--r-pill); background: none; color: var(--howto-bg); }
+.hero-icon:hover { background: color-mix(in srgb, var(--color-black) calc(var(--op-5) * 100%), transparent); }
+.hero-icon:focus-visible { outline: var(--bw-2) solid var(--accent); outline-offset: var(--bw-1); }
+.hero-icon svg { width: var(--size-xs); height: var(--size-xs); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* practice game: the tagline bar folds away into the pill, and with it the bone and tongue */
+.hero-island.is-practice .hero-mission { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: var(--op-0); }
+.hero-island.is-practice .hero-lick-stage { opacity: var(--op-0); }
+/* compact practice game: back, new game, logo in the middle, customise, video */
+.hero-island.is-compact.is-practice .hero-burger, .hero-island.is-compact.is-practice .hero-actions { display: none; }
+.hero-island.is-compact.is-practice .hero-side { display: flex; }
+/* compact card grid: back sits where the menu was, the same gap before the logo; the spare room goes after the logo */
+.hero-island.is-compact.is-grid .hero-burger, .hero-island.is-compact.is-grid .hero-icon-new { display: none; }
+.hero-island.is-compact.is-grid .hero-side-l { display: flex; }
+.hero-island.is-compact.is-grid .hero-pill { gap: var(--lgap); }
+.hero-island.is-compact.is-grid .hero-left { margin-right: auto; }
+
+/* phones (600px and narrower): How to Play stays in the pill, left of Buy Now. The pill is as wide as the page's content
+   (16px in from each edge) and the logo is as large as fits beside the buttons (header.js), never below 20px */
+@media (max-width: 600px) {
+  .hero-island { --phone: 1; --lgap: var(--sp-2); --logo-h: var(--size-xs); top: var(--sp-8); width: calc(100vw - var(--sp-4) * 2); }
+  .hero-pill { gap: var(--sp-2); padding: var(--sp-3-5) var(--sp-3) var(--sp-3-5) var(--sp-4-5); }
+  .hero-btn { height: auto; padding: var(--sp-2) var(--sp-2-5); font-size: var(--fs-sm); }
+  .hero-actions { gap: var(--sp-1-5); }
+  .hero-mission { padding: var(--sp-3-5) var(--sp-4-5) var(--sp-4-5); font-size: var(--fs-md); }
+  .hero-island.is-compact.is-practice .hero-logo { height: max(var(--logo-h), var(--size-xs)); } /* the practice pill has room: at least 24px */
+}
+/* the smallest phones (iPhone SE) */
+@media (max-width: 360px) {
+  .hero-island { --lgap: var(--sp-1-5); }
+  .hero-island { --btn-box: var(--sp-7); } /* menu and back 4px smaller, so Buy Now stays inside the pill's padding */
+  .hero-pill { gap: var(--sp-1-5); padding-left: var(--sp-2); padding-right: var(--sp-2); }
+  .hero-side { gap: 0; } .hero-icon svg { width: var(--sp-5); height: var(--sp-5); }
+  .hero-btn { padding: var(--sp-1-5) var(--sp-2); font-size: var(--fs-xs); }
+  .hero-actions { gap: var(--sp-1); }
+}
+@media (prefers-reduced-motion: reduce) { .hero-btn { transition: none; } }
