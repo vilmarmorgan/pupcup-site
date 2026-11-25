@@ -1,0 +1,10 @@
+/* Pupcup's footer: one component for every page with a bottom (Vilmar, 25 Nov 2026): the parody note, the copyright,
+   and the site's version, just the number, for Vilmar and Claude to track. Not on the card canvas or the backers'
+   wall: they have no bottom. Edit it here and every page that uses it changes. Every value is a library token. */
+.site-foot { position: relative; z-index: 1; max-width: var(--w-5xl); margin: 0 auto; padding: var(--sp-5) var(--sp-6) var(--sp-10); display: grid; gap: var(--sp-2-5);
+  border-top: var(--bw-1) solid color-mix(in srgb, var(--color-white) calc(var(--op-10) * 100%), transparent); color: var(--ink-2); font-size: var(--fs-sm); line-height: var(--lh-body); }
+.site-foot .parody { margin: 0; }
+.site-foot .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sp-1-5) var(--sp-6); }
+.site-foot a { color: inherit; text-decoration: underline; text-underline-offset: var(--bw-2); }
+.site-foot .made { display: inline-flex; align-items: center; gap: var(--sp-1-5); }
+.site-foot .made svg { width: var(--sp-3); height: var(--sp-3); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
