@@ -45,7 +45,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="https://design.vilmarmorgan.com/fonts/fonts.css"> <!-- Jost, from the Vilmartian library: no request to Google -->
-<link rel="stylesheet" href="https://design.vilmarmorgan.com/v/2/tokens.css"> <!-- the Vilmartian library, release 2: sizes, type, space, and Pupcup's colours (ADR-023) -->
+<link rel="stylesheet" href="https://design.vilmarmorgan.com/v/3/tokens.css"> <!-- the Vilmartian library, release 3: sizes, type, space, and Pupcup's colours (ADR-023) -->
 <style>
   /* ───── Reset & Base ───── */
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -61,7 +61,6 @@
 
   html, body {
     width: 100%; height: 100%;
-    overflow: hidden;
     background: var(--bg);
     font-family: var(--f-ui);
     color: var(--ink);
@@ -69,73 +68,7 @@
     user-select: none;
   }
 
-  /* ───── Floating Hero Island ───── */
-  .hero-island {
-    position: fixed;
-    top: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 100;
-    width: min(680px, calc(100vw - 28px));
-    display: flex;
-    flex-direction: column;
-  }
-  /* Bottom "pill": a large-radius rounded rectangle spanning the whole island, its
-     top edge flush with the top pill's top edge, revealing beneath as the mission bar. */
-  .hero-island::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 52px;
-    background: rgba(225, 205, 205, 0.9);
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
-    box-shadow: 0 20px 36px rgba(18, 20, 28, 0.26);
-    z-index: 0;
-  }
-  .hero-pill {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 40px;
-    padding: 19px 16px 19px 26px;
-    border-radius: 100px;
-    background: rgba(255, 255, 255, 0.92);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-    box-shadow: 0 6px 16px rgba(18, 20, 28, 0.18);
-  }
-  .hero-logo { height: 52px; width: auto; display: block; flex-shrink: 0; }
-  .hero-logo-link { display: block; line-height: 0; flex-shrink: 0; }
-  .hero-left { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
-  .hero-burger {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 6px;
-    width: 34px;
-    height: 34px;
-    padding: 4px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .hero-burger span {
-    display: block;
-    width: 100%;
-    height: 3px;
-    border-radius: 2px;
-    background: var(--howto-bg);
-    transition: transform 0.15s ease;
-  }
-  .hero-burger:active { transform: scale(0.92); }
-  .hero-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-  /* Mobile-only bottom How to Play button */
-  .mobile-howto { display: none; }
 
   /* Full-screen navigation menu */
   .nav-menu {
@@ -198,41 +131,6 @@
   .mode-card-only .overlay-left { flex: 1 1 100%; }
   .mode-card-only .overlay-info { display: none; }
   .mode-card-only .overlay-shop-btn { display: none; }
-  .hero-btn {
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
-    padding: 0 22px;
-    border-radius: 100px;
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-  .hero-btn:hover { transform: scale(1.04); }
-  .hero-btn:active { transform: scale(0.96); }
-  .hero-btn-howto { background: var(--howto-bg); color: var(--howto-text); }
-  .hero-btn-buy {
-    background: var(--buy-bg);
-    color: var(--buy-text);
-    font-weight: 700;
-    box-shadow: 0 2px 10px rgba(255, 141, 30, 0.3);
-  }
-  /* Mission text sits over the bottom pill (::before), below the top pill. */
-  .hero-mission {
-    position: relative;
-    z-index: 1;
-    padding: 18px 28px 22px;
-    text-align: center;
-    color: #3c3733;
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 1.35;
-  }
 
   /* Bone toss + tongue lick styles + logic now live in the shared bone-lick.js
      (loaded near the end of <body>), so all header pages share one source. */
@@ -892,34 +790,9 @@
       --card-h: 212px;
       --gap: 10px;
     }
-    .hero-island { top: 36px; width: 90vw; }
-    .hero-island::before { border-radius: 42px; }
-    .hero-pill { gap: 12px; padding: 15px 12px 15px 18px; }
-    .hero-logo { height: 33px; }
-    .hero-btn { padding: 10px 16px; font-size: 14px; height: auto; }
-    .hero-btn-howto { display: none; }
-    .mobile-howto {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      padding: 13px 30px;
-      border-radius: 100px;
-      background: var(--howto-bg);
-      color: var(--howto-text);
-      font-weight: 600;
-      font-size: 15px;
-      text-decoration: none;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
     .nav-menu-links a { font-size: 40px; }
     .nav-menu-links { gap: 40px; }
     .nav-menu-close { top: 16px; left: 16px; width: 54px; height: 54px; font-size: 30px; }
-    .hero-mission { padding: 15px 18px 18px; font-size: 16px; }
     .rp-banner-link { margin-bottom: 112px; }
     .overlay { overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; }
     .overlay::-webkit-scrollbar { display: none; }
@@ -1761,6 +1634,157 @@
     .tap-finger, .tap-ring, .card-cell.hint-pulse .card-inner { animation: none; }
   }
 </style>
+<style>
+/* ── The journey (Vilmar, 25 Nov 2026): the hero with the box, the practice game on the table, and the card canvas.
+   Scroll from the box to the table; Explore the cards opens the box and deals the cards out onto the canvas below.
+   The practice game is the live game (landing/?embed) in a frame on the table. Every value is a library token. ── */
+*, *::before, *::after { box-sizing: border-box; }
+.bg { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: opacity var(--dur-700) var(--ease-in-out); }
+/* the card canvas, its prism and its hint belong to the cards: hidden until Explore the cards (the page scrolls until then) */
+html.cards, html.cards body { overflow: hidden; }
+html:not(.cards) #canvas-viewport { visibility: hidden; }
+html:not(.cards) .hint { opacity: var(--op-0); }
+.kc-bg-prism { transition: opacity var(--dur-700) var(--ease-in-out); }
+html:not(.cards) .kc-bg-prism { opacity: var(--op-0); }
+html.cards .bg { opacity: var(--op-0); }
+
+/* the header is the shared component, header.css (inlined at build time from the site). On the card grid: a way back to the box */
+.back { position: fixed; left: var(--sp-10); top: var(--sp-10); z-index: 110; appearance: none; border: 0; cursor: pointer; font: inherit; font-size: var(--fs-md); font-weight: var(--fw-semibold);
+  display: inline-flex; align-items: center; gap: var(--sp-2); height: var(--size-xl); padding: 0 var(--sp-6); border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--color-white) calc(var(--op-90) * 100%), transparent); color: var(--color-pupcup-black); box-shadow: var(--shadow-xl);
+  opacity: var(--op-0); transform: translateX(calc(var(--sp-6) * -1)); pointer-events: none; transition: opacity var(--dur-700) var(--ease-in-out), transform var(--dur-700) var(--ease-in-out); }
+body.grid-on .back { opacity: var(--op-100); transform: none; pointer-events: auto; }
+/* the scroll journey: a tall section; the stage stays put while you scroll through it */
+.journey { position: relative; z-index: 1; height: 260vh; } /* a shorter scroll: the table now arrives while the box is still turning */
+.stage { --seat-top: var(--sp-16); --phone: 0; position: sticky; top: 0; height: 100vh; overflow: hidden; }
+
+/* the title: PUPCUP is set to the width of LET'S PLAY (script measures both lines); white at the edges,
+   a little greyer in the middle where the box stands in front of it, as in the KOVA reference */
+.title { --tfs: min(15.5vw, 29vh); position: absolute; left: 0; right: 0; top: 50%; z-index: 2; margin: 0; text-align: center; pointer-events: none;
+  font-weight: var(--fw-heavy); text-transform: uppercase; line-height: .86 /*artwork*/; letter-spacing: var(--ls-tighter); font-size: var(--tfs);
+  color: transparent; -webkit-background-clip: text; background-clip: text;
+  /* two layers, both clipped to the letters so neither touches the background:
+     the box's shadow falling on the letters behind it (placed by script each frame, under the box, down and to the right),
+     and a large spotlight from the header pill: whitest at the letters nearest it, a light blue-grey further out */
+  --cx: 50%; --cy: 50%; --cw: var(--sp-1); --ch: var(--sp-1); --ca: 1; --sx: 50%; --sy: 0%; --sr: var(--w-7xl);
+  background-image:
+    radial-gradient(var(--cw) var(--ch) at var(--cx) var(--cy), color-mix(in srgb, var(--color-black) calc(var(--op-50) * var(--ca) * 100%), transparent),
+      color-mix(in srgb, var(--color-black) calc(var(--op-25) * var(--ca) * 100%), transparent) 45%, transparent),
+    radial-gradient(circle var(--sr) at var(--sx) var(--sy), var(--color-white) 0%, var(--color-neutral-50) 32%, var(--color-neutral-200) 66%, var(--color-neutral-300) 100%);
+  filter: drop-shadow(0 var(--sp-3) var(--sp-8) color-mix(in srgb, var(--color-black) calc(var(--op-35) * 100%), transparent)); }
+.title .ln { display: block; width: fit-content; margin-inline: auto; white-space: nowrap; }
+/* glass mode (the switch at the bottom left): the letters become frosted glass. A layer behind them blurs and brightens
+   whatever is under the letters (cut to their shapes by a mask drawn from the same text), and the letters themselves
+   keep only a thin bright edge, a sheen across the top, and the box's shadow */
+.glass { position: absolute; left: 0; right: 0; z-index: 2; pointer-events: none; display: none;
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+body.glass-on .glass { display: block; }
+body.glass-on .title {
+  background-image:
+    radial-gradient(var(--cw) var(--ch) at var(--cx) var(--cy), color-mix(in srgb, var(--color-black) calc(var(--op-35) * var(--ca) * 100%), transparent), transparent),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-white) calc(var(--op-40) * 100%), transparent), color-mix(in srgb, var(--color-white) calc(var(--op-5) * 100%), transparent) 45%,
+      transparent 70%, color-mix(in srgb, var(--color-white) calc(var(--op-15) * 100%), transparent)),
+    radial-gradient(circle var(--sr) at var(--sx) var(--sy), color-mix(in srgb, var(--color-white) calc(var(--op-25) * 100%), transparent), transparent);
+  /* the edge: a soft light rim around each whole letter (a text outline would also trace the font's inner overlaps) */
+  filter: drop-shadow(0 0 var(--bw-1) color-mix(in srgb, var(--color-white) calc(var(--op-70) * 100%), transparent))
+    drop-shadow(0 var(--sp-2) var(--sp-6) color-mix(in srgb, var(--color-black) calc(var(--op-20) * 100%), transparent)); }
+.title.stacked .w { display: block; width: fit-content; margin-inline: auto; line-height: .8 /*artwork*/; } /* the four stacked words sit a little closer */
+.title .ln, .title .w { --k: 1; font-size: calc(var(--k) * 100%); } /* each sized by script: on desktop the two lines, on phones the four words */
+
+.explore { position: absolute; left: 50%; bottom: 4vh; translate: -50% 0; z-index: 6; appearance: none; border: 0; cursor: pointer; font: inherit;
+  color: var(--ink); font-size: var(--fs-xl); font-weight: var(--fw-semibold); display: inline-flex; gap: var(--sp-2); align-items: center;
+  padding: var(--sp-3) var(--sp-6); border-radius: var(--r-pill); text-decoration: none;
+  background: color-mix(in srgb, var(--color-white) calc(var(--op-10) * 100%), transparent); transition: background-color var(--dur-150) var(--ease-out); } /* a pill button, not an underlined link (Vilmar, 25 Nov) */
+.explore:hover { background: color-mix(in srgb, var(--color-white) calc(var(--op-15) * 100%), transparent); }
+/* the table: the practice game's felt, slides in under the box. It reaches up around the header pill: the same gap (sp-5)
+   above the felt's top edge as between that edge and the pill, which sits at sp-10 */
+.felt { position: absolute; inset: var(--sp-5); z-index: 4; border-radius: var(--r-4xl);
+  background: radial-gradient(80% 70% at 50% 45%, var(--color-green-700), var(--color-green-900)); /* the game's default green felt */
+  box-shadow: inset 0 0 0 var(--bw-2) color-mix(in srgb, var(--color-white) calc(var(--op-5) * 100%), transparent), var(--shadow-2xl); overflow: hidden; }
+.table-ui { position: absolute; inset: 0; z-index: 7; pointer-events: none; }
+/* the practice game: the live game in a frame filling the table; it fades in as the table settles */
+.game { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; opacity: var(--op-0); pointer-events: none; background: transparent; }
+.stage.table-on .game { pointer-events: auto; }
+/* the table's links, level with the header pill: New game and Customise top left, Watch a video top right.
+   No Full screen: the table already fills the window. Styled as the live game's buttons (.pg-btn). */
+.ctl { --ctl-y: var(--sp-16); position: absolute; top: var(--ctl-y); translate: 0 -50%; display: flex; gap: var(--sp-2); }
+.ctl.l { left: calc(var(--sp-5) + var(--sp-8)); } .ctl.r { right: calc(var(--sp-5) + var(--sp-8)); }
+.ctl a { display: inline-flex; align-items: center; gap: var(--sp-1-5); padding: var(--sp-2) var(--sp-3-5); border-radius: var(--r-pill);
+  font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--ink); text-decoration: none;
+  background: color-mix(in srgb, var(--color-black) calc(var(--op-30) * 100%), transparent); transition: background-color var(--dur-150) var(--ease-out); }
+.ctl a:hover { background: color-mix(in srgb, var(--color-black) calc(var(--op-45) * 100%), transparent); }
+.ctl a:focus-visible { outline: var(--bw-2) solid var(--accent); outline-offset: var(--bw-2); }
+.stage.table-on .ctl { pointer-events: auto; } /* clickable only once they have faded in */
+/* the box, in 3D, built as on the current page: real proportions (1 inch = 72px), lit from above left, with a drop shadow under it */
+.box-view { position: absolute; inset: 0; z-index: 5; perspective: 1900px /*geometry: camera distance, as on the current page*/; perspective-origin: 50% 30%; pointer-events: none; }
+.fit, .box, .lid { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+.f { position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden; background-size: 100% 100%; background-repeat: no-repeat; outline: var(--bw-1) solid transparent; }
+.base-in { background-color: var(--base-inside); } .base-out { background-color: var(--base-outside); } .lid-in { background-color: var(--lid-inside); }
+.rim { background-color: var(--color-pupcup-tray-out); } .divider { background-color: var(--color-pupcup-tray); }
+.card-edge { border-radius: var(--r-xl); background: var(--card-edge); }
+.card-face img { width: 100%; height: 100%; display: block; }
+.shadow { position: absolute; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--color-black) calc(var(--op-50) * 100%), transparent), transparent); }
+.shadow-contact { position: absolute; border-radius: var(--r-2xl); background: color-mix(in srgb, var(--color-black) calc(var(--op-55) * 100%), transparent); filter: blur(var(--sp-3)); }
+/* studio light: the key light is above and to the left, so the top is brightest, the front a little darker, the sides darkest */
+.lt-top { --light: radial-gradient(60% 70% at 46% 34%, color-mix(in srgb, var(--color-white) calc(var(--op-20) * 100%), transparent), transparent 70%),
+  radial-gradient(120% 120% at 50% 50%, transparent 55%, color-mix(in srgb, var(--color-black) calc(var(--op-20) * 100%), transparent) 100%); }
+.lt-front { --light: linear-gradient(to bottom, color-mix(in srgb, var(--color-black) calc(var(--op-10) * 100%), transparent), color-mix(in srgb, var(--color-black) calc(var(--op-35) * 100%), transparent)); }
+.lt-back { --light: linear-gradient(to bottom, color-mix(in srgb, var(--color-black) calc(var(--op-25) * 100%), transparent), color-mix(in srgb, var(--color-black) calc(var(--op-45) * 100%), transparent)); }
+.lt-left { --light: linear-gradient(to bottom, color-mix(in srgb, var(--color-black) calc(var(--op-30) * 100%), transparent), color-mix(in srgb, var(--color-black) calc(var(--op-50) * 100%), transparent)); }
+.lt-right { --light: linear-gradient(to bottom, color-mix(in srgb, var(--color-black) calc(var(--op-40) * 100%), transparent), color-mix(in srgb, var(--color-black) calc(var(--op-60) * 100%), transparent)); }
+.lt-plain { --light: linear-gradient(to bottom, color-mix(in srgb, var(--color-white) calc(var(--op-35) * 100%), transparent) 0, color-mix(in srgb, var(--color-white) calc(var(--op-10) * 100%), transparent) 5%,
+  color-mix(in srgb, var(--color-white) calc(var(--op-5) * 100%), transparent) 45%, color-mix(in srgb, var(--color-black) calc(var(--op-15) * 100%), transparent) 100%); }
+
+/* the cards on their way out of the box and back: copies of the canvas's own cards, laid over it while they fly */
+.grid { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
+/* each card has two sides, so it can leave the box face down and turn over on the way */
+.gcard { position: absolute; left: 0; top: 0; perspective: var(--w-7xl); will-change: transform; }
+.flip { position: absolute; inset: 0; transform-style: preserve-3d; }
+.side { position: absolute; inset: 0; border-radius: var(--r-2xl); overflow: hidden; box-shadow: var(--shadow-2xl); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.side.down { transform: rotateY(180deg); }
+.side img { width: 100%; height: 100%; display: block; object-fit: cover; pointer-events: none; }
+.floorshadow { position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-black) calc(var(--op-90) * 100%), transparent) 0%,
+    color-mix(in srgb, var(--color-black) calc(var(--op-50) * 100%), transparent) 38%, transparent 100%);
+  filter: blur(var(--sp-1-5)); } /* the hero's shadow: a long soft oval on the ground under the floating box */
+.side .card-inner { width: 100%; height: 100%; }
+/* the scrollbar, as in Printian: the browser's own is hidden everywhere (it also took width from the page, so the
+   header pill jumped sideways when the card grid hid it); a small pill track and thumb float at the right edge instead.
+   Drag the thumb, or click the track to jump. Hidden on touch screens, as in Printian. */
+* { scrollbar-width: none; } *::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.sbv { position: fixed; right: calc((var(--sp-5) - var(--sp-2)) / 2 - var(--sp-1-5)); top: 50%; /* the track centred in the gutter between the table (inset sp-5) and the window's edge; sp-1-5 is this element's own padding */ translate: 0 -50%; z-index: 90; display: block; padding: var(--sp-2) var(--sp-1-5);
+  cursor: pointer; touch-action: none; transition: opacity var(--dur-300) var(--ease-out); } /* no outer pill (Vilmar, 25 Nov): only the track and thumb show; the padding stays as a bigger, invisible area to grab */
+.sbv .tr { position: relative; display: block; width: var(--sp-2); height: var(--size-3xl); border-radius: var(--r-pill);
+  /* the title's glass (below), plus its sheen across the top */
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--color-white) calc(var(--op-40) * 100%), transparent), color-mix(in srgb, var(--color-white) calc(var(--op-5) * 100%), transparent) 45%,
+    transparent 70%, color-mix(in srgb, var(--color-white) calc(var(--op-15) * 100%), transparent)); } /* no edge line (Vilmar, 25 Nov: it read as a glow) */
+/* the white glass, written once: the title's letters and the scrollbar's track both use it */
+.glass, .sbv .tr {
+  -webkit-backdrop-filter: blur(var(--sp-3)) saturate(1.7) brightness(1.25); backdrop-filter: blur(var(--sp-3)) saturate(1.7) brightness(1.25);
+  background-color: color-mix(in srgb, var(--color-white) calc(var(--op-10) * 100%), transparent); }
+.sbv .th { position: absolute; left: 0; right: 0; min-height: var(--sp-3); border-radius: var(--r-pill); background: var(--ink); }
+body.grid-on .sbv { opacity: var(--op-0); pointer-events: none; } /* the card grid doesn't scroll the page */
+@media (hover: none) { .sbv { display: none; } }
+@media (prefers-reduced-motion: reduce) { .back { transition: none; } }
+/* ── the compact header (header.css, .is-compact): phones, tablets (touch screens), and any window too narrow for the table's
+   links to sit beside the pill. Script sets it, and body.compact-head for this page's own parts: the table's links move into the pill. ── */
+.stage { --touch: 0; } @media (hover: none) { .stage { --touch: 1; } }
+body.compact-head.grid-on .back { display: none; } /* the pill's back button takes over (the floating one would sit on the logo) */
+body.compact-head .ctl { display: none; }
+@media (max-width: 600px) {
+  .stage { --phone: 1; }
+  .explore { bottom: var(--sp-6); font-size: var(--fs-lg); white-space: nowrap; }
+  /* the table fills the screen once it has settled (Vilmar, 25 Nov) */
+  .felt { inset: var(--sp-4); border-radius: var(--r-3xl); transition: inset var(--dur-700) var(--ease-in-out), border-radius var(--dur-700) var(--ease-in-out); }
+  .stage.table-on .felt { inset: 0; border-radius: 0; }
+  /* the game is laid out full screen from the start, so it never re-lays out as the table grows to meet it: the table's edge only uncovers it */
+  .game { left: calc(var(--sp-4) * -1); top: calc(var(--sp-4) * -1); width: calc(100% + var(--sp-4) * 2); height: calc(100% + var(--sp-4) * 2);
+    transition: left var(--dur-700) var(--ease-in-out), top var(--dur-700) var(--ease-in-out), width var(--dur-700) var(--ease-in-out), height var(--dur-700) var(--ease-in-out); }
+  .stage.table-on .game { left: 0; top: 0; width: 100%; height: 100%; }
+}
+</style>
+<link rel="stylesheet" href="header.css">
+<link rel="stylesheet" href="footer.css"> <!-- the shared footer: one copy for every page with a bottom --> <!-- the shared header: one copy for every page -->
 </head>
 <body>
 
@@ -1777,24 +1801,25 @@
 </div>
 
 <!-- Top Bar -->
-<div class="hero-island">
+<div class="hero-island" id="island"><!-- the shared header component (header.css / header.js) -->
   <div class="hero-pill">
-    <div class="hero-left">
-      <button class="hero-burger" id="heroBurger" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
-      <a class="hero-logo-link" href="index.html"><img class="hero-logo" src="images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
+    <div class="hero-side hero-side-l"><!-- compact modes: back and new game in the practice game, back on the card grid -->
+      <button class="hero-icon" type="button" id="pBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <a class="hero-icon hero-icon-new" href="#" data-play="newGame" aria-label="New game"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></a>
     </div>
-    <div class="hero-actions">
-      <a class="hero-btn hero-btn-howto" href="howtoplay/">How to Play</a>
-      <a class="hero-btn hero-btn-buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a>
+    <div class="hero-left">
+      <button class="hero-burger" type="button" id="heroBurger" aria-label="Open menu"><span></span><span></span><span></span></button>
+      <a class="hero-logo-link" href="./" id="logo"><img class="hero-logo" src="images/Pupcup-logo-horizontal.svg" alt="Pupcup"></a>
+    </div>
+    <div class="hero-actions"><a class="hero-btn hero-btn-howto" href="howtoplay/" data-howto>How to Play</a><a class="hero-btn hero-btn-buy" href="https://shop.playpupcup.com/" rel="noopener">Buy Now</a></div>
+    <div class="hero-side hero-side-r"><!-- compact practice game: Customise and Watch a video -->
+      <a class="hero-icon" href="#" data-play="customise" aria-label="Customise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg></a>
+      <a class="hero-icon" href="howtoplay/" aria-label="Watch a video"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></a>
     </div>
   </div>
   <div class="hero-mission">A card game that brings people together to bark, growl, and howl with laughter.</div>
 </div>
 
-<!-- Mobile-only How to Play button pinned to the bottom -->
-<a class="mobile-howto" href="howtoplay/">How to Play</a>
 
 <!-- Full-screen navigation menu -->
 <div class="nav-menu" id="navMenu">
@@ -1812,6 +1837,39 @@
   <span class="kc-blob b5"></span>
   <span class="kc-blob b6"></span>
 </div>
+
+<!-- The hero and the practice game (the journey). The video is the hero's background; the canvas has its own prism. -->
+<video class="bg" id="bg" autoplay muted loop playsinline aria-hidden="true">
+  <source src="landing/bg/prism.webm" type="video/webm"><source src="landing/bg/prism.mp4" type="video/mp4">
+</video>
+<button class="back" type="button" id="back">← Back to the box</button>
+<main>
+  <section class="journey" id="journey" aria-label="Pupcup">
+    <div class="stage" id="stage">
+      <div class="glass" id="glass" aria-hidden="true"></div>
+      <h1 class="title" id="title"><span class="ln l1"><span class="w">Let’s</span> <span class="w">play</span></span><span class="ln l2"><span class="w">Pup</span><span class="w">cup</span></span></h1>
+      <div class="felt" id="felt"><iframe class="game" id="game" src="landing/?embed" title="Practice game"></iframe></div>
+      <div class="floorshadow" id="floorShadow"></div>
+      <div class="box-view" id="boxView"><div class="fit" id="fit"></div></div>
+      <button class="explore" type="button" id="explore">Explore the cards <span aria-hidden="true">→</span></button>
+      <div class="table-ui" id="tableUi">
+        <div class="ctl l"><a href="#" data-play="newGame"><span aria-hidden="true">↻</span> New game</a><a href="#" data-play="customise"><span aria-hidden="true">🎨</span> Customise</a></div>
+        <div class="ctl r"><a href="howtoplay/"><span aria-hidden="true">▶</span> Watch a video</a></div>
+      </div>
+    </div>
+  </section>
+  <!-- below the table: the parody note, the copyright, and the page's version (just the number: it's for us) -->
+  <footer class="site-foot">
+    <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
+    <div class="foot-row">
+      <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
+      <span class="ver" title="Version of this page">1.7</span>
+      <span class="made">Made with <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
+    </div>
+  </footer>
+</main>
+<div class="grid" id="grid" aria-hidden="true"></div>
+<span class="sbv" id="sbv" role="presentation"><span class="tr"><i class="th"></i></span></span>
 
 <!-- Infinite Canvas -->
 <div id="canvas-viewport">
@@ -4325,7 +4383,7 @@ function spawnTailWagRipple(isSuper, originX, originY) {
 }
 
 
-function loadClass(cls) {
+function loadClass(cls, quiet) {
   for (const [key, el] of cells) { el.remove(); }
   cells.clear();
   const all = CARD_DATA[cls] || [];
@@ -4339,12 +4397,12 @@ function loadClass(cls) {
 
   camX = 0; camY = 0;
 
-  // Enable staggered reveal with a fresh random seed
+  // Enable staggered reveal with a fresh random seed (not when the cards are dealt from the box: they arrive already in place)
   revealSeed = (Math.random() * 2147483647) | 0;
-  isRevealing = true;
+  isRevealing = !quiet;
   render();
   // Turn off revealing after 3s so cards added by panning appear instantly
-  setTimeout(() => { isRevealing = false; }, 3000);
+  if (!quiet) setTimeout(() => { isRevealing = false; }, 3000);
 }
 
 /* ───── Init ───── */
@@ -4361,16 +4419,433 @@ function initNavMenu() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 }
 
+// The canvas is the third part of the one page: built the first time Explore the cards opens it (the journey's script).
+let canvasStarted = false;
+window.pupCanvas = {
+  start() { if (canvasStarted) return false; canvasStarted = true; loadClass(currentClass, true); window.addEventListener('resize', () => render()); return true; },
+  cells() { return [...cells.values()]; },
+  hint() { initTapHint(); }
+};
+
 function init() {
   if (CONFIG.popupMode === 'card-only') document.documentElement.classList.add('mode-card-only');
-  loadClass(currentClass);
-  window.addEventListener('resize', () => render());
-  initTapHint();
   initNavMenu();
 }
 
 init();
 </script>
+<script src="header.js"></script>
 <script src="bone-lick.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function ms(name) { var v = tok(name); return reduce ? 0 : (v.endsWith('ms') ? parseFloat(v) : parseFloat(v) * 1000); }
+  function cssPx(v) { var p = document.createElement('div'); p.style.position = 'absolute'; p.style.width = v; document.body.appendChild(p); var w = p.getBoundingClientRect().width; p.remove(); return w; }
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  function seg(p, a, b) { return clamp((p - a) / (b - a), 0, 1); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  // gentle curves: every move eases in and settles out
+  function sine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
+  function soft(t) { return t < .5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2; }
+  // writes a style only when it changes
+  function css(el, prop, val) { var key = '_' + prop; val = String(val); if (el[key] !== val) { el.style[prop] = val; el[key] = val; } }
+
+  // ── the box: the one on the current page, at its real size (1 inch = 72px) ──
+  var ART = 'landing/box-art/', C = 'landing/cards/'; // the game's own pictures, in its folder
+  var W = 414, D = 270, H = 72, LW = 420, LD = 276, LH = 74 /*geometry: 5.75 x 3.75 x 1 in, the lid a hair bigger*/;
+  var CW = 186, CH = 264, STACK_X = 103 /*geometry: card size and where each deck sits*/;
+  var TILT = 58, SPIN = -22; // degrees: how far the box leans back and turns in the hero, as on the current page
+  var fit = $('fit'), bucket = null;
+  function el(parent, cls) { var d = document.createElement('div'); d.className = cls; parent.appendChild(d); return d; }
+  function face(parent, w, h, tf, cls, img, light) {
+    var f = el(parent, 'f ' + (cls || '') + (light ? ' lt-' + light : ''));
+    f.style.width = w + 'px'; f.style.height = h + 'px'; f.style.left = (-w / 2) + 'px'; f.style.top = (-h / 2) + 'px'; f.style.transform = tf;
+    var layers = []; if (light) layers.push('var(--light)'); if (img) layers.push('url("' + img + '")');
+    if (layers.length) f.style.backgroundImage = layers.join(', ');
+    if (bucket) bucket.push(f);
+    return f;
+  }
+  function walls(parent, w, d, h, zMid, img, inCls, outCls, lightAll, closeCorners) {
+    var keys = ['front', 'back', 'left', 'right'], hz = 'translateZ(' + zMid + 'px) ', outer = [];
+    [[w, 'translateY(' + (d / 2) + 'px) ' + hz + 'rotateX(-90deg)', img.front],
+     [w, 'translateY(' + (-d / 2) + 'px) ' + hz + 'rotateX(-90deg) rotateY(180deg)', img.back],
+     [d, 'translateX(' + (-w / 2) + 'px) ' + hz + 'rotateY(-90deg) rotateZ(90deg)', img.left],
+     [d, 'translateX(' + (w / 2) + 'px) ' + hz + 'rotateY(90deg) rotateZ(-90deg)', img.right]].forEach(function (s, k) {
+      // each wall at its exact size: the edges meet at the corners, and each panel's art lines up with the next
+      outer.push(face(parent, s[0], h, s[1], s[2] ? '' : (outCls || inCls), s[2], lightAll || (s[2] ? keys[k] : 'plain')));
+      face(parent, s[0] - 4, h - 2, s[1] + ' rotateY(180deg)', inCls); // the inside stops just short of the edges, so its colour never bleeds through a seam
+    });
+    if (closeCorners) {
+      // small posts in the inside corners and a thin rim along the top, so no seam shows looking down into the box
+      var P = 7, T = 5 /*geometry: the board's thickness*/;
+      [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (c) {
+        var side = 'translateX(' + (c[0] * (w / 2 - P)) + 'px) translateY(' + (c[1] * (d / 2 - P / 2 - 1)) + 'px) ' + hz + 'rotateY(90deg) rotateZ(-90deg)';
+        var fb = 'translateY(' + (c[1] * (d / 2 - P)) + 'px) translateX(' + (c[0] * (w / 2 - P / 2 - 1)) + 'px) ' + hz + 'rotateX(-90deg)';
+        [side, fb].forEach(function (tr) { face(parent, P, h - 1, tr, inCls); face(parent, P, h - 1, tr + ' rotateY(180deg)', inCls); });
+      });
+      var zTop = 'translateZ(' + (zMid + h / 2 + .3) + 'px)'; // flush with the top of the walls
+      [[0, d / 2 - T / 2, w, T], [0, -(d / 2 - T / 2), w, T], [w / 2 - T / 2, 0, T, d], [-(w / 2 - T / 2), 0, T, d]].forEach(function (r) {
+        var tr = 'translate(' + r[0] + 'px,' + r[1] + 'px) ' + zTop;
+        face(parent, r[2], r[3], tr, 'rim'); face(parent, r[2], r[3], tr + ' rotateY(180deg)', 'rim');
+      });
+    }
+    return outer;
+  }
+  var box = el(fit, 'box');
+  // the drop shadow: a soft one spreading out on the floor, and a darker one tight under the box; the light is above and to the left, so both fall a little to the right
+  function shadowEl(cls, w, d) { var n = el(box, cls); n.style.width = w + 'px'; n.style.height = d + 'px'; n.style.left = (-w / 2) + 'px'; n.style.top = (-d / 2) + 'px'; return n; }
+  var SHX = 14, SHY = 8 /*geometry: how far the shadow falls from the box, in the box's inches*/;
+  var tableShadows = [shadowEl('shadow', W * 1.6, D * 1.9), shadowEl('shadow-contact', W + 6, D + 6)]; // on the table only; in the hero the box floats over its own shadow
+  tableShadows[0].style.transform = 'translate(' + SHX * 2 + 'px,' + SHY * 2 + 'px) translateZ(0.2px)';
+  tableShadows[1].style.transform = 'translate(' + SHX + 'px,' + SHY + 'px) translateZ(0.4px)';
+  // the base: black print, open top, a divider down the middle
+  face(box, W, D, 'translateZ(1px)', 'base-in');
+  walls(box, W, D, H, H / 2, { front: null, back: ART + 'base-back.jpg', left: ART + 'base-left.jpg', right: ART + 'base-right.jpg' }, 'base-in', 'base-out', null, true);
+  [-1.5, 1.5].forEach(function (x) {
+    face(box, D, H - 8, 'translateX(' + x + 'px) translateZ(' + ((H - 8) / 2) + 'px) rotateY(90deg) rotateZ(-90deg)', 'divider');
+    face(box, D, H - 8, 'translateX(' + x + 'px) translateZ(' + ((H - 8) / 2) + 'px) rotateY(-90deg) rotateZ(90deg)', 'divider');
+  });
+  function stack(x, src) {
+    for (var k = 0; k < 6; k++) face(box, CW, CH, 'translateX(' + x + 'px) translateZ(' + (4 + k * 6) + 'px)', 'card-edge');
+    var top = face(box, CW, CH, 'translateX(' + x + 'px) translateZ(' + (4 + 6 * 6) + 'px)', 'card-face');
+    var i = document.createElement('img'); i.src = src; i.alt = ''; top.appendChild(i);
+    return top;
+  }
+  // the main deck (the dog cards, whose back is the white Pupcup card) on the left, the penalty deck on the right
+  var DOG_BACK = C + 'dog-cards-face.webp';
+  var dogDeck = stack(-STACK_X, DOG_BACK);
+  stack(STACK_X, C + 'penalty.webp');
+  var lidFaces = []; bucket = lidFaces;
+  var lid = el(box, 'lid');
+  face(lid, LW, LD, 'translateZ(0px)', '', ART + 'lid-top.jpg', 'top'); // flush with the top of the lid's walls, the same size
+  face(lid, LW - 2, LD - 2, 'translateZ(-1px) rotateY(180deg)', 'lid-in');
+  walls(lid, LW, LD, LH, -LH / 2, { front: ART + 'lid-front.jpg', back: ART + 'lid-back.jpg', left: ART + 'lid-left.jpg', right: ART + 'lid-right.jpg' }, 'lid-in');
+  bucket = null;
+  // fading a group of 3D panels: each panel fades on its own (fading the group would flatten it)
+  function fade(list, o) { o = Math.round(o * 1000) / 1000; for (var i = 0; i < list.length; i++) css(list[i], 'opacity', o); }
+
+  // ── layout: measured once per screen size ──
+  var title = $('title'), l1 = title.children[0], l2 = title.children[1], floorShadow = $('floorShadow'), explore = $('explore'), felt = $('felt'),
+      tableUi = $('tableUi'), game = $('game'), boxView = $('boxView'), stage = $('stage'), island = $('island');
+  var M = {};
+  function isPhone() { return getComputedStyle(stage).getPropertyValue('--phone').trim() === '1'; } // set by the phone rules in the CSS
+  function boxBottom() { var b = -1e9; [].forEach.call(box.children, function (n) { if (n.classList.contains('f')) b = Math.max(b, n.getBoundingClientRect().bottom); }); return b; }
+  function measure() {
+    M.sp4 = cssPx('var(--sp-4)'); M.sp8 = cssPx('var(--sp-8)'); M.bob = cssPx('var(--sp-1-5)'); M.tau = ms('--dur-150');
+    // the title: size LET'S PLAY to fit, then PUPCUP to the same width
+    var probe = cssPx('var(--fs-10xl)');
+    // desktop: LET'S PLAY / PUPCUP, PUPCUP set to the width of LET'S PLAY. Phones: LET'S / PLAY / PUP / CUP, each word to the full width
+    M.phone = isPhone();
+    var words = [].slice.call(title.querySelectorAll('.w')), lines = M.phone ? words : [l1, l2];
+    title.classList.toggle('stacked', M.phone);
+    title.style.setProperty('--tfs', probe + 'px');
+    [l1, l2].concat(words).forEach(function (e) { e.style.setProperty('--k', 1); });
+    var ks = lines.map(function () { return 1; });
+    for (var n = 0; n < 3; n++) lines.forEach(function (e, i) { if (!i) return; ks[i] *= lines[0].getBoundingClientRect().width / e.getBoundingClientRect().width; e.style.setProperty('--k', ks[i]); }); // the letters' sides don't scale evenly, so settle it in a few passes
+    M.lines = lines;
+    var top = island.getBoundingClientRect().bottom + M.sp4, bottom = explore.getBoundingClientRect().top - M.sp4; // between the header and Explore the cards
+    var availW = innerWidth - cssPx(M.phone ? 'var(--sp-5)' : 'var(--sp-12)') * 2;
+    var f = Math.min(availW / lines[0].offsetWidth, (bottom - top) / title.offsetHeight);
+    M.titleFill = Math.min(1, f * lines[0].offsetWidth / availW); // 1 = every line full width; less = the stack had to shrink to fit the height
+    title.style.setProperty('--tfs', (probe * f) + 'px');
+    title.style.top = (top + (bottom - top - title.offsetHeight) / 2) + 'px';
+    // the box in the hero stands over PUPCUP, its middle a little above that line's middle
+    var line2Mid = M.phone ? title.offsetTop + title.offsetHeight * .56 : title.offsetTop + l2.offsetTop + l2.offsetHeight * .5; // shares of the title: phones, just below the middle of the stack
+    M.heroY = line2Mid - innerHeight / 2;
+    M.heroW = M.phone ? Math.min(innerWidth * .5, (bottom - top) * .6) : Math.min(l1.offsetWidth * .4, innerWidth * .38, innerHeight * .56); // shares of the title and screen
+    M.lineW = l1.offsetWidth;
+    M.pillY = island.querySelector('.hero-pill').getBoundingClientRect(); M.pillY = M.pillY.top + M.pillY.height / 2; // the spotlight's centre
+    PupHeader.fit(); // the logo as large as fits (header.js)
+    M.pillY = island.querySelector('.hero-pill').getBoundingClientRect(); M.pillY = M.pillY.top + M.pillY.height / 2;
+    // the compact header: on phones and touch screens, and whenever the table's links would touch the pill
+    document.body.classList.remove('compact-head');
+    var hp = island.querySelector('.hero-pill').getBoundingClientRect(), cl = document.querySelector('.ctl.l').getBoundingClientRect(), cr = document.querySelector('.ctl.r').getBoundingClientRect();
+    M.linksFit = cl.right + M.sp4 <= hp.left && hp.right + M.sp4 <= cr.left;
+    M.compact = M.phone || getComputedStyle(stage).getPropertyValue('--touch').trim() === '1' || !M.linksFit;
+    document.body.classList.toggle('compact-head', M.compact); PupHeader.set({ compact: M.compact });
+    [].forEach.call(document.querySelectorAll('.ctl'), function (c) { c.style.setProperty('--ctl-y', M.pillY + 'px'); }); // the table's links sit level with the pill
+    // the title slides all the way out of the top: this far
+    M.titleOut = title.offsetTop + title.offsetHeight + M.sp8;
+    M.feltStart = TABLE_IN; // with the slower title the table can't wait for LET'S PLAY to leave: it comes in on its own cue and covers the title
+    // the table: the box lands where the game shows its own box (the lesson's first step), then hands over to it
+    var gt = gameBox();
+    M.tableY = gt ? gt.y - innerHeight / 2 : 0;
+    M.tableW = gt ? gt.w : cssPx('var(--w-60)');
+    setEmbedTop();
+    // the floating box's shadow sits a gap under the box, and the link a gap under that: lift the box if it doesn't fit
+    M.gap = cssPx('var(--sp-8)'); M.shH = cssPx('var(--sp-6)');
+    var linkTop = explore.getBoundingClientRect().top;
+    for (var k = 0; k < 3; k++) {
+      render(0, 0, t0); var bb = boxBottom();
+      var over = bb + M.gap + M.shH + M.gap - linkTop; if (over <= 1) break; M.heroY -= over;
+    }
+    M.shadowY = boxBottom() + M.gap - M.shH / 2; // the oval's top: centred a gap under the box
+    render(S.p, S.g, performance.now());
+  }
+
+  // ── one state for everything: S.p (scroll: 0 hero .. 1 at the table) and S.g (0 hero .. 1 cards in the grid) ──
+  var t0 = performance.now();
+  // the scroll, start to finish (p = 0..1 through the section):
+  //   0    – .58   the lid's flight: up off the box, tipping back and away, in one continuous move
+  //   .02  – ...   the title slides up (parallax), never fading; the table covers it before it's out
+  //   .08  – .6    the box turns to look straight down and moves to the middle of the table
+  //   .38  – .7    the table rises from the bottom, covering the title
+  //   .62  – .8    the game fades in on the table;  .8 – .9 our box hands over to the game's own
+  var TITLE_A = .02, TITLE_B = 1.42, TITLE_PACE = 1.25; // v9's curve, travelling 25% further at every point (so 25% faster throughout); at the end of the scroll it has gone 99% of the way
+  var CLEAR = .5 * (1 - Math.sqrt(1 - 1.05 / 1.8)); // where the lift (an ease-out over the first half) has raised the lid 1.05 lid-heights: clear of the walls
+  var LID_END = .58, TABLE_IN = .38; // the lid's flight ends by .58; the table starts rising at .38
+  function render(p, g, now) {
+    var t = (now - t0) / 1000;
+    // the title: on the scroll it rises and leaves (no fade); on Explore it fades as before
+    var wordsG = 1 - sine(seg(g, 0, .22)), rise = Math.min(1, TITLE_PACE * sine(seg(p, TITLE_A, TITLE_B)));
+    // (once the table is up the title is behind it except in the thin gap above the table: it goes then, out of sight)
+    var titleO = wordsG * (1 - seg(p, .66, .74)), titleT = 'translateY(' + (-rise * M.titleOut - (1 - wordsG) * M.sp8) + 'px)';
+    css(title, 'opacity', titleO); css(title, 'transform', titleT);
+    css(glass, 'opacity', titleO); css(glass, 'transform', titleT);
+    var link = Math.min(wordsG, 1 - sine(seg(p, 0, .12)));
+    css(explore, 'opacity', link); css(explore, 'pointerEvents', link > .5 ? 'auto' : 'none');
+    // the lid: the original flight (straight up off the box, then it tips back and flies away), now as one motion.
+    // The two parts overlap, so the tip-back is already gathering speed while the lift is still easing off, and the
+    // whole flight rides one easing curve from closed to out of view: no stop in the middle.
+    var open = Math.max(seg(p, 0, LID_END), seg(g, 0, .3));
+    var u = sine(open);
+    // A real lid can only go straight up until it is clear of the base's walls; only then can it tip back and fly off.
+    // lift reaches LH * 1.05 above its resting place (clear of the walls) at u = CLEAR; the tip-back starts there.
+    var lift = 1 - Math.pow(1 - seg(u, 0, .5), 2), away = Math.pow(seg(u, CLEAR, 1), 2);
+    var lz = LH + 1 + lift * LH * 1.8 + away * LH * 9; // in the box's own inches, the original distances
+    var free = sine(seg(lz - LH - 1, LH * 1.05, LH * 2.6)); // 0 while the lid is still around the box, 1 once well clear of it
+    var lidPath = 'translateY(' + (-away * LD * .9) + 'px) translateZ(' + lz + 'px) rotateX(' + (-away * 40) + 'deg) rotateZ(' + (-away * 8) + 'deg)';
+    var lidVis = 1 - sine(seg(open, .75, 1)); // it fades only at the end of its flight, as it leaves
+    fade(lidFaces, lidVis);
+    // the box turns to look straight down: on the way to the table (scroll), or to let the cards out (explore)
+    var turnS = soft(seg(p, .08, .6)), turnG = soft(seg(g, .04, .34)), turn = Math.max(turnS, turnG);
+    var idle = reduce ? 0 : 1 - turn;
+    var spin = lerp(SPIN, 0, turn) + Math.sin(t * .6) * 1.2 * idle, tilt = lerp(TILT, 0, turn);
+    var w = lerp(M.heroW, M.tableW, turnS);
+    var yBase = lerp(lerp(M.heroY, M.tableY, turnS), 0, turnG), y = yBase + Math.sin(t * 1.4) * M.bob * idle;
+    // explore: once the cards are out the box sinks back and fades
+    var gone = sine(seg(g, .45, .85));
+    var s = w / W * (1 - gone * .12);
+    css(fit, 'transform', 'translate(0px,' + y + 'px) scale3d(' + s + ',' + s + ',' + s + ')'); // scale3d keeps the box's depth in proportion
+    css(box, 'transform', 'rotateX(' + tilt + 'deg) rotateZ(' + spin + 'deg)');
+    // the lid flies as it would from the box at its hero angle: undo however far the box has turned since, so turning
+    // the box underneath doesn't swing the lid back down into view
+    // ...and keep its size: undo the box shrinking on its way to the table, and hold the lid at the same distance from the
+    // camera (the tip-back would otherwise carry it away and make it look smaller)
+    // (only once it is clear of the box: until then it moves exactly with the box, straight up off it)
+    var keep = lerp(1, (M.heroW / W) / s, free);
+    var T0 = TILT * Math.PI / 180, sr = spin * Math.PI / 180;
+    var depth = -((-away * LD * .9) * Math.sin(T0) + (lz - LH - 1) * Math.cos(T0)) * free; // how far the flight has moved it toward or away from the camera, undone
+    var back = 'translate3d(' + (depth * Math.sin(T0) * Math.sin(sr)) + 'px,' + (depth * Math.sin(T0) * Math.cos(sr)) + 'px,' + (depth * Math.cos(T0)) + 'px) ';
+    css(lid, 'transform', 'scale3d(' + keep + ',' + keep + ',' + keep + ') rotateZ(' + (-spin) + 'deg) rotateX(' + ((TILT - tilt) * free) + 'deg) rotateZ(' + spin + 'deg) ' + back + lidPath);
+    // on the letters only: the box's shadow, down and to the right of it (the light is above left), and the spotlight from the pill
+    var titleTop = title.offsetTop - rise * M.titleOut - (1 - wordsG) * M.sp8;
+    title.style.setProperty('--cx', (innerWidth / 2 + w * .1) + 'px'); title.style.setProperty('--cy', (innerHeight / 2 + y + w * .14 - titleTop) + 'px'); // shares of the box
+    title.style.setProperty('--cw', (w * .78) + 'px'); title.style.setProperty('--ch', (w * .62) + 'px');
+    title.style.setProperty('--ca', 1 - sine(seg(p, 0, .15)));                    // it goes as the box lifts away from the letters
+    title.style.setProperty('--sx', (innerWidth / 2) + 'px'); title.style.setProperty('--sy', (M.pillY - titleTop) + 'px');
+    title.style.setProperty('--sr', (M.lineW * .72) + 'px');                       // a share of the title: T'S PL nearest, the outer letters a touch blue-grey
+    // the hero's shadow: a long soft oval on the ground under the floating box; it tightens and darkens as the box bobs down
+    var hero = (1 - turnS) * (1 - turnG), bob = Math.sin(t * 1.4) * idle;
+    var shW = w * 1.05 * (1 - bob * .04), shY = M.shadowY + (yBase - M.heroY); // stays on the ground: it doesn't bob with the box
+    css(floorShadow, 'width', shW + 'px'); css(floorShadow, 'height', M.shH + 'px');
+    css(floorShadow, 'transform', 'translate(' + (innerWidth / 2 - shW / 2) + 'px,' + shY + 'px)');
+    css(floorShadow, 'opacity', hero * (.85 + bob * .15) * (1 - sine(seg(p, 0, .2))));
+    fade(tableShadows, Math.max(turnS, 0));                                         // on the table, the box sits on its own shadow
+    // the table rises under the box; the game fades in on it as it settles
+    var slide = 1 - Math.pow(1 - seg(p, M.feltStart, .7), 3); // comes up quickly so its edge shows straight away, then settles into place
+    css(felt, 'transform', 'translateY(' + ((1 - slide) * innerHeight) + 'px)');
+    var ui = sine(seg(p, .62, .8)); css(tableUi, 'opacity', ui); css(game, 'opacity', ui); stage.classList.toggle('table-on', ui > .5);
+    css(boxView, 'opacity', (1 - gone) * (1 - sine(seg(p, .8, .9)))); // the game's own box takes over from ours, in the same place
+    var practice = !gridOn && p >= TABLE_IN; // from the moment the table starts coming in
+    if (practice !== document.body.classList.contains('practice')) { document.body.classList.toggle('practice', practice); PupHeader.set({ practice: practice }); } // the header folds its tagline bar and pauses the bone and tongue
+  }
+  var S = { p: 0, g: 0 }, last = performance.now(), gridOn = false, busy = false;
+  function scrollP() { var j = $('journey'); return clamp(scrollY / (j.offsetHeight - innerHeight), 0, 1); }
+  // the page follows the scroll a touch behind, so every move glides instead of stepping with the wheel
+  function loop(now) {
+    var dt = now - last; last = now;
+    if (!gridOn) {
+      if (!busy) { var target = scrollP(), k = M.tau ? 1 - Math.exp(-dt / M.tau) : 1; S.p += (target - S.p) * k; if (Math.abs(target - S.p) < .0005) S.p = target; }
+      render(S.p, S.g, now);
+    }
+    requestAnimationFrame(loop);
+  }
+  // glass: a mask of the title's letters, drawn with the same font, size and spacing, so the blur shows only through them
+  var glass = $('glass');
+  function drawGlassMask() {
+    glass.style.top = title.style.top; glass.style.height = title.offsetHeight + 'px';
+    var dpr = window.devicePixelRatio || 1, c = document.createElement('canvas'), x = c.getContext('2d');
+    c.width = Math.ceil(title.offsetWidth * dpr); c.height = Math.ceil(title.offsetHeight * dpr); x.scale(dpr, dpr);
+    M.lines.forEach(function (line) {
+      var cs = getComputedStyle(line);
+      x.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; x.letterSpacing = cs.letterSpacing; x.fillStyle = 'black'; // a mask: only the shape counts
+      var text = line.textContent.toUpperCase(), m = x.measureText(text), lh = parseFloat(cs.lineHeight);
+      var base = line.offsetTop + (lh - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent; // the same half-leading as the page
+      x.fillText(text, line.offsetLeft, base);
+    });
+    var url = 'url(' + c.toDataURL() + ')'; glass.style.webkitMaskImage = url; glass.style.maskImage = url;
+  }
+  var glassOn = true; // the glass letters (Vilmar, 25 Nov)
+  function setGlass(on) { glassOn = on; document.body.classList.toggle('glass-on', on); if (on) drawGlassMask(); }
+  function relayout() { measure(); if (glassOn) drawGlassMask(); render(S.p, S.g, performance.now()); }
+  addEventListener('resize', relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  // ── the practice game: the live game, in a frame on the table ──
+  function gameDoc() { try { return game.contentDocument; } catch (e) { return null; } }
+  function feltTop() { return M.phone ? 0 : felt.offsetTop; } // phones: the table ends up filling the screen
+  function gameBox() {
+    var d = gameDoc(), box = d && d.getElementById('lessonBox'), inn = box && !box.hidden && box.querySelector('.pbox .in');
+    if (!inn) return null;
+    var r = inn.getBoundingClientRect(); if (!r.width) return null;
+    return { y: feltTop() + r.top + r.height / 2, w: r.width };
+  }
+  function setEmbedTop() { // the game's players start under the header pill
+    var d = gameDoc(), board = d && d.querySelector('.pg-board'); if (!board) return;
+    var pill = island.querySelector('.hero-pill').getBoundingClientRect();
+    board.style.setProperty('--embed-top', (pill.bottom - feltTop() + M.sp4) + 'px');
+  }
+  function play(fn) { try { game.contentWindow.pupGame[fn](); } catch (e) {} }
+  var waited = 0;
+  function gameReady() {
+    setEmbedTop(); play('start');
+    (function check() { if (gameBox()) relayout(); else if (++waited < 300) requestAnimationFrame(check); })(); // until the game shows its box
+  }
+  if (gameDoc() && gameDoc().readyState === 'complete' && game.contentWindow.pupGame) gameReady(); else game.addEventListener('load', gameReady);
+
+  // ── the cards: Explore opens the box and deals the canvas's own cards out of the dog deck, face down, turning over on the way ──
+  var grid = $('grid');
+  function onScreen() {
+    return pupCanvas.cells().filter(function (c) { var r = c.getBoundingClientRect(); return r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight; })
+      .map(function (c) { var r = c.getBoundingClientRect(); return { c: c, x: r.left, y: r.top, w: r.width, h: r.height }; });
+  }
+  function copyCard(q) { // a copy of one canvas card, with the dog deck's back on its other side
+    var n = el(grid, 'gcard'); n.style.width = q.w + 'px'; n.style.height = q.h + 'px';
+    var fl = el(n, 'flip'), up = el(fl, 'side up'), face = q.c.firstChild.cloneNode(true);
+    [].forEach.call(face.querySelectorAll('video, button'), function (v) { v.remove(); }); // a still copy: no clips playing, no buttons
+    up.appendChild(face);
+    var im = document.createElement('img'); im.src = DOG_BACK; im.alt = ''; el(fl, 'side down').appendChild(im);
+    n._flip = fl; return n;
+  }
+  function tween(dur, fn) { return new Promise(function (done) { var a = performance.now(); (function step(now) { var t = reduce || !dur ? 1 : clamp((now - a) / dur, 0, 1); fn(t); if (t < 1) requestAnimationFrame(step); else done(); })(a); }); }
+  function cardMove(f, x, y, rot, s, flipDeg, vis) {
+    f.n.style.transform = 'translate(' + x + 'px,' + y + 'px) rotate(' + rot + 'deg) scale(' + s + ')';
+    f.n._flip.style.transform = 'rotateY(' + flipDeg + 'deg)';
+    f.n.style.visibility = vis ? 'visible' : 'hidden';
+  }
+  var OPEN = .36; // S.g with the box open, looking straight down, ready to deal
+
+  function cardsOn(on) { // the canvas takes over the page, or hands it back
+    gridOn = on; document.documentElement.classList.toggle('cards', on); document.body.classList.toggle('grid-on', on); PupHeader.set({ grid: on });
+  }
+  // Explore: the box opens and turns to face up, the cards rise out of the dog deck face down, turn over and glide to their places on the canvas
+  async function goExplore() {
+    if (busy || gridOn) return; busy = true;
+    gliding++; scrollTo({ top: 0, behavior: 'auto' }); S.p = 0;
+    await tween(ms('--dur-1000') * 1.4, function (t) { S.g = OPEN * t; });
+    render(0, OPEN, performance.now());
+    var first = pupCanvas.start(); // builds the canvas (still hidden) the first time
+    var deck = dogDeck.getBoundingClientRect(), mid = { x: innerWidth / 2, y: innerHeight / 2 };
+    var list = onScreen();
+    list.sort(function (a, b) { return Math.hypot(a.x + a.w / 2 - mid.x, a.y + a.h / 2 - mid.y) - Math.hypot(b.x + b.w / 2 - mid.x, b.y + b.h / 2 - mid.y); }); // nearest the middle leaves first
+    var lead = .5 / Math.max(1, list.length); // shares of the flight: each card leaves a moment after the one before
+    var flights = list.map(function (q, i) {
+      return { n: copyCard(q), x0: deck.left + deck.width / 2 - q.w / 2, y0: deck.top + deck.height / 2 - q.h / 2, s0: deck.width / q.w, x1: q.x, y1: q.y,
+               delay: i * lead, side: q.x + q.w / 2 > innerWidth / 2 ? 1 : -1 };
+    });
+    flights.reverse().forEach(function (f) { grid.appendChild(f.n); cardMove(f, f.x0, f.y0, 0, f.s0, 180, false); }); // the first card out stays on top
+    var rise = deck.height * .55; // a share of the card: how high it lifts out of the box before it travels
+    await tween(ms('--dur-1000') * 2.8, function (t) {
+      S.g = OPEN + t * (1 - OPEN);
+      flights.forEach(function (f) {
+        var u = seg(t, f.delay, f.delay + .5);
+        var up = sine(seg(u, 0, .35)), fly = soft(seg(u, .22, 1)), turnOver = sine(seg(u, .28, .8));
+        var x = lerp(f.x0, f.x1, fly), y = lerp(f.y0 - up * rise, f.y1, fly) - Math.sin(fly * Math.PI) * rise * .6;
+        var s = lerp(f.s0 * (1 + up * .12), 1, fly), rot = Math.sin(fly * Math.PI) * 7 * f.side;
+        cardMove(f, x, y, rot, s, 180 * (1 - turnOver), u > 0);
+      });
+    });
+    cardsOn(true); grid.textContent = ''; busy = false; // every copy sits exactly on its card: the canvas shows through as they go
+    if (first) pupCanvas.hint();
+  }
+  // Back: every card in view turns face down, glides home into the dog deck, and the hero comes back
+  async function goBack() {
+    if (busy || !gridOn) return; busy = true;
+    render(0, OPEN, performance.now());
+    var list = onScreen(), flights = list.map(function (q) { var n = copyCard(q); grid.appendChild(n); return { n: n, q: q }; });
+    cardsOn(false);
+    var deck = dogDeck.getBoundingClientRect(), lead = .4 / Math.max(1, list.length);
+    flights = flights.map(function (f, i) {
+      var q = f.q;
+      return { n: f.n, x0: q.x, y0: q.y, x1: deck.left + deck.width / 2 - q.w / 2, y1: deck.top + deck.height / 2 - q.h / 2, s1: deck.width / q.w, h: q.h, delay: i * lead,
+               side: q.x + q.w / 2 > innerWidth / 2 ? 1 : -1 };
+    });
+    flights.forEach(function (f) { cardMove(f, f.x0, f.y0, 0, 1, 0, true); });
+    await tween(ms('--dur-1000') * 2.2, function (t) {
+      S.g = lerp(.85, OPEN, sine(seg(t, 0, .45)));
+      flights.forEach(function (f) {
+        var u = seg(t, f.delay, f.delay + .6), fly = soft(u), turnOver = sine(seg(u, .1, .65));
+        var x = lerp(f.x0, f.x1, fly), y = lerp(f.y0, f.y1, fly) - Math.sin(fly * Math.PI) * f.h * .25;
+        cardMove(f, x, y, Math.sin(fly * Math.PI) * 7 * f.side, lerp(1, f.s1, fly), 180 * turnOver, u < 1);
+      });
+    });
+    grid.textContent = '';
+    await tween(ms('--dur-1000') * 1.4, function (t) { S.g = OPEN * (1 - t); });
+    S.g = 0; busy = false;
+  }
+  // scrolling the page for the header's links: our own glide, 2.5 seconds, easing in and out
+  // (the browser's smooth scroll picks its own speed, which was far too quick for this page)
+  var gliding = 0;
+  function glideTo(y) {
+    var from = scrollY, id = ++gliding;
+    return tween(ms('--dur-1000') * 2.5, function (t) { if (id === gliding) scrollTo(0, lerp(from, y, sine(t))); });
+  }
+  addEventListener('wheel', function () { gliding++; }, { passive: true }); // the reader scrolling takes over at once
+  // the scrollbar (Printian's): thumb size and place follow the page; drag the thumb, or click the track to jump there
+  var sbv = $('sbv'), sbTrack = sbv.firstChild, sbThumb = sbTrack.firstChild;
+  function sbPos() {
+    var de = document.scrollingElement, sh = de.scrollHeight;
+    sbThumb.style.height = Math.max(12, innerHeight / sh * 100) + '%'; sbThumb.style.top = (scrollY / sh * 100) + '%'; // shares of the track
+  }
+  addEventListener('scroll', sbPos, { passive: true }); addEventListener('resize', sbPos);
+  sbv.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); gliding++; if (gridOn || busy) return;
+    var de = document.scrollingElement, tr = sbTrack.getBoundingClientRect(), total = de.scrollHeight;
+    if (e.target !== sbThumb) { scrollTo(0, (e.clientY - tr.top) / tr.height * total - innerHeight / 2); return; }
+    var y0 = e.clientY, s0 = scrollY;
+    function mv(ev) { scrollTo(0, s0 + (ev.clientY - y0) / tr.height * total); }
+    function up() { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); }
+    addEventListener('pointermove', mv); addEventListener('pointerup', up);
+  });
+  addEventListener('touchstart', function () { gliding++; }, { passive: true });
+  // the table's links and the compact pill's icons drive the game in the frame
+  [].forEach.call(document.querySelectorAll('[data-play]'), function (a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); a.blur(); play(a.getAttribute('data-play')); });
+  });
+  explore.addEventListener('click', goExplore);
+  $('back').addEventListener('click', goBack);
+  $('pBack').addEventListener('click', function () { if (gridOn) goBack(); else if (!busy) glideTo(0); }); // phones: back to the hero (or out of the card grid)
+  $('logo').addEventListener('click', function (e) { e.preventDefault(); if (gridOn) goBack(); else glideTo(0); });
+  addEventListener('keydown', function (e) { // Escape closes a card's popup first; only with nothing open does it leave the canvas
+    if (e.key === 'Escape' && gridOn && !document.querySelector('.overlay.active:not(.pup-lick-pause), .howto-overlay.active, .video-overlay.active, .nav-menu.active')) goBack();
+  }, true);
+  [].forEach.call(document.querySelectorAll('[data-howto]'), function (a) {
+    a.addEventListener('click', async function (e) {
+      e.preventDefault(); if (busy) return;
+      if (gridOn) await goBack();
+      var j = $('journey'); glideTo(j.offsetHeight - innerHeight); play('howto');
+    });
+  });
+
+  measure();
+  setGlass(glassOn);
+  sbPos();
+  requestAnimationFrame(loop);
+  window.__hp = { S: S, M: M, explore: goExplore, back: goBack, state: function () { return { gridOn: gridOn, busy: busy }; } }; // for the page's tests
+})();
+</script>
 </body>
 </html>
