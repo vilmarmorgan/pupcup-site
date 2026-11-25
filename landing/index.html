@@ -336,14 +336,20 @@
     width: clamp(44px, 6.6vh, 60px); border-radius: 6px; cursor: default; font: inherit;
   }
   .pc img { width: 100%; display: block; pointer-events: none; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .35)); }
-  .up .pc { margin-left: -34px; transition: transform .2s; }
+  .up .pc { margin-left: -34px; transition: transform var(--dur-300) var(--ease-out); }
   .up .pc.gs { margin-left: 6px !important; }
 
   .pc.pick { cursor: pointer; z-index: 2; }
   .pc.pick img { filter: drop-shadow(0 0 10px rgba(245, 197, 66, .95)); }
   .pc.pick:hover { transform: translateY(-8px); }
-  .pg-board.picking .up .pc:not(.pick), .pg-board.picking .rules .pc:not(.pick) { opacity: .4; }
+  /* while you choose, every card stays fully visible: the ones you can take lift instead (Vilmar, 25 Nov 2026) */
   .pg-board.picking .up .pc.pick { margin-left: -10px; }
+  /* Choosing a card to steal: the cards you can take lift off the table towards you, bigger, so it's clear what
+     you're choosing; once you've chosen, they settle back down (Vilmar, 25 Nov 2026: they were too small to read) */
+  .pg-board.picking .up .pc.pick { transform-origin: 50% 0; transform: translateY(var(--sp-2)) scale(1.6); z-index: 6 !important; } /* grows down, towards you and the open table, not over the dog's name; on top of its own pile (the pile's order is set inline, hence !important) */
+  .pg-board.picking .up .pc.pick img { box-shadow: 0 var(--sp-3) var(--sp-6) color-mix(in srgb, var(--color-black) calc(var(--op-45) * 100%), transparent); border-radius: var(--r-md); }
+  @media (hover: hover) { .pg-board.picking .up .pc.pick:hover { transform: translateY(var(--sp-3)) scale(1.72); } }
+  .pg-board.picking .seat:has(.pc.pick) { position: relative; z-index: 4; } /* above the decks and the message while lifted */
   .pc.target img { filter: drop-shadow(0 0 12px rgba(255, 70, 70, .95)); }
 
   /* every player (you included) is bigger: there's room around them on wider screens */
@@ -1215,7 +1221,7 @@
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
-      <span class="ver" title="Version of this page">v1.4</span>
+      <span class="ver" title="Version of this page">v1.5</span>
       <span class="made">Made with <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -3016,7 +3022,9 @@
         '<span class="sp"></span><button class="pg-btn gold big" type="button" data-a="next">' + o.btn + '</button></div>' : '');
     drawerEl.hidden = false;
     drawerEl.classList.remove('in'); void drawerEl.offsetWidth; drawerEl.classList.add('in'); drawerEl.scrollTop = 0;
-    if (L.busy) lRoom(); else lCalc(); // sized to this step's words (on desktop every step is one height, so the table holds still)
+    // sized once per step, to its words (on desktop every step is one height, so the table holds still); a step that
+    // changes its words part-way, like Steal's "Which card do you want?", keeps the table as it is
+    if (L.busy || L.sized === L.page) lRoom(); else { lCalc(); L.sized = L.page; }
     var b = drawerEl.querySelector('[data-a="next"]'); if (b) b.focus({ preventScroll: true });
     return new Promise(function (resolve) { drawerEl._next = resolve; });
   }
@@ -3153,7 +3161,7 @@
     lRoom();
   }
   function lGo(i, played) {
-    L.page = i; L.busy = false; var g = ++L.gen; gen++; // gen stops anything still flying from the page before
+    L.page = i; L.busy = false; L.sized = -1; var g = ++L.gen; gen++; // gen stops anything still flying from the page before
     if (!played) lLay(i);
     L_PAGES[i](function () { return g !== L.gen || !L.on; });
   }
