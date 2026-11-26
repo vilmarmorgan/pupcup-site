@@ -1881,7 +1881,7 @@ body.compact-head .ctl { display: none; }
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
-      <span class="ver" title="Version of this page">1.15</span>
+      <span class="ver" title="Version of this page">1.16</span>
       <span class="made">Made with <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -4834,6 +4834,48 @@ init();
     await tween(ms('--dur-1000') * 1.4, function (t) { S.g = OPEN * (1 - t); });
     S.g = 0; busy = false;
   }
+  // From the cards to the practice game (Vilmar, 25 Nov 2026): every card in view turns face down, they gather in the
+  // middle and shuffle, then split into the game's two decks in its box, while the table slides up underneath. No hero
+  // on the way: it ends exactly where scrolling down to the table ends.
+  function deckRect(id) { // where one of the game's decks will be once the table is in place
+    var d = gameDoc(), n = d && d.getElementById(id); if (!n) return null;
+    var r = n.getBoundingClientRect(); if (!r.width) return null;
+    return { x: felt.offsetLeft + game.offsetLeft + r.left + r.width / 2, y: felt.offsetTop + game.offsetTop + r.top + r.height / 2, w: r.width };
+  }
+  async function goPlay() {
+    if (busy || !gridOn) return; busy = true;
+    play('howto'); // the lesson back at its first step: the box on the table, both decks in it
+    var list = onScreen(), copies = list.map(function (q) { var n = copyCard(q); grid.appendChild(n); return { n: n, q: q }; });
+    cardsOn(false); gliding++; scrollTo(0, 0); S.p = 0; S.g = 1; // the hero stays hidden (g = 1): only the table comes in
+    copies.forEach(function (c) { cardMove(c, c.q.x, c.q.y, 0, 1, 0, true); });
+    await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
+    var mid = { x: innerWidth / 2, y: innerHeight / 2 }, k = cssPx('var(--sp-2)');
+    var decks = [deckRect('lbMain') || { x: mid.x - k * 6, y: mid.y, w: list.length ? list[0].w / 4 : k }, deckRect('lbPen') || { x: mid.x + k * 6, y: mid.y, w: list.length ? list[0].w / 4 : k }];
+    var n = Math.max(1, copies.length);
+    var flights = copies.map(function (c, i) {
+      var q = c.q, side = i % 2, d = decks[side]; // every other card to the penalty deck, which has its own back
+      if (side) c.n.querySelector('.side.down img').src = C + 'penalty.webp';
+      return { n: c.n, x0: q.x, y0: q.y, w: q.w, h: q.h, x1: d.x - q.w / 2, y1: d.y - q.h / 2, s1: d.w / q.w, delay: (i / n) * .15, i: i,
+               jx: (Math.random() - .5) * k * 6, jy: (Math.random() - .5) * k * 4, r0: (Math.random() - .5) * 16 };
+    });
+    await tween(ms('--dur-1000') * 3.2, function (t) {
+      S.p = sine(seg(t, .08, .95)); // the table slides up underneath while the cards shuffle
+      flights.forEach(function (f) {
+        var down = sine(seg(t, f.delay, f.delay + .22));                 // turned face down where it lay
+        var gather = soft(seg(t, .12 + f.delay, .45 + f.delay));          // to the middle, in a loose pile
+        var split = soft(seg(t, .58 + f.delay * .6, .92 + f.delay * .5));  // and into its deck
+        var shuffle = Math.sin(t * 30 + f.i * 1.7) * (1 - split) * gather * k * 3; // riffled while it's in the pile
+        var gx = mid.x - f.w / 2 + f.jx + shuffle, gy = mid.y - f.h / 2 + f.jy;
+        var x = lerp(lerp(f.x0, gx, gather), f.x1, split), y = lerp(lerp(f.y0, gy, gather), f.y1, split);
+        var s = lerp(lerp(1, .55, gather), f.s1, split), rot = lerp(f.r0 * gather, 0, split);
+        cardMove(f, x, y, rot, s, 180 * down, true);
+      });
+    });
+    var j = $('journey'); scrollTo(0, j.offsetHeight - innerHeight); S.p = 1; S.g = 0; // where scrolling down would have left you
+    grid.textContent = ''; // the game's own decks are under the copies, in the same place
+    await new Promise(function (r) { requestAnimationFrame(r); });
+    busy = false;
+  }
   // scrolling the page for the header's links: our own glide, 2.5 seconds, easing in and out
   // (the browser's smooth scroll picks its own speed, which was far too quick for this page)
   var gliding = 0;
@@ -4873,7 +4915,7 @@ init();
   [].forEach.call(document.querySelectorAll('[data-howto]'), function (a) {
     a.addEventListener('click', async function (e) {
       e.preventDefault(); if (busy) return;
-      if (gridOn) await goBack();
+      if (gridOn) { goPlay(); return; } // from the cards straight to the table, not back through the hero
       var j = $('journey'); glideTo(j.offsetHeight - innerHeight); play('howto');
     });
   });
@@ -4882,7 +4924,7 @@ init();
   setGlass(glassOn);
   sbPos();
   requestAnimationFrame(loop);
-  window.__hp = { S: S, M: M, explore: goExplore, back: goBack, state: function () { return { gridOn: gridOn, busy: busy }; } }; // for the page's tests
+  window.__hp = { S: S, M: M, explore: goExplore, back: goBack, play: goPlay, state: function () { return { gridOn: gridOn, busy: busy }; } }; // for the page's tests
 })();
 </script>
 </body>
