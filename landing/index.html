@@ -3088,7 +3088,9 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
       for (var i = 0; i < parts.length; i++) for (var j = i + 1; j < parts.length; j++) if (hit(parts[i], parts[j])) return false;
       // and the hand's own row ends above the drawer, so nothing has to scroll
       var floor = board.getBoundingClientRect().bottom - (lSide() ? 0 : drawerEl.offsetHeight);
-      return R(hw).bottom <= floor + slack && cards.every(function (c) { return !hit(c, up) && parts.every(function (p) { return !hit(c, p); }); });
+      // ...and at least half of every card in your hand shows above it (Vilmar, 25 Nov 2026: on a 1366 x 768 laptop only a
+      // third showed, because the hand's row is squeezed and its cards hang out of it, under the drawer)
+      return R(hw).bottom <= floor + slack && cards.every(function (c) { return c.top + c.height / 2 <= floor + slack && !hit(c, up) && parts.every(function (p) { return !hit(c, p); }); });
     };
     // Your cards are measured where they rest, not where they are this instant: a card still settling after you
     // tapped it, or one that's glowing, sat high enough to fail every size, and the table shrank to half for the
