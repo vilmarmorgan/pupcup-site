@@ -973,7 +973,7 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
      Left: the eyebrow, title, words and Take the tour. Right: the arrows and Skip at the top, Next at the bottom. */
   @media (min-width: 761px) and (min-height: 521px) {
     .lesson-drawer { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--sp-10); row-gap: var(--sp-2); align-content: start;
-      min-height: 0; padding: var(--sp-4) var(--sp-10) var(--sp-8); }
+      min-height: 0; padding: var(--sp-4) var(--sp-10) var(--sp-8); width: min(100%, var(--w-4xl)); } /* wider, so the words fit two lines */
     .lesson-drawer .l-top, .lesson-drawer .row { display: contents; }
     .lesson-drawer > *, .lesson-drawer .l-top > *, .lesson-drawer .row > * { grid-column: 1; }
     .lesson-drawer .dots { grid-column: 1 / -1; padding-bottom: var(--sp-3); }
@@ -983,6 +983,11 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
     .lesson-drawer .row > .pg-btn { grid-column: 2; align-self: end; justify-self: end; }
     .lesson-drawer h2 { margin-bottom: var(--sp-1); }
     .lesson-drawer .row > .link { justify-self: start; margin-top: var(--sp-2); }
+    /* at most two lines of words, and no extra "Click your glowing card" line: the glow shows what to tap (Vilmar, 25 Nov 2026) */
+    .lesson-drawer p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+    .lesson-drawer p.do { display: none; }
+    /* you and your hand sit 24px higher during the lesson, so more of your cards clear the drawer */
+    .pg-board.lesson .seat[data-p="0"], .pg-board.lesson .pg-hand-wrap { translate: 0 calc(var(--sp-6) * -1); }
   }
   .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
   .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
@@ -3305,7 +3310,7 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
     },
     // 2 · Rule cards
     async function (stale) {
-      lStep({ step: 'Rule', k: 'Rule Cards', title: 'Play a Rule card', text: 'Instead of a Point card, you can play a Rule card. Rule cards are fun: when you play one, every other player has to follow your rule. Btw, you’re exempt from your own rule!', doing: tap() + ' your glowing Rule card' });
+      lStep({ step: 'Rule', k: 'Rule Cards', title: 'Play a Rule card', text: 'Instead of a Point card, you can play a Rule card: every other player has to follow your rule. You’re exempt from your own rule!', doing: tap() + ' your glowing Rule card' });
       var c = lFind('rule'); await lPick(c); if (stale()) return;
       await lPlay(c); if (stale()) return;
       await lDraw('p30'); if (stale()) return;
