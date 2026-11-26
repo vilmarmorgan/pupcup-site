@@ -1881,7 +1881,7 @@ body.compact-head .ctl { display: none; }
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
-      <span class="ver" title="Version of this page">1.14</span>
+      <span class="ver" title="Version of this page">1.15</span>
       <span class="made">Made with <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -4564,7 +4564,15 @@ init();
     var ks = lines.map(function () { return 1; });
     for (var n = 0; n < 3; n++) lines.forEach(function (e, i) { if (!i) return; ks[i] *= lines[0].getBoundingClientRect().width / e.getBoundingClientRect().width; e.style.setProperty('--k', ks[i]); }); // the letters' sides don't scale evenly, so settle it in a few passes
     M.lines = lines;
-    var top = island.getBoundingClientRect().bottom + M.sp4, bottom = explore.getBoundingClientRect().top - M.sp4; // between the header and Explore the cards
+    // between the header and Explore the cards. The header is measured as the hero shows it (tagline bar open), whatever
+    // mode it's in now: measured mid-game, the folded bar put LET'S under the bar on the way back (Vilmar's iPhone, 25 Nov 2026)
+    var was = island.className; island.classList.remove('is-practice', 'is-grid'); island.classList.add('hero-measuring');
+    var top = island.getBoundingClientRect().bottom + M.sp4; island.className = was;
+    // On touch screens the browser's bars come and go as you scroll, changing the height: the title keeps the room it had
+    // for this width rather than resizing mid-scroll (it shrank, then jumped, on the way to the game)
+    var room = explore.getBoundingClientRect().top - M.sp4 - top;
+    if (!(M.touchRoom && M.touchRoom.w === innerWidth)) M.touchRoom = matchMedia('(hover: none)').matches ? { w: innerWidth, h: room } : null;
+    var bottom = top + (M.touchRoom ? M.touchRoom.h : room);
     var availW = innerWidth - cssPx(M.phone ? 'var(--sp-5)' : 'var(--sp-12)') * 2;
     var f = Math.min(availW / lines[0].offsetWidth, (bottom - top) / title.offsetHeight);
     M.titleFill = Math.min(1, f * lines[0].offsetWidth / availW); // 1 = every line full width; less = the stack had to shrink to fit the height
