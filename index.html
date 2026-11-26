@@ -1665,7 +1665,9 @@ html.cards .bg { opacity: var(--op-0); }
 body.grid-on .back { opacity: var(--op-100); transform: none; pointer-events: auto; }
 /* the scroll journey: a tall section; the stage stays put while you scroll through it */
 .journey { position: relative; z-index: 1; height: 260vh; } /* a shorter scroll: the table now arrives while the box is still turning */
-.stage { --seat-top: var(--sp-16); --phone: 0; position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; } /* dvh: the part the browser's own bars leave visible (phones), so nothing sits under them */
+.stage { --seat-top: var(--sp-16); --phone: 0; position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-x: clip; overflow-y: visible; }
+/* clipped at the sides only: scrolled on to the footer, the table's drop shadow shows in full below it (Vilmar, 25 Nov 2026).
+   Nothing reaches past the top or bottom while the stage is pinned: the title has gone and the table is in place by then */ /* dvh: the part the browser's own bars leave visible (phones), so nothing sits under them */
 
 /* the title: PUPCUP is set to the width of LET'S PLAY (script measures both lines); white at the edges,
    a little greyer in the middle where the box stands in front of it, as in the KOVA reference */
@@ -1715,7 +1717,7 @@ body.glass-on .title {
    on it (Vilmar, 25 Nov 2026). The game is laid out that tall from the start, so it never re-lays out as the edge drops */
 @media (min-width: 601px) {
   .felt { transition: bottom var(--dur-700) var(--ease-in-out), border-radius var(--dur-700) var(--ease-in-out); }
-  .stage.table-on .felt { bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .stage.table-on .felt { bottom: 0; } /* its corners stay round, as at the top (Vilmar, 25 Nov 2026) */
   .felt .game { height: calc(100vh - var(--sp-5)); height: calc(100dvh - var(--sp-5)); } /* the window less the table's top edge: the same before and after */
 }
 /* the practice game: the live game in a frame filling the table; it fades in as the table settles */
@@ -1879,7 +1881,7 @@ body.compact-head .ctl { display: none; }
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
-      <span class="ver" title="Version of this page">1.13</span>
+      <span class="ver" title="Version of this page">1.15</span>
       <span class="made">Made with <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -4562,7 +4564,15 @@ init();
     var ks = lines.map(function () { return 1; });
     for (var n = 0; n < 3; n++) lines.forEach(function (e, i) { if (!i) return; ks[i] *= lines[0].getBoundingClientRect().width / e.getBoundingClientRect().width; e.style.setProperty('--k', ks[i]); }); // the letters' sides don't scale evenly, so settle it in a few passes
     M.lines = lines;
-    var top = island.getBoundingClientRect().bottom + M.sp4, bottom = explore.getBoundingClientRect().top - M.sp4; // between the header and Explore the cards
+    // between the header and Explore the cards. The header is measured as the hero shows it (tagline bar open), whatever
+    // mode it's in now: measured mid-game, the folded bar put LET'S under the bar on the way back (Vilmar's iPhone, 25 Nov 2026)
+    var was = island.className; island.classList.remove('is-practice', 'is-grid'); island.classList.add('hero-measuring');
+    var top = island.getBoundingClientRect().bottom + M.sp4; island.className = was;
+    // On touch screens the browser's bars come and go as you scroll, changing the height: the title keeps the room it had
+    // for this width rather than resizing mid-scroll (it shrank, then jumped, on the way to the game)
+    var room = explore.getBoundingClientRect().top - M.sp4 - top;
+    if (!(M.touchRoom && M.touchRoom.w === innerWidth)) M.touchRoom = matchMedia('(hover: none)').matches ? { w: innerWidth, h: room } : null;
+    var bottom = top + (M.touchRoom ? M.touchRoom.h : room);
     var availW = innerWidth - cssPx(M.phone ? 'var(--sp-5)' : 'var(--sp-12)') * 2;
     var f = Math.min(availW / lines[0].offsetWidth, (bottom - top) / title.offsetHeight);
     M.titleFill = Math.min(1, f * lines[0].offsetWidth / availW); // 1 = every line full width; less = the stack had to shrink to fit the height

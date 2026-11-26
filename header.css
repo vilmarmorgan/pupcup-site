@@ -97,5 +97,5 @@
 @keyframes heroIn { from { opacity: var(--op-0); } }
 .hero-ghost { position: fixed; z-index: 101; margin: 0; pointer-events: none; transition: opacity var(--dur-300) var(--ease-out); }
 /* while measuring, sizes apply at once */
-.hero-measuring, .hero-measuring .hero-pill, .hero-measuring .hero-logo { transition: none; }
+.hero-measuring, .hero-measuring .hero-pill, .hero-measuring .hero-logo, .hero-measuring .hero-mission { transition: none; }
 @media (prefers-reduced-motion: reduce) { .hero-btn, .hero-island, .hero-pill, .hero-logo { transition: none; } .hero-in { animation: none; } }
