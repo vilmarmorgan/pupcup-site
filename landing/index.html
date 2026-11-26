@@ -888,6 +888,12 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
   .pg-board .pgdeck.lesson-ring img { box-shadow: 0 0 0 var(--bw-2) var(--accent), 0 0 var(--sp-5) color-mix(in srgb, var(--accent) calc(var(--op-60) * 100%), transparent); }
   .pg-hand .pc.show { transform: translateY(calc(var(--sp-4) * -1)) scale(1.06); z-index: 5; }
   .pg-hand .pc.show img { filter: drop-shadow(0 0 var(--sp-3) var(--accent)); }
+  /* the lesson, with a mouse: the card under the pointer grows and rises clear of the drawer, fully in view (Vilmar, 25 Nov
+     2026). Script sets --lift, how far it rises; the glow pauses while it's held up */
+  .pg-hand .pc { --lift: 0px; }
+  @media (hover: hover) {
+    .pg-board.lesson .pg-hand .pc:hover { transform: translateY(calc(var(--lift) * -1)) rotate(0) scale(1.35); animation: none; z-index: 40; }
+  }
   .lesson-box { grid-area: mid; z-index: 6; position: relative; align-self: stretch; display: grid; place-items: center; pointer-events: none; }
   .lesson-box[hidden] { display: none; }
   .lesson-box .setup-row { display: grid; place-items: center; transition: opacity var(--dur-300), transform var(--dur-300); }
@@ -2391,7 +2397,10 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
         '<button type="button" class="pg-btn" id="tipClose">Close</button></div>' : '');
     var br = board.getBoundingClientRect(), r = n.getBoundingClientRect();
     tip.style.left = Math.max(10, Math.min(br.width - 280, r.left - br.left + r.width / 2 - 135)) + 'px';
-    tip.style.top = Math.max(10, r.top - br.top - 150) + 'px';
+    // a card raised clear of the lesson's drawer (hover): the tip goes above where the card ends up, not where it started
+    var lift = parseFloat(n.style.getPropertyValue('--lift')) || 0, z = parseFloat(hand.parentNode.style.zoom) || 1;
+    var top = lift && board.classList.contains('lesson') && n.matches(':hover') ? r.top - lift * z + 1.1 * r.height * (1 - GROW) : r.top;
+    tip.style.top = Math.max(10, top - br.top - 150) + 'px';
     tip.classList.add('on');
     if (withPlay) {
       if ($('tipPlay')) $('tipPlay').addEventListener('click', function () { var s = selected; clearSel(); if (s) onHandCard(s); });
@@ -3062,6 +3071,15 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
   // the table makes room for the drawer: the board's bottom edge sits on the drawer's top edge, and when the
   // table and your hand don't fit above it (a 720-high screen), both shrink together, layout unchanged
   // a phone on its side has no height for a drawer: there it stands at the right, and the table keeps the rest
+  // how far a hovered card rises: its bottom, once grown (it grows from just below its foot), a gap above the drawer's top
+  var GROW = 1.35; // the hover rule's scale, above
+  hand.addEventListener('pointerover', function (e) {
+    var c = e.target.closest && e.target.closest('.pc');
+    if (!c || e.pointerType !== 'mouse' || !board.classList.contains('lesson') || drawerEl.hidden || lSide()) return;
+    var r = c.getBoundingClientRect(), d = drawerEl.getBoundingClientRect(), z = parseFloat(hand.parentNode.style.zoom) || 1;
+    var bottom = r.bottom + 0.1 * r.height * (1 - GROW); // the foot moves a little as the card grows (origin at 110% of its height)
+    c.style.setProperty('--lift', Math.max(0, (bottom - d.top + cssPx('var(--sp-3)')) / z) + 'px');
+  });
   function lSide() { return getComputedStyle(drawerEl).translate === 'none'; } // the CSS decides: centred at the bottom it's shifted half its width
   function lPad(on) {
     var side = on && lSide();
