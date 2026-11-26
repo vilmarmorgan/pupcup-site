@@ -88,4 +88,14 @@
   .hero-btn { padding: var(--sp-1-5) var(--sp-2); font-size: var(--fs-xs); }
   .hero-actions { gap: var(--sp-1); }
 }
-@media (prefers-reduced-motion: reduce) { .hero-btn { transition: none; } }
+/* moving between modes (Vilmar, 25 Nov 2026): the pill grows or shrinks, the logo glides and resizes, and the buttons fade
+   out and in, never a jump. header.js does the gliding and the fades; these are the size changes */
+.hero-island { transition: width var(--dur-500) var(--ease-in-out); }
+.hero-pill { transition: padding var(--dur-500) var(--ease-in-out), gap var(--dur-500) var(--ease-in-out); }
+.hero-logo { transition: height var(--dur-500) var(--ease-in-out); }
+.hero-in { animation: heroIn var(--dur-300) var(--ease-out) var(--dur-150) both; }
+@keyframes heroIn { from { opacity: var(--op-0); } }
+.hero-ghost { position: fixed; z-index: 101; margin: 0; pointer-events: none; transition: opacity var(--dur-300) var(--ease-out); }
+/* while measuring, sizes apply at once */
+.hero-measuring, .hero-measuring .hero-pill, .hero-measuring .hero-logo { transition: none; }
+@media (prefers-reduced-motion: reduce) { .hero-btn, .hero-island, .hero-pill, .hero-logo { transition: none; } .hero-in { animation: none; } }
