@@ -995,12 +995,6 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
     /* you and your hand sit 24px higher during the lesson, so more of your cards clear the drawer */
     .pg-board.lesson .seat[data-p="0"], .pg-board.lesson .pg-hand-wrap { translate: 0 calc(var(--sp-6) * -1); }
   }
-  /* phones held upright: Chrome on iPhone lays its bottom bar over the page, so the bottom 70 or so points of the screen
-     belong to the browser and a tap there never reaches the page. Next sat in it: the arrows and Skip, higher up, worked
-     and Next didn't (Vilmar's iPhone, 25 Nov 2026). The drawer's last row now stays above that band */
-  @media (max-width: 760px) and (orientation: portrait) {
-    .pg-board.touch .lesson-drawer { padding-bottom: calc(var(--sp-12) + var(--sp-8)); }
-  }
   .pg-rotate-card { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 360px; padding: 28px 24px; border-radius: 22px; background: #15161c; box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
   .pg-rotate-card h3 { font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
   .pg-rotate-card p { color: var(--ink-2); font-size: 15px; line-height: 1.45; text-wrap: balance; }
@@ -3103,6 +3097,10 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
   // with the drawer at its one height, then kept for the whole lesson so the table never changes size between steps.
   function lCalc() {
     var t = $('tableEl'), hw = hand.parentNode, page = L.page, wasHidden = drawerEl.hidden;
+    // Step 1 is measured on a dealt table and then laid back, which clears the step's waiting Next. Keep it: on an iPhone
+    // the browser's bar resizes the page as you scroll, every resize re-measured, and Next stopped answering while the
+    // arrows and Skip still worked (Vilmar, 25 Nov 2026)
+    var waiting = drawerEl._next;
     if (page === 0) lLay(1);
     drawerEl.hidden = false;
     lPad(true);
@@ -3134,6 +3132,7 @@ if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add(
     if (Math.abs(lo - L.zoom) < 0.02) lo = L.zoom; // a hair's difference between steps: keep the table still
     L.zoom = lo;
     if (page === 0) lLay(0);
+    if (waiting) drawerEl._next = waiting;
     drawerEl.hidden = wasHidden;
     lRoom();
   }
