@@ -1722,7 +1722,7 @@ body.glass-on .title {
 }
 /* the practice game: the live game in a frame filling the table; it fades in as the table settles */
 .game { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; opacity: var(--op-0); pointer-events: none; background: transparent; }
-.stage.table-on .game { pointer-events: auto; }
+.stage.game-live .game { pointer-events: auto; } /* takes taps as soon as it is mostly in: full width or not, settled or not */
 /* the table's links, level with the header pill: New game and Customise top left, Watch a video top right.
    No Full screen: the table already fills the window. Styled as the live game's buttons (.pg-btn). */
 .ctl { --ctl-y: var(--sp-16); position: absolute; top: var(--ctl-y); translate: 0 -50%; display: flex; gap: var(--sp-2); }
@@ -1881,7 +1881,7 @@ body.compact-head .ctl { display: none; }
     <p class="parody">Pupcup characters are original fictional parodies and are not affiliated with, endorsed by, or sponsored by any real person.</p>
     <div class="foot-row">
       <span>©2026 <a href="https://vilmarmorgan.com" target="_blank" rel="noopener">Vilmar Morgan LLC</a></span>
-      <span class="ver" title="Version of this page">1.16</span>
+      <span class="ver" title="Version of this page">1.17</span>
       <span class="made">Made with <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg> by Vilmar Morgan</span>
     </div>
   </footer>
@@ -4683,9 +4683,10 @@ init();
     fade(tableShadows, Math.max(turnS, 0));                                         // on the table, the box sits on its own shadow
     // the table rises under the box; the game fades in on it as it settles
     var slide = 1 - Math.pow(1 - seg(p, M.feltStart, .7), 3); // comes up quickly so its edge shows straight away, then settles into place
-    css(felt, 'transform', 'translateY(' + ((1 - slide) * innerHeight) + 'px)');
+    css(felt, 'transform', slide < 1 ? 'translateY(' + ((1 - slide) * innerHeight) + 'px)' : 'none'); // no transform at rest: taps into the game land true
     var ui = sine(seg(p, .62, .8)); css(tableUi, 'opacity', ui); css(game, 'opacity', ui);
-    stage.classList.toggle('table-on', ui > .99); // the game takes taps only once it is fully in, never half faded under our box
+    stage.classList.toggle('table-on', ui > .99);
+    stage.classList.toggle('game-live', ui > .5); // the game takes taps once mostly in (the table is already at rest by then) // the game takes taps only once it is fully in, never half faded under our box
     css(boxView, 'opacity', (1 - gone) * (1 - sine(seg(p, .72, .8)))); // the game's own box takes over from ours, in the same place, as it fades in
     var practice = !gridOn && p >= TABLE_IN; // from the moment the table starts coming in
     if (practice !== document.body.classList.contains('practice')) { document.body.classList.toggle('practice', practice); PupHeader.set({ practice: practice }); headMode(); } // the header folds its tagline bar and pauses the bone and tongue
@@ -4750,6 +4751,8 @@ init();
   var waited = 0;
   function gameReady() {
     setEmbedTop(); play('start');
+    // a tap in the game before the page has finished arriving at the table: it carries on there, while the tap still works
+    try { gameDoc().addEventListener('pointerdown', function () { var j = $('journey'), end = j.offsetHeight - innerHeight; if (!busy && !gridOn && scrollY < end - 1) glideTo(end); }, true); } catch (e) {}
     (function check() { if (gameBox()) relayout(); else if (++waited < 300) requestAnimationFrame(check); })(); // until the game shows its box
   }
   if (gameDoc() && gameDoc().readyState === 'complete' && game.contentWindow.pupGame) gameReady(); else game.addEventListener('load', gameReady);
